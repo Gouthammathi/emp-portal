@@ -52,7 +52,7 @@ const Register = () => {
       });
 
       alert("Registration successful! You can now log in.");
-      navigate("/login"); // Redirect to login page
+      navigate("/"); // Redirect to login page
     } catch (err) {
       console.error("Registration error:", err);
       setError("Registration failed. Please try again.");

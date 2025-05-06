@@ -5,6 +5,7 @@ import Login from '../pages/Login';
 import Register from '../pages/Register';
 import SetNewPassword from '../pages/SetNewPassword';
 import CheckEmail from '../pages/CheckEmail'; // Import the new CheckEmail component
+import ForgetPassword from '../pages/ForgetPassword'; // Import the Forget Password component
 import Dashboard from '../pages/Dashboard';
 import Moduleselection from '../pages/Mocktest/Moduleselection';
 import Testins from '../pages/Mocktest/Testins';
@@ -23,6 +24,7 @@ function Routers() {
       <Route path='/register' element={<Register />} /> {/* Registration Page */}
       <Route path='/check-email' element={<CheckEmail />} /> {/* Email Entry Page */}
       <Route path='/setnewpassword' element={<SetNewPassword />} /> {/* Set New Password Page */}
+      <Route path='/forget-password' element={<ForgetPassword />} /> {/* Forget Password Page */}
       <Route path='/dashboard' element={<Dashboard />} />
       <Route path='/module-selection' element={<Moduleselection />} />
       <Route path='/test-instructions/:moduleId' element={<Testins />} />

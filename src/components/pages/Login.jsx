@@ -1,10 +1,8 @@
 // src/components/pages/Login.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react"; // Import useEffect
 import { useNavigate, Link } from "react-router-dom";
 import { FaUser, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth"; // Import Firebase auth
-import { getDoc, doc } from "firebase/firestore"; // Import Firestore functions
-import { db } from "../../firebase"; // Import Firestore instance
 
 const Login = () => {
   const [email, setEmail] = useState(""); // Employee email
@@ -13,6 +11,12 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false); // For toggling password visibility
   const navigate = useNavigate();
   const auth = getAuth(); // Initialize Firebase auth
+
+  // Clear email and password on component mount
+  useEffect(() => {
+    setEmail("");
+    setPassword("");
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,6 +28,41 @@ const Login = () => {
     try {
       await signInWithEmailAndPassword(auth, email, password); // Sign in with email and password
       navigate("/dashboard"); // Redirect to dashboard on success
+
+      // Assuming authentication is successful
+      const isAuthenticated = true; // Replace with actual authentication check
+      if (isAuthenticated) {
+        // Define the hierarchy for report sending
+        const reportHierarchy = {
+          222003: 111069,
+          222002: 222001,
+          222001: 222001, // 222001 sends to themselves
+        };
+
+        // Function to send email
+        function sendEmail(to, subject, body) {
+          // ... code to send email ...
+          console.log(`Email sent to ${to} with subject: ${subject}`);
+        }
+
+        // Function to handle employee login
+        function handleEmployeeLogin(empId, reportData) {
+          const reportRecipientId = reportHierarchy[empId];
+          if (reportRecipientId) {
+            const subject = "New Report Submission";
+            const body = `Report for employee ID ${empId}: ${reportData}`;
+            sendEmail(reportRecipientId, subject, body);
+          } else {
+            console.log("No report recipient found for this employee.");
+          }
+        }
+
+        // Example report data (you may want to fetch this from your database)
+        const reportData = "Report data for employee " + email;
+
+        // Call the function to handle report sending
+        handleEmployeeLogin(email, reportData);
+      }
     } catch (err) {
       console.error("Login error:", err); // Log the error to the console
       setError("Login failed. Please check your credentials.");
@@ -123,7 +162,7 @@ const Login = () => {
             <button
               type="button"
               className="text-sm text-orange-600 hover:text-orange-800 font-medium transition duration-150 ease-in-out"
-              onClick={() => alert("Redirect to forgot password page")}
+              onClick={() => navigate("/forget-password")} // Redirect to the Forget Password page
             >
               Forgot Password?
             </button>
