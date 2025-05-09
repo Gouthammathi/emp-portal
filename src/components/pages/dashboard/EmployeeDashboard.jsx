@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../firebase';
-import { FaClipboardList, FaCalendarAlt, FaClock, FaBook } from 'react-icons/fa';
+import { FaClipboardList, FaCalendarAlt, FaClock, FaBook, FaSitemap } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
 const EmployeeDashboard = () => {
@@ -60,6 +60,14 @@ const EmployeeDashboard = () => {
       hoverColor: 'hover:bg-orange-600',
       onClick: () => navigate('/holiday-calendar')
     },
+    {
+      title: 'Org Chart',
+      icon: <FaSitemap className="w-8 h-8" />,
+      description: 'View the organization structure',
+      color: 'bg-orange-500',
+      hoverColor: 'hover:bg-orange-600',
+      onClick: () => navigate('/org-chart')
+    },
   ];
 
   if (loading) {
@@ -76,7 +84,7 @@ const EmployeeDashboard = () => {
           <p className="text-gray-600">Employee Dashboard</p>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
           {tiles.map((tile, index) => (
             <div
               key={index}
