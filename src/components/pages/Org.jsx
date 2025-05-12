@@ -378,9 +378,7 @@ function Org() {
         onClick={() => setSelectedPerson(person)}
         className={`flex items-center cursor-pointer hover:scale-105 transition-transform ${bgColor} border-2 ${borderColor} rounded-lg shadow-lg p-4 w-64 min-h-[80px] space-x-3`}
       >
-        <div className="flex-shrink-0">
-          <FaUserCircle className="w-12 h-12 text-gray-600" />
-        </div>
+        
         <div className="flex flex-col justify-center flex-grow">
           <p className="font-semibold text-sm text-gray-800 truncate">{person.name}</p>
           <p className="text-xs text-gray-600">{person.title}</p>

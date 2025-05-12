@@ -3,26 +3,25 @@ import { useNavigate } from 'react-router-dom';
 import { getAuth } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
-import TlDashboard from './dashboard/TlDashboard';
-import HrDashboard from './dashboard/HrDashboard';
 import ManagerDashboard from './dashboard/ManagerDashboard';
+import SuperManagerDashboard from './dashboard/SuperManagerDashboard';
 import EmployeeDashboard from './dashboard/EmployeeDashboard';
-
+ 
 const Dashboard = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const auth = getAuth();
-
+ 
   useEffect(() => {
     const fetchUserData = async () => {
       const user = auth.currentUser;
-      
+     
       if (!user) {
         navigate('/');
         return;
       }
-
+ 
       try {
         // First try to get user data from Firestore
         const userDoc = await getDoc(doc(db, "users", user.uid));
@@ -41,13 +40,13 @@ const Dashboard = () => {
         console.error("Error fetching user data:", error);
         navigate('/');
       }
-      
+     
       setLoading(false);
     };
-
+ 
     fetchUserData();
   }, [navigate, auth]);
-
+ 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -55,11 +54,11 @@ const Dashboard = () => {
       </div>
     );
   }
-
+ 
   // Render the appropriate dashboard based on user role
   switch (userData?.role) {
-    case 'tl':
-      return <TlDashboard />;
+    case 'supermanager':
+      return <SuperManagerDashboard />;
     case 'hr':
       return <HrDashboard />;
     case 'manager':
@@ -77,5 +76,5 @@ const Dashboard = () => {
       );
   }
 };
-
-export default Dashboard; 
+ 
+export default Dashboard;

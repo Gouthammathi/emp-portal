@@ -15,7 +15,7 @@ import TestResult from '../pages/Mocktest/TestResult';
 import Certificate from '../pages/Mocktest/Certificate';
 import Timesheet from '../pages/Timesheet/Timesheet';
 import Holidaycal from '../pages/holidaycal/holcal';
-import Dailys from '../pages/dailystatus/dailys';
+import Dailys from '../pages/dailystatus/daily';
 import Org from '../pages/Org';
 function Routers() {
   return (

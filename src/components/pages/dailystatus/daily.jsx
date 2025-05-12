@@ -1,39 +1,91 @@
-import React, { useState } from 'react';
-
-const Dailys = () => {
+import React, { useState, useEffect } from 'react';
+import { getAuth } from 'firebase/auth';
+import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../../../firebase';
+ 
+const Daily = () => {
   const [status, setStatus] = useState({
     date: '',
     tasks: [{ time: '', description: '', completed: false }],
+    empId: '',
+    employeeName: '',
+    department: '',
+    manager: ''
   });
-
+ 
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const auth = getAuth();
+      const user = auth.currentUser;
+     
+      if (user) {
+        const userQuery = query(collection(db, "users"), where("uid", "==", user.uid));
+        const userSnapshot = await getDocs(userQuery);
+       
+        if (!userSnapshot.empty) {
+          const userData = userSnapshot.docs[0].data();
+          setStatus(prev => ({
+            ...prev,
+            empId: userData.empId,
+            employeeName: `${userData.firstName} ${userData.lastName}`,
+            department: userData.department || '',
+            manager: userData.manager || ''
+          }));
+        }
+      }
+    };
+ 
+    fetchUserData();
+  }, []);
+ 
   const handleChange = (index, field, value) => {
     const updatedTasks = [...status.tasks];
     updatedTasks[index][field] = field === 'completed' ? value.target.checked : value;
     setStatus({ ...status, tasks: updatedTasks });
   };
-
+ 
   const addTask = () => {
     setStatus({
       ...status,
       tasks: [...status.tasks, { time: '', description: '', completed: false }],
     });
   };
-
-  const handleSubmit = (e) => {
+ 
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submitted status:", status);
-    alert("Status submitted successfully!");
-    setStatus({
-      date: '',
-      tasks: [{ time: '', description: '', completed: false }],
-    });
+   
+    try {
+      // Save status report to Firestore
+      const statusData = {
+        ...status,
+        submittedAt: new Date(),
+        status: 'pending' // pending, reviewed
+      };
+ 
+      await addDoc(collection(db, "statusReports"), statusData);
+     
+      alert("Status submitted successfully!");
+     
+      // Reset form
+      setStatus({
+        date: '',
+        tasks: [{ time: '', description: '', completed: false }],
+        empId: status.empId,
+        employeeName: status.employeeName,
+        department: status.department,
+        manager: status.manager
+      });
+    } catch (error) {
+      console.error("Error submitting status:", error);
+      alert("Error submitting status. Please try again.");
+    }
   };
-
+ 
   return (
     <div className="h-screen overflow-y-auto bg-orange-50 p-8">
       <div className="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow-md">
         <h2 className="text-2xl font-semibold text-orange-500 mb-4">📝 Daily Status Report</h2>
-
+ 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-gray-700 font-medium mb-1">Date</label>
@@ -45,7 +97,7 @@ const Dailys = () => {
               required
             />
           </div>
-
+ 
           {status.tasks.map((task, index) => (
             <div key={index} className="border p-4 rounded-md mb-4 bg-gray-50">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-2">
@@ -76,7 +128,7 @@ const Dailys = () => {
               </div>
             </div>
           ))}
-
+ 
           <div className="flex justify-between">
             <button
               type="button"
@@ -97,5 +149,6 @@ const Dailys = () => {
     </div>
   );
 };
-
-export default Dailys;
+ 
+export default Daily;
+ 
