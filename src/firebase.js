@@ -24,8 +24,10 @@ if (typeof window !== "undefined") {
 }
 
 // --- Firestore update: Assign team lead 111069 to HR 22222 ---
-
-const tlRef = doc(db, "users", "111069");
-await updateDoc(tlRef, { hrId: "22222" });
+// Use this function in your app where needed, e.g. in a useEffect or event handler
+export async function assignTeamLeadToHR() {
+  const tlRef = doc(db, "users", "111069");
+  await updateDoc(tlRef, { hrId: "22222" });
+}
 
 export { app, auth, db, analytics };
