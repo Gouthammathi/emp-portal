@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../firebase';
-import { FaClipboardList, FaCalendarAlt, FaClock, FaBook, FaUsers, FaChartLine, FaTasks } from 'react-icons/fa';
+import { FaClipboardList, FaCalendarAlt, FaClock, FaBook, FaUsers, FaChartLine, FaTasks, FaSitemap } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-
+import OrgChartPage from '../Org';
 const TlDashboard = () => {
   const [userData, setUserData] = useState(null);
   const [teamMembers, setTeamMembers] = useState([]);
@@ -89,6 +89,14 @@ const TlDashboard = () => {
       color: 'bg-pink-500',
       hoverColor: 'hover:bg-pink-600',
       onClick: () => navigate('/team-tasks')
+    },
+    {
+      title: 'Org Chart',
+      icon: <FaSitemap className="w-8 h-8" />,
+      description: 'View the organization structure',
+      color: 'bg-orange-500',
+      hoverColor: 'hover:bg-orange-600',
+      onClick: () => navigate('/org')
     },
   ];
 
@@ -189,11 +197,11 @@ const TlDashboard = () => {
               <button className="w-full bg-purple-600 text-white py-2 px-4 rounded hover:bg-purple-700 transition-colors">
                 Review Team Performance
               </button>
+              
             </div>
           </div>
         </div>
-
-        {/* Recent Activities Section */}
+             {/* Recent Activities Section */}
         <div className="bg-white rounded-lg shadow-lg p-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Recent Activities</h2>
           <div className="space-y-4">

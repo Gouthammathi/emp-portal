@@ -66,7 +66,7 @@ const EmployeeDashboard = () => {
       description: 'View the organization structure',
       color: 'bg-orange-500',
       hoverColor: 'hover:bg-orange-600',
-      onClick: () => navigate('/org-chart')
+      onClick: () => navigate('/org')
     },
   ];
 

@@ -16,7 +16,7 @@ import Certificate from '../pages/Mocktest/Certificate';
 import Timesheet from '../pages/Timesheet/Timesheet';
 import Holidaycal from '../pages/holidaycal/holcal';
 import Dailys from '../pages/dailystatus/dailys';
-
+import Org from '../pages/Org';
 function Routers() {
   return (
     <Routes>
@@ -35,6 +35,7 @@ function Routers() {
       <Route path='/Timesheet' element={<Timesheet />} />
       <Route path='/holiday-calendar' element={<Holidaycal />} />
       <Route path='/daily-s' element={<Dailys />} />
+      <Route path='/org' element={<Org/>}/>
     </Routes>
   );
 }

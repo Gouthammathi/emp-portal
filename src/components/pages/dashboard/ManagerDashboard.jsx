@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../firebase';
+import { FaClipboardList, FaCalendarAlt, FaClock, FaBook, FaUsers, FaChartLine, FaTasks, FaSitemap } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 const ManagerDashboard = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -35,6 +38,23 @@ const ManagerDashboard = () => {
           Welcome, {userData?.firstName} {userData?.lastName}
         </h1>
         <p className="text-gray-600">Manager Dashboard</p>
+      </div>
+
+      {/* Manager Features Section */}
+      <div className="mb-6">
+        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Manager Features</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div
+            onClick={() => navigate('/org')}
+            className="bg-orange-500 hover:bg-orange-600 rounded-lg shadow-lg p-6 text-white transform transition-all duration-300 hover:scale-105 cursor-pointer"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">Org Chart</h2>
+              <FaSitemap className="w-8 h-8" />
+            </div>
+            <p className="text-sm opacity-90">View the organization structure</p>
+          </div>
+        </div>
       </div>
 
       {/* Manager Overview Section */}
