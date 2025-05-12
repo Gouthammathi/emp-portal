@@ -1,0 +1,349 @@
+{
+  "organizationChart": [
+    {
+      "employeeNo": "111001",
+      "employeeName": "Rajshri Rama Krishna Walse",
+      "managerName": "Top Level Manager"
+    },
+    {
+      "employeeNo": "111002",
+      "employeeName": "CHITTEPU LAKSHMI CHENNA KESAVA REDDY",
+      "managerName": "Rajshri Rama Krishna Walse"
+    },
+    {
+      "employeeNo": "111003",
+      "employeeName": "Syama Sundara Reddy Obulapuram",
+      "managerName": "Rajshri Rama Krishna Walse"
+    },
+    {
+      "employeeNo": "111004",
+      "employeeName": "Muralidhar Reddy Nara",
+      "managerName": "Rajshri Rama Krishna Walse"
+    },
+    {
+      "employeeNo": "111005",
+      "employeeName": "Hari Nadha Reddy Andluru",
+      "managerName": "Rajshri Rama Krishna Walse"
+    },
+    {
+      "employeeNo": "111087",
+      "employeeName": "G P Subba Reddy",
+      "managerName": "Rajshri Rama Krishna Walse"
+    },
+    {
+      "employeeNo": "111088",
+      "employeeName": "Radha Krishna Battu",
+      "managerName": "Rajshri Rama Krishna Walse"
+    },
+    {
+      "employeeNo": "111047",
+      "employeeName": "Nigama Ambala",
+      "managerName": "G P Subba Reddy"
+    },
+    {
+      "employeeNo": "111007",
+      "employeeName": "Pothukuchi Surya Annapurna Santhy Kamal",
+      "managerName": "Syama Sundara Reddy Obulapuram"
+    },
+    {
+      "employeeNo": "111015",
+      "employeeName": "SUBBA RAM REDDY JEEREDDY",
+      "managerName": "Syama Sundara Reddy Obulapuram"
+    },
+    {
+      "employeeNo": "111045",
+      "employeeName": "Isvaiah Lyagala",
+      "managerName": "Syama Sundara Reddy Obulapuram"
+    },
+    {
+      "employeeNo": "111062",
+      "employeeName": "Dodla Sai Kumar",
+      "managerName": "Syama Sundara Reddy Obulapuram"
+    },
+    {
+      "employeeNo": "111006",
+      "employeeName": "Gade Sambi Reddy",
+      "managerName": "CHITTEPU LAKSHMI CHENNA KESAVA REDDY"
+    },
+    {
+      "employeeNo": "111016",
+      "employeeName": "Anirudh Teppala",
+      "managerName": "CHITTEPU LAKSHMI CHENNA KESAVA REDDY"
+    },
+    {
+      "employeeNo": "111031",
+      "employeeName": "Chandra Sekhar . K",
+      "managerName": "CHITTEPU LAKSHMI CHENNA KESAVA REDDY"
+    },
+    {
+      "employeeNo": "111078",
+      "employeeName": "Amareshwar",
+      "managerName": "CHITTEPU LAKSHMI CHENNA KESAVA REDDY"
+    },
+    {
+      "employeeNo": "111082",
+      "employeeName": "MAQBOOL HUSSAIN SYED",
+      "managerName": "CHITTEPU LAKSHMI CHENNA KESAVA REDDY"
+    },
+    {
+      "employeeNo": "111014",
+      "employeeName": "Mandapati Vajra Reddy",
+      "managerName": "Muralidhar Reddy Nara"
+    },
+    {
+      "employeeNo": "111028",
+      "employeeName": "Susmitha.P",
+      "managerName": "Muralidhar Reddy Nara"
+    },
+    {
+      "employeeNo": "111012",
+      "employeeName": "Nikhileswar Reddy G",
+      "managerName": "Hari Nadha Reddy Andluru"
+    },
+    {
+      "employeeNo": "111024",
+      "employeeName": "RAJESH.N",
+      "managerName": "Nigama Ambala"
+    },
+    {
+      "employeeNo": "111025",
+      "employeeName": "Sreedhar Sreeram",
+      "managerName": "Nigama Ambala"
+    },
+    {
+      "employeeNo": "111041",
+      "employeeName": "Jadapalli Devendra Goud",
+      "managerName": "Nigama Ambala"
+    },
+    {
+      "employeeNo": "111042",
+      "employeeName": "Madupu Gayathri",
+      "managerName": "Nigama Ambala"
+    },
+    {
+      "employeeNo": "111043",
+      "employeeName": "Gaddam Hashitha Reddy",
+      "managerName": "Nigama Ambala"
+    },
+    {
+      "employeeNo": "111048",
+      "employeeName": "Pydikondala priyathama subhash",
+      "managerName": "Nigama Ambala"
+    },
+    {
+      "employeeNo": "111049",
+      "employeeName": "Ramya Pasala",
+      "managerName": "Nigama Ambala"
+    },
+    {
+      "employeeNo": "111051",
+      "employeeName": "Paloju Srilekha",
+      "managerName": "Nigama Ambala"
+    },
+    {
+      "employeeNo": "111054",
+      "employeeName": "Naveen Kumar Reddy Malireddy",
+      "managerName": "Nigama Ambala"
+    },
+    {
+      "employeeNo": "111055",
+      "employeeName": "Ramesh Pasuvula",
+      "managerName": "Nigama Ambala"
+    },
+    {
+      "employeeNo": "111057",
+      "employeeName": "Uday Deepak Burela",
+      "managerName": "Nigama Ambala"
+    },
+    {
+      "employeeNo": "111066",
+      "employeeName": "Bhavani Thumkunta",
+      "managerName": "Nigama Ambala"
+    },
+    {
+      "employeeNo": "111072",
+      "employeeName": "Sailaja Konudula",
+      "managerName": "Nigama Ambala"
+    },
+    {
+      "employeeNo": "111076",
+      "employeeName": "Moola Muni Swetha",
+      "managerName": "Nigama Ambala"
+    },
+    {
+      "employeeNo": "111077",
+      "employeeName": "Vanguri Chakradhar Reddy",
+      "managerName": "Nigama Ambala"
+    },
+    {
+      "employeeNo": "111080",
+      "employeeName": "Donthireddy Niharika",
+      "managerName": "Nigama Ambala"
+    },
+    {
+      "employeeNo": "111021",
+      "employeeName": "Dharani Obulreddy",
+      "managerName": "Susmitha.P"
+    },
+    {
+      "employeeNo": "111023",
+      "employeeName": "Viswanadhuni Lakshmi Kalyani",
+      "managerName": "Susmitha.P"
+    },
+    {
+      "employeeNo": "111029",
+      "employeeName": "Venkata Viswam .R",
+      "managerName": "Susmitha.P"
+    },
+    {
+      "employeeNo": "111032",
+      "employeeName": "Jyothi Konda",
+      "managerName": "Susmitha.P"
+    },
+    {
+      "employeeNo": "111046",
+      "employeeName": "Neeraja Chinnimilli",
+      "managerName": "Susmitha.P"
+    },
+    {
+      "employeeNo": "111050",
+      "employeeName": "Kasireddy Sivakalyani",
+      "managerName": "Susmitha.P"
+    },
+    {
+      "employeeNo": "111069",
+      "employeeName": "Penthala Harsha Vardhan",
+      "managerName": "Susmitha.P"
+    },
+    {
+      "employeeNo": "111071",
+      "employeeName": "Nithin Reddy Gangadasari",
+      "managerName": "Susmitha.P"
+    },
+    {
+      "employeeNo": "222001",
+      "employeeName": "Ganesh Dhanasri",
+      "managerName": "Susmitha.P"
+    },
+    {
+      "employeeNo": "222002",
+      "employeeName": "Geetha Sandesh N",
+      "managerName": "Susmitha.P"
+    },
+    {
+      "employeeNo": "222003",
+      "employeeName": "Goutham Mathi",
+      "managerName": "Susmitha.P"
+    },
+    {
+      "employeeNo": "222004",
+      "employeeName": "Pachigolla Navya",
+      "managerName": "Susmitha.P"
+    },
+    {
+      "employeeNo": "111064",
+      "employeeName": "Akhila kakarla",
+      "managerName": "Mandapati Vajra Reddy"
+    },
+    {
+      "employeeNo": "111065",
+      "employeeName": "Manikanteswara Reddy Mukkamalla",
+      "managerName": "Mandapati Vajra Reddy"
+    },
+    {
+      "employeeNo": "111009",
+      "employeeName": "Ajay Rajashekhar Gundinahole",
+      "managerName": "Nikhileswar Reddy G"
+    },
+    {
+      "employeeNo": "111010",
+      "employeeName": "Shravan Kumar kharwar",
+      "managerName": "Nikhileswar Reddy G"
+    },
+    {
+      "employeeNo": "111017",
+      "employeeName": "Gaurav Bhargav Patil",
+      "managerName": "Nikhileswar Reddy G"
+    },
+    {
+      "employeeNo": "111018",
+      "employeeName": "Gangadasari Lakshmi Narasimha Reddy",
+      "managerName": "Nikhileswar Reddy G"
+    },
+    {
+      "employeeNo": "111019",
+      "employeeName": "Prathibha Polagari",
+      "managerName": "Nikhileswar Reddy G"
+    },
+    {
+      "employeeNo": "111020",
+      "employeeName": "Sai Kumar Thalikota",
+      "managerName": "Nikhileswar Reddy G"
+    },
+    {
+      "employeeNo": "111035",
+      "employeeName": "Poojitha Bandaru",
+      "managerName": "Nikhileswar Reddy G"
+    },
+    {
+      "employeeNo": "111037",
+      "employeeName": "Aswartha Narayanamma Vulindala",
+      "managerName": "Nikhileswar Reddy G"
+    },
+    {
+      "employeeNo": "111038",
+      "employeeName": "Harish Bathala",
+      "managerName": "Nikhileswar Reddy G"
+    },
+    {
+      "employeeNo": "111044",
+      "employeeName": "Hemanth Kumar Reddy Bollapu",
+      "managerName": "Nikhileswar Reddy G"
+    },
+    {
+      "employeeNo": "111056",
+      "employeeName": "Chandra Sekhara Reddy Chittepu",
+      "managerName": "Nikhileswar Reddy G"
+    },
+    {
+      "employeeNo": "111061",
+      "employeeName": "Parameswar Reddy Obulreddy",
+      "managerName": "Nikhileswar Reddy G"
+    },
+    {
+      "employeeNo": "111063",
+      "employeeName": "Nara Sai Hemanth Reddy",
+      "managerName": "Nikhileswar Reddy G"
+    },
+    {
+      "employeeNo": "111067",
+      "employeeName": "Dinesh Reddy S.",
+      "managerName": "Nikhileswar Reddy G"
+    },
+    {
+      "employeeNo": "111068",
+      "employeeName": "Ganesh Gunde",
+      "managerName": "Nikhileswar Reddy G"
+    },
+    {
+      "employeeNo": "111073",
+      "employeeName": "Pachharapalle Siva Nageswara Reddy",
+      "managerName": "Nikhileswar Reddy G"
+    },
+    {
+      "employeeNo": "111074",
+      "employeeName": "Thota Lakshminarasimha Udaya Bhaskar",
+      "managerName": "Nikhileswar Reddy G"
+    },
+    {
+      "employeeNo": "111075",
+      "employeeName": "Vijay Kumar M",
+      "managerName": "Nikhileswar Reddy G"
+    },
+    {
+      "employeeNo": "111079",
+      "employeeName": "Kavya Penugonda",
+      "managerName": "Nikhileswar Reddy G"
+    }
+  ]
+}

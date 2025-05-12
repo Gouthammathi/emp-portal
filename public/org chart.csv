@@ -1,0 +1,71 @@
+,Organization Chart,
+Employee No,Employee Name,Manager Name
+111001,Rajshri Rama Krishna Walse,Top Level Manager
+111002,CHITTEPU LAKSHMI CHENNA KESAVA REDDY,Rajshri Rama Krishna Walse
+111003,Syama Sundara Reddy Obulapuram,Rajshri Rama Krishna Walse
+111004,Muralidhar Reddy Nara,Rajshri Rama Krishna Walse
+111005,Hari Nadha Reddy Andluru,Rajshri Rama Krishna Walse
+111087,G P Subba Reddy,Rajshri Rama Krishna Walse
+111088,Radha Krishna Battu,Rajshri Rama Krishna Walse
+111047,Nigama Ambala,G P Subba Reddy
+111007,Pothukuchi Surya Annapurna Santhy Kamal,Syama Sundara Reddy Obulapuram
+111015,SUBBA RAM REDDY JEEREDDY,Syama Sundara Reddy Obulapuram
+111045,Isvaiah Lyagala,Syama Sundara Reddy Obulapuram
+111062,Dodla Sai Kumar,Syama Sundara Reddy Obulapuram
+111006,Gade Sambi Reddy,CHITTEPU LAKSHMI CHENNA KESAVA REDDY
+111016,Anirudh Teppala,CHITTEPU LAKSHMI CHENNA KESAVA REDDY
+111031,Chandra Sekhar . K,CHITTEPU LAKSHMI CHENNA KESAVA REDDY
+111078,Amareshwar,CHITTEPU LAKSHMI CHENNA KESAVA REDDY
+111082,MAQBOOL HUSSAIN SYED,CHITTEPU LAKSHMI CHENNA KESAVA REDDY
+111014,Mandapati Vajra Reddy,Muralidhar Reddy Nara
+111028,Susmitha.P,Muralidhar Reddy Nara
+111012,Nikhileswar Reddy G,Hari Nadha Reddy Andluru
+111024,RAJESH.N,Nigama Ambala
+111025,Sreedhar Sreeram,Nigama Ambala
+111041,Jadapalli Devendra Goud,Nigama Ambala
+111042,Madupu Gayathri,Nigama Ambala
+111043,Gaddam Hashitha Reddy,Nigama Ambala
+111048,Pydikondala priyathama subhash,Nigama Ambala
+111049,Ramya Pasala,Nigama Ambala
+111051,Paloju Srilekha,Nigama Ambala
+111054,Naveen Kumar Reddy Malireddy,Nigama Ambala
+111055,Ramesh Pasuvula,Nigama Ambala
+111057,Uday Deepak Burela,Nigama Ambala
+111066,Bhavani Thumkunta,Nigama Ambala
+111072,Sailaja Konudula,Nigama Ambala
+111076,Moola Muni Swetha,Nigama Ambala
+111077,Vanguri Chakradhar Reddy,Nigama Ambala
+111080,Donthireddy Niharika,Nigama Ambala
+111021,Dharani Obulreddy,Susmitha.P
+111023,Viswanadhuni Lakshmi Kalyani,Susmitha.P
+111029,Venkata Viswam .R,Susmitha.P
+111032,Jyothi Konda,Susmitha.P
+111046,Neeraja Chinnimilli,Susmitha.P
+111050,Kasireddy Sivakalyani,Susmitha.P
+111069,Penthala Harsha Vardhan,Susmitha.P
+111071,Nithin Reddy Gangadasari,Susmitha.P
+222001,Ganesh Dhanasri,Susmitha.P
+222002,Geetha Sandesh N,Susmitha.P
+222003,Goutham Mathi,Susmitha.P
+222004,Pachigolla Navya,Susmitha.P
+111064,Akhila kakarla,Mandapati Vajra Reddy
+111065,Manikanteswara Reddy Mukkamalla,Mandapati Vajra Reddy
+111009,Ajay Rajashekhar Gundinahole,Nikhileswar Reddy G
+111010,Shravan Kumar kharwar,Nikhileswar Reddy G
+111017,Gaurav Bhargav Patil,Nikhileswar Reddy G
+111018,Gangadasari Lakshmi Narasimha Reddy,Nikhileswar Reddy G
+111019,Prathibha Polagari,Nikhileswar Reddy G
+111020,Sai Kumar Thalikota,Nikhileswar Reddy G
+111035,Poojitha Bandaru,Nikhileswar Reddy G
+111037,Aswartha Narayanamma Vulindala,Nikhileswar Reddy G
+111038,Harish Bathala,Nikhileswar Reddy G
+111044,Hemanth Kumar Reddy Bollapu,Nikhileswar Reddy G
+111056,Chandra Sekhara Reddy Chittepu,Nikhileswar Reddy G
+111061,Parameswar Reddy Obulreddy,Nikhileswar Reddy G
+111063,Nara Sai Hemanth Reddy,Nikhileswar Reddy G
+111067,Dinesh Reddy S.,Nikhileswar Reddy G
+111068,Ganesh Gunde,Nikhileswar Reddy G
+111073,Pachharapalle Siva Nageswara Reddy,Nikhileswar Reddy G
+111074,Thota Lakshminarasimha Udaya Bhaskar,Nikhileswar Reddy G
+111075,Vijay Kumar M,Nikhileswar Reddy G
+111079,Kavya Penugonda,Nikhileswar Reddy G

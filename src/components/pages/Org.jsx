@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { FaUserCircle } from 'react-icons/fa';
  
 function Org() {
   const orgData = {
@@ -348,7 +349,7 @@ function Org() {
  
   const getBorderColor = (title) => {
     const lower = title.toLowerCase();
-    if (lower.includes("founder") || lower.includes("chairman")) return "border-red-500";
+    if (lower.includes("top level manager")) return "border-red-500";
     if (lower.includes("cto") || lower.includes("ceo") || lower.includes("coo") || lower.includes("cfo") || lower.includes("architect")) return "border-yellow-400";
     if (lower.includes("lead") || lower.includes("head")) return "border-green-500";
     return "border-blue-500";
@@ -360,23 +361,30 @@ function Org() {
     if (level === 2) return "bg-green-400";
     return "bg-blue-400";
   };
+
+  const getBackgroundColor = (title) => {
+    const lower = title.toLowerCase();
+    if (lower.includes("top level manager")) return "bg-red-50";
+    if (lower.includes("cto") || lower.includes("ceo") || lower.includes("coo") || lower.includes("cfo") || lower.includes("architect")) return "bg-yellow-50";
+    if (lower.includes("lead") || lower.includes("head")) return "bg-green-50";
+    return "bg-blue-50";
+  };
  
   const PersonNode = ({ person }) => {
     const borderColor = getBorderColor(person.title);
+    const bgColor = getBackgroundColor(person.title);
     return (
       <div
         onClick={() => setSelectedPerson(person)}
-        className={`flex items-center cursor-pointer hover:scale-105 transition-transform bg-white border ${borderColor} rounded-md shadow p-2 w-48 min-h-[60px] space-x-2`}
+        className={`flex items-center cursor-pointer hover:scale-105 transition-transform ${bgColor} border-2 ${borderColor} rounded-lg shadow-lg p-4 w-64 min-h-[80px] space-x-3`}
       >
-        <img
-          src={person.image}
-          alt={person.name}
-          className="w-8 h-8 rounded-full object-cover shadow"
-        />
-        <div className="flex flex-col justify-center">
-          <p className="font-medium text-xs text-gray-800">{person.name}</p>
-          <p className="text-[10px] text-gray-500">{person.title}</p>
-          <p className="text-[10px] text-gray-400">ID: {person.empId}</p>
+        <div className="flex-shrink-0">
+          <FaUserCircle className="w-12 h-12 text-gray-600" />
+        </div>
+        <div className="flex flex-col justify-center flex-grow">
+          <p className="font-semibold text-sm text-gray-800 truncate">{person.name}</p>
+          <p className="text-xs text-gray-600">{person.title}</p>
+          <p className="text-xs text-gray-500">ID: {person.empId}</p>
         </div>
       </div>
     );
@@ -397,20 +405,20 @@ function Org() {
                 e.stopPropagation();
                 toggleNode(person.empId);
               }}
-              className="mt-1 text-white bg-gray-300 hover:bg-gray-300 px-2 py-0.5 rounded-full text-xs shadow"
+              className="mt-2 text-gray-600 bg-white hover:bg-gray-100 px-3 py-1 rounded-full text-xs shadow-md border border-gray-200 transition-colors"
             >
-              {countDescendants(person)}
+              {isExpanded ? 'Hide Team' : `Show Team (${countDescendants(person)})`}
             </button>
           )}
         </div>
  
         {hasChildren && isExpanded && (
           <>
-            <div className={`h-6 w-1 ${connectorColor} mt-1`} />
-            <div className={`mt-2 ${level === 0 ? "flex flex-wrap justify-center gap-6" : "flex flex-col items-center space-y-4"}`}>
+            <div className={`h-8 w-1 ${connectorColor} mt-2`} />
+            <div className={`mt-4 ${level === 0 ? "flex flex-wrap justify-center gap-8" : "flex flex-col items-center space-y-6"}`}>
               {person.children.map((child, idx) => (
                 <div key={idx} className="relative">
-                  <div className={`absolute top-0 left-1/2 transform -translate-x-1/2 h-4 w-1 ${connectorColor}`} />
+                  <div className={`absolute top-0 left-1/2 transform -translate-x-1/2 h-6 w-1 ${connectorColor}`} />
                   <OrgTree person={child} level={level + 1} />
                 </div>
               ))}
@@ -422,45 +430,48 @@ function Org() {
   };
  
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
-      <h1 className="text-3xl font-bold text-center mb-10">🧭 Organization Chart</h1>
-      <div className="overflow-auto pb-16">
-        <OrgTree person={orgData} />
-      </div>
- 
-      {selectedPerson && (
-        <div className="fixed bottom-6 right-6 bg-white border border-gray-300 rounded-lg shadow-2xl p-5 w-80 z-50 animate-fade-in">
-          <div className="flex justify-between items-center mb-3">
-            <h2 className="text-xl font-semibold text-gray-800">Person Details</h2>
-            <button
-              onClick={() => setSelectedPerson(null)}
-              className="text-gray-500 hover:text-red-500 text-2xl font-bold"
-            >
-              ×
-            </button>
-          </div>
-          <img
-            src={selectedPerson.image}
-            alt={selectedPerson.name}
-            className="w-20 h-20 rounded-full mx-auto mb-4"
-          />
-          <p className="text-center text-lg font-bold">{selectedPerson.name}</p>
-          <p className="text-center text-gray-600">{selectedPerson.title}</p>
-          <p className="text-center text-sm text-gray-500">ID: {selectedPerson.empId}</p>
+    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold text-center mb-2">Organization Chart</h1>
+        <p className="text-gray-600 text-center mb-8">View the complete organizational structure</p>
+        
+        <div className="overflow-auto pb-16">
+          <OrgTree person={orgData} />
         </div>
-      )}
  
-      <style>{`
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-          animation: fade-in 0.3s ease-out;
-        }
-      `}</style>
+        {selectedPerson && (
+          <div className="fixed bottom-6 right-6 bg-white border border-gray-300 rounded-lg shadow-2xl p-6 w-80 z-50 animate-fade-in">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-gray-800">Employee Details</h2>
+              <button
+                onClick={() => setSelectedPerson(null)}
+                className="text-gray-500 hover:text-red-500 text-2xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+            <div className="flex flex-col items-center">
+              <FaUserCircle className="w-24 h-24 text-gray-600 mb-4" />
+              <p className="text-center text-lg font-bold">{selectedPerson.name}</p>
+              <p className="text-center text-gray-600">{selectedPerson.title}</p>
+              <p className="text-center text-sm text-gray-500">ID: {selectedPerson.empId}</p>
+            </div>
+          </div>
+        )}
+ 
+        <style>{`
+          @keyframes fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          .animate-fade-in {
+            animation: fade-in 0.3s ease-out;
+          }
+        `}</style>
+      </div>
     </div>
   );
 }
  
 export default Org;
+ 

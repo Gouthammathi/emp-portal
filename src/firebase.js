@@ -2,6 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getAnalytics } from "firebase/analytics";
+import { doc, updateDoc } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAWkua5fkeauCWeCXNjMG02-4Bu66Q5ILc",
@@ -21,5 +22,10 @@ let analytics;
 if (typeof window !== "undefined") {
   analytics = getAnalytics(app);
 }
+
+// --- Firestore update: Assign team lead 111069 to HR 22222 ---
+
+const tlRef = doc(db, "users", "111069");
+await updateDoc(tlRef, { hrId: "22222" });
 
 export { app, auth, db, analytics };
