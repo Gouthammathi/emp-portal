@@ -202,6 +202,27 @@ const TeamOverview = () => {
     }
   };
  
+  const handleApproveStatusReport = async (statusReportId) => {
+    try {
+      const statusReportRef = doc(db, "statusReports", statusReportId);
+      await updateDoc(statusReportRef, {
+        status: 'approved',
+        approvedAt: new Date(),
+        approvedBy: getAuth().currentUser.uid
+      });
+     
+      // Refresh the status report data
+      if (selectedMember) {
+        fetchMemberData(selectedMember.empId);
+      }
+     
+      alert('Status report approved successfully!');
+    } catch (error) {
+      console.error("Error approving status report:", error);
+      alert('Error approving status report. Please try again.');
+    }
+  };
+ 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -351,19 +372,64 @@ const TeamOverview = () => {
               <div className="space-y-4">
                 {memberData.statusReports.map((report) => (
                   <div key={report.id} className="border rounded-lg p-4">
-                    <p className="font-semibold">Date: {report.date}</p>
-                    <p>Status: {report.status}</p>
-                    <div className="mt-2">
-                      <h4 className="font-medium">Tasks:</h4>
-                      <div className="mt-2 space-y-2">
-                        {report.tasks?.map((task, index) => (
-                          <div key={index} className="bg-gray-50 p-2 rounded">
-                            <p>Time: {task.time}</p>
-                            <p>Description: {task.description}</p>
-                            <p>Completed: {task.completed ? 'Yes' : 'No'}</p>
-                          </div>
-                        ))}
+                    <div className="flex justify-between items-center mb-4">
+                      <div>
+                        <p className="font-semibold">Date: {report.date}</p>
+                        <p className="text-sm text-gray-500">
+                          Submitted: {new Date(report.submittedAt?.toDate()).toLocaleDateString()}
+                        </p>
                       </div>
+                      <div className="flex items-center gap-4">
+                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                          report.status === 'approved'
+                            ? 'bg-green-100 text-green-800'
+                            : report.status === 'rejected'
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {report.status.charAt(0).toUpperCase() + report.status.slice(1)}
+                        </span>
+                        {report.status === 'pending' && (
+                          <button
+                            onClick={() => handleApproveStatusReport(report.id)}
+                            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors"
+                          >
+                            Approve
+                          </button>
+                        )}
+                      </div>
+                    </div>
+ 
+                    {/* Excel-like table */}
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full border border-gray-300">
+                        <thead>
+                          <tr className="bg-gray-100">
+                            <th className="border px-4 py-2">Time</th>
+                            <th className="border px-4 py-2">Description</th>
+                            <th className="border px-4 py-2">Status</th>
+                            <th className="border px-4 py-2">Remarks</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {report.tasks?.map((task, index) => (
+                            <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                              <td className="border px-4 py-2">{task.time}</td>
+                              <td className="border px-4 py-2">{task.description}</td>
+                              <td className="border px-4 py-2">
+                                <span className={`px-2 py-1 rounded-full text-sm ${
+                                  task.completed
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-red-100 text-red-800'
+                                }`}>
+                                  {task.completed ? 'Completed' : 'Pending'}
+                                </span>
+                              </td>
+                              <td className="border px-4 py-2">{task.remarks || '-'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
                 ))}
