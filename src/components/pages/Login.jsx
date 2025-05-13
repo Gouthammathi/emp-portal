@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react"; // Import useEffect
 import { useNavigate, Link } from "react-router-dom";
 import { FaUser, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth"; // Import Firebase auth
-
+ 
 const Login = () => {
   const [email, setEmail] = useState(""); // Employee email
   const [password, setPassword] = useState(""); // Password
@@ -11,24 +11,24 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false); // For toggling password visibility
   const navigate = useNavigate();
   const auth = getAuth(); // Initialize Firebase auth
-
+ 
   // Clear email and password on component mount
   useEffect(() => {
     setEmail("");
     setPassword("");
   }, []);
-
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) {
       setError("Please fill in all fields");
       return;
     }
-
+ 
     try {
       await signInWithEmailAndPassword(auth, email, password); // Sign in with email and password
       navigate("/dashboard"); // Redirect to dashboard on success
-
+ 
       // Assuming authentication is successful
       const isAuthenticated = true; // Replace with actual authentication check
       if (isAuthenticated) {
@@ -38,13 +38,13 @@ const Login = () => {
           222002: 222001,
           222001: 222001, // 222001 sends to themselves
         };
-
+ 
         // Function to send email
         function sendEmail(to, subject, body) {
           // ... code to send email ...
           console.log(`Email sent to ${to} with subject: ${subject}`);
         }
-
+ 
         // Function to handle employee login
         function handleEmployeeLogin(empId, reportData) {
           const reportRecipientId = reportHierarchy[empId];
@@ -56,10 +56,10 @@ const Login = () => {
             console.log("No report recipient found for this employee.");
           }
         }
-
+ 
         // Example report data (you may want to fetch this from your database)
         const reportData = "Report data for employee " + email;
-
+ 
         // Call the function to handle report sending
         handleEmployeeLogin(email, reportData);
       }
@@ -68,7 +68,7 @@ const Login = () => {
       setError("Login failed. Please check your credentials.");
     }
   };
-
+ 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-100 to-orange-200 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-2xl">
@@ -80,7 +80,7 @@ const Login = () => {
             Please sign in to your account
           </p>
         </div>
-
+ 
         {error && (
           <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
             <div className="flex">
@@ -103,35 +103,36 @@ const Login = () => {
             </div>
           </div>
         )}
-
+ 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             {/* Email */}
             <div className="relative">
-              <label htmlFor="email" className="sr-only">
-                Email
-              </label>
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FaUser className="h-5 w-5 text-gray-400" />
-              </div>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                className="appearance-none rounded-t-md relative block w-full px-3 py-3 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-
+  <label htmlFor="email" className="sr-only">
+    Email
+  </label>
+  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+    <FaUser className="h-5 w-5 text-gray-400" />
+  </div>
+  <input
+    id="email"
+    name="email"
+    type="email"
+    required
+    className="appearance-none rounded-t-md relative block w-full px-3 py-3 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-0 sm:text-sm"
+    placeholder="Email"
+    value={email}
+    onChange={(e) => setEmail(e.target.value)}
+  />
+</div>
+ 
+ 
             {/* Password */}
             <div className="relative">
               <label htmlFor="password" className="sr-only">
                 Password
               </label>
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
                 <FaLock className="h-5 w-5 text-gray-400" />
               </div>
               <input
@@ -145,7 +146,7 @@ const Login = () => {
                 onChange={(e) => setPassword(e.target.value)}
               />
               <div
-                className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center z-10 cursor-pointer"
                 onClick={() => setShowPassword((prev) => !prev)}
               >
                 {showPassword ? (
@@ -156,7 +157,7 @@ const Login = () => {
               </div>
             </div>
           </div>
-
+ 
           {/* Forgot Password */}
           <div className="flex justify-between mt-6">
             <button
@@ -167,7 +168,7 @@ const Login = () => {
               Forgot Password?
             </button>
           </div>
-
+ 
           {/* Sign In Button */}
           <div>
             <button
@@ -177,7 +178,7 @@ const Login = () => {
               Sign In
             </button>
           </div>
-
+ 
           {/* Registration Link */}
           <div className="text-center mt-6">
             <p className="text-sm text-gray-600">
@@ -192,5 +193,6 @@ const Login = () => {
     </div>
   );
 };
-
+ 
 export default Login;
+ 

@@ -1,18 +1,19 @@
-import React from 'react'
-import Routers from '../Routers/Routers'
-import Header from '../header/Header'
-import Footer from '../footer/Footer'
-import {BrowserRouter as Router} from 'react-router-dom'
+import React from 'react';
+import Routers from '../Routers/Routers';
+import Header from '../header/Header';
+import Footer from '../footer/Footer';
+ 
 function Layout() {
   return (
-<Router>
-<Header/> 
-<div>
-<Routers/>
-</div>  
-<Footer/>
-</Router>
-  )
+    <>
+      <Header />
+      <div>
+        <Routers />
+      </div>
+      <Footer />
+    </>
+  );
 }
-
-export default Layout
+ 
+export default Layout;
+ 

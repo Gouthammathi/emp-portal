@@ -73,11 +73,7 @@ const TestInstructions = () => {
 
   const handleStartTest = () => {
     if (isAgreed) {
-      if (moduleId === 'ewm') {
-        navigate('/ewm-test');
-      } else {
-        navigate(`/test/${moduleId}`);
-      }
+      navigate(`/test/${moduleId}`);
     }
   };
 

@@ -10,13 +10,13 @@ import Dashboard from '../pages/Dashboard';
 import Moduleselection from '../pages/Mocktest/Moduleselection';
 import Testins from '../pages/Mocktest/Testins';
 import Test from '../pages/Mocktest/Test';
-import EWMTest from '../pages/Mocktest/EWMTest';
 import TestResult from '../pages/Mocktest/TestResult';
 import Certificate from '../pages/Mocktest/Certificate';
 import Timesheet from '../pages/Timesheet/Timesheet';
 import Holidaycal from '../pages/holidaycal/holcal';
 import Dailys from '../pages/dailystatus/daily';
 import Org from '../pages/Org';
+
 function Routers() {
   return (
     <Routes>
@@ -29,7 +29,6 @@ function Routers() {
       <Route path='/module-selection' element={<Moduleselection />} />
       <Route path='/test-instructions/:moduleId' element={<Testins />} />
       <Route path='/test/:moduleId' element={<Test />} />
-      <Route path='/ewm-test' element={<EWMTest />} />
       <Route path='/mocktest/result' element={<TestResult />} />
       <Route path='/certificate/:moduleId' element={<Certificate />} />
       <Route path='/Timesheet' element={<Timesheet />} />
