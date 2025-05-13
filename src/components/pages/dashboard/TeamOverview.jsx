@@ -371,7 +371,7 @@ const TeamOverview = () => {
               <h3 className="text-xl font-semibold text-gray-800 mb-4">Status Reports</h3>
               <div className="space-y-4">
                 {memberData.statusReports.map((report) => (
-                  <div key={report.id} className="border rounded-lg p-4">
+                  <div key={report.id} className="border rounded-lg p-4 bg-white shadow-sm">
                     <div className="flex justify-between items-center mb-4">
                       <div>
                         <p className="font-semibold">Date: {report.date}</p>
@@ -400,24 +400,24 @@ const TeamOverview = () => {
                       </div>
                     </div>
  
-                    {/* Excel-like table */}
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full border border-gray-300">
+                    {/* Excel-like table with fixed styling */}
+                    <div className="overflow-x-auto border border-gray-200 rounded-lg">
+                      <table className="w-full table-fixed border-collapse">
                         <thead>
                           <tr className="bg-gray-100">
-                            <th className="border px-4 py-2">Time</th>
-                            <th className="border px-4 py-2">Description</th>
-                            <th className="border px-4 py-2">Status</th>
-                            <th className="border px-4 py-2">Remarks</th>
+                            <th className="w-1/6 border border-gray-300 px-4 py-2 text-left font-semibold text-gray-700">Time</th>
+                            <th className="w-2/6 border border-gray-300 px-4 py-2 text-left font-semibold text-gray-700">Description</th>
+                            <th className="w-1/6 border border-gray-300 px-4 py-2 text-left font-semibold text-gray-700">Status</th>
+                            <th className="w-2/6 border border-gray-300 px-4 py-2 text-left font-semibold text-gray-700">Remarks</th>
                           </tr>
                         </thead>
                         <tbody>
                           {report.tasks?.map((task, index) => (
                             <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                              <td className="border px-4 py-2">{task.time}</td>
-                              <td className="border px-4 py-2">{task.description}</td>
-                              <td className="border px-4 py-2">
-                                <span className={`px-2 py-1 rounded-full text-sm ${
+                              <td className="border border-gray-300 px-4 py-2 text-sm">{task.time}</td>
+                              <td className="border border-gray-300 px-4 py-2 text-sm">{task.description}</td>
+                              <td className="border border-gray-300 px-4 py-2 text-sm">
+                                <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
                                   task.completed
                                     ? 'bg-green-100 text-green-800'
                                     : 'bg-red-100 text-red-800'
@@ -425,7 +425,7 @@ const TeamOverview = () => {
                                   {task.completed ? 'Completed' : 'Pending'}
                                 </span>
                               </td>
-                              <td className="border px-4 py-2">{task.remarks || '-'}</td>
+                              <td className="border border-gray-300 px-4 py-2 text-sm">{task.remarks || '-'}</td>
                             </tr>
                           ))}
                         </tbody>
