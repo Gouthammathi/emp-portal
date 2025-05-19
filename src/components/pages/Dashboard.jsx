@@ -6,7 +6,7 @@ import { db } from '../../firebase';
 import ManagerDashboard from './dashboard/ManagerDashboard';
 import SuperManagerDashboard from './dashboard/SuperManagerDashboard';
 import EmployeeDashboard from './dashboard/EmployeeDashboard';
- 
+import HrDashboard from './dashboard/HrDashboard';
 const Dashboard = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -57,11 +57,11 @@ const Dashboard = () => {
  
   // Render the appropriate dashboard based on user role
   switch (userData?.role) {
-    case 'supermanager':
+    case 'manager':
       return <SuperManagerDashboard />;
     case 'hr':
       return <HrDashboard />;
-    case 'manager':
+    case 'TeamLead':
       return <ManagerDashboard />;
     case 'employee':
       return <EmployeeDashboard />;

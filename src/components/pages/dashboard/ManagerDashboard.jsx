@@ -1,8 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { getAuth } from 'firebase/auth';
+import { getAuth, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../firebase';
-import { FaClipboardList, FaCalendarAlt, FaClock, FaBook, FaUsers, FaChartLine, FaTasks, FaSitemap } from 'react-icons/fa';
+import {
+  FaClipboardList,
+  FaCalendarAlt,
+  FaClock,
+  FaBook,
+  FaUsers,
+  FaChartLine,
+  FaTasks,
+  FaSitemap,
+  FaUserCircle
+} from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import OrgChartPage from '../Org';
 import TeamOverview from './TeamOverview';
@@ -11,13 +21,14 @@ const ManagerDashboard = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeView, setActiveView] = useState('dashboard');
+  const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
  
   useEffect(() => {
     const fetchUserData = async () => {
       const auth = getAuth();
       const user = auth.currentUser;
-     
+ 
       if (user) {
         const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) {
@@ -30,7 +41,12 @@ const ManagerDashboard = () => {
     fetchUserData();
   }, []);
  
-  // Employee features tiles
+  const handleLogout = async () => {
+    const auth = getAuth();
+    await signOut(auth);
+    navigate('/login');
+  };
+ 
   const employeeTiles = [
     {
       title: 'Mock Tests',
@@ -66,7 +82,6 @@ const ManagerDashboard = () => {
     },
   ];
  
-  // Team Lead specific tiles
   const teamLeadTiles = [
     {
       title: 'Team Overview',
@@ -113,12 +128,37 @@ const ManagerDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        {/* Welcome Section */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome, {userData?.firstName} {userData?.lastName}
-          </h1>
-          <p className="text-gray-600">Team Lead Dashboard</p>
+ 
+        {/* Welcome Section with Logout inside */}
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-1">
+              Welcome, {userData?.firstName} {userData?.lastName}
+            </h1>
+            <p className="text-gray-600">Team Lead(Manager) Dashboard</p>
+          </div>
+ 
+          {/* Logout Dropdown Inside Welcome Section */}
+          <div className="relative mt-4 sm:mt-0">
+            <div
+              onClick={() => setShowDropdown(!showDropdown)}
+              className="flex items-center space-x-2 cursor-pointer bg-gray-100 px-4 py-2 rounded-full shadow hover:shadow-md transition"
+            >
+              <FaUserCircle className="text-2xl text-gray-700" />
+              <span className="text-gray-800 font-medium">{userData?.firstName}</span>
+            </div>
+ 
+            {showDropdown && (
+              <div className="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
         </div>
  
         {/* Team Lead Features Section */}
@@ -221,10 +261,11 @@ const ManagerDashboard = () => {
             </div>
             <div className="border-l-4 border-purple-500 pl-4 py-2">
               <p className="text-gray-800">New team member onboarded</p>
-              <p className="text-sm text-gray-500">2 days ago</p>
+              <p className="text-sm text-gray-500">3 days ago</p>
             </div>
           </div>
         </div>
+ 
       </div>
     </div>
   );

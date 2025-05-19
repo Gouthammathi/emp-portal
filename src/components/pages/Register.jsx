@@ -108,9 +108,9 @@ const Register = () => {
             className="block w-full px-3 py-2 border border-gray-300 rounded-md bg-white"
           >
             <option value="employee">Employee</option>
-            <option value="tl">Team Lead</option>
+            <option value="tl">Team Lead(manager)</option>
             <option value="hr">HR</option>
-            <option value="manager">Manager</option>
+            <option value="manager">(Super)Manager</option>
           </select>
           <input
             type="password"

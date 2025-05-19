@@ -37,12 +37,12 @@ const SuperManagerDashboard = () => {
         <h1 className="text-2xl font-bold text-gray-800 mb-4">
           Welcome, {userData?.firstName} {userData?.lastName}
         </h1>
-        <p className="text-gray-600">Manager Dashboard</p>
+        <p className="text-gray-600">Super Manager Dashboard</p>
       </div>
  
       {/* Manager Features Section */}
       <div className="mb-6">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Manager Features</h2>
+        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Super Manager Features</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           <div
             onClick={() => navigate('/org')}

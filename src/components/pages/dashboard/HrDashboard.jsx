@@ -1,20 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { getAuth } from 'firebase/auth';
+import { getAuth, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { FaSitemap } from 'react-icons/fa';
+import { FiUser } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
-
+ 
 const HrDashboard = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
-
+ 
   useEffect(() => {
     const fetchUserData = async () => {
       const auth = getAuth();
       const user = auth.currentUser;
-      
+ 
       if (user) {
         const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) {
@@ -23,23 +25,57 @@ const HrDashboard = () => {
       }
       setLoading(false);
     };
-
+ 
     fetchUserData();
   }, []);
-
+ 
+  const handleLogout = () => {
+    const auth = getAuth();
+    signOut(auth)
+      .then(() => {
+        navigate('/login');
+      })
+      .catch((error) => {
+        console.error('Logout error:', error);
+      });
+  };
+ 
   if (loading) {
     return <div>Loading...</div>;
   }
-
+ 
   return (
     <div className="p-6">
+      {/* Header with user icon and dropdown */}
+      <div className="flex justify-end items-center mb-4">
+        <div className="relative">
+          <button
+            onClick={() => setShowDropdown(!showDropdown)}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full"
+          >
+            <FiUser className="text-gray-700" />
+            <span className="text-gray-700 text-sm">{userData?.firstName}</span>
+          </button>
+          {showDropdown && (
+            <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow z-10">
+              <button
+                onClick={handleLogout}
+                className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+              >
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+ 
       <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
         <h1 className="text-2xl font-bold text-gray-800 mb-4">
           Welcome, {userData?.firstName} {userData?.lastName}
         </h1>
         <p className="text-gray-600">HR Dashboard</p>
       </div>
-
+ 
       {/* HR Features Section */}
       <div className="mb-6">
         <h2 className="text-2xl font-semibold text-gray-800 mb-4">HR Features</h2>
@@ -56,7 +92,7 @@ const HrDashboard = () => {
           </div>
         </div>
       </div>
-
+ 
       {/* HR Overview Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Employee Management Card */}
@@ -77,7 +113,7 @@ const HrDashboard = () => {
             </div>
           </div>
         </div>
-
+ 
         {/* Leave Management Card */}
         <div className="bg-white rounded-lg shadow-lg p-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Leave Management</h2>
@@ -92,7 +128,7 @@ const HrDashboard = () => {
             </div>
           </div>
         </div>
-
+ 
         {/* Quick Actions Card */}
         <div className="bg-white rounded-lg shadow-lg p-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
@@ -109,7 +145,7 @@ const HrDashboard = () => {
           </div>
         </div>
       </div>
-
+ 
       {/* Recent HR Activities */}
       <div className="mt-6 bg-white rounded-lg shadow-lg p-6">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">Recent Activities</h2>
@@ -131,5 +167,5 @@ const HrDashboard = () => {
     </div>
   );
 };
-
-export default HrDashboard; 
+ 
+export default HrDashboard;

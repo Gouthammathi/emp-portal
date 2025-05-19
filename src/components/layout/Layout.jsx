@@ -1,15 +1,12 @@
 import React from 'react';
-import Routers from '../Routers/Routers';
-import Header from '../header/Header';
-import Footer from '../footer/Footer';
+import Header from '../header/Header'; // Assuming you have a Header component
+import Footer from '../footer/Footer'; // Assuming you have a Footer component
  
-function Layout() {
+function Layout({ children }) {
   return (
     <>
       <Header />
-      <div>
-        <Routers />
-      </div>
+      <div>{children}</div> {/* The page content (children) will be rendered here */}
       <Footer />
     </>
   );
