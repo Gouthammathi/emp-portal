@@ -17,7 +17,9 @@ import Timesheet from '../pages/Timesheet/Timesheet';
 import Holidaycal from '../pages/holidaycal/holcal';
 import Dailys from '../pages/dailystatus/daily';
 import Org from '../pages/Org';
- 
+import ReimbursementRequest from '../pages/ReimbursementRequest';
+import TeamMemberDetails from '../pages/dashboard/TeamMemberDetails';
+import TeamOverview from '../pages/dashboard/TeamOverview';
 function Routers() {
   return (
     <Routes>
@@ -45,6 +47,9 @@ function Routers() {
               <Route path="/holiday-calendar" element={<Holidaycal />} />
               <Route path="/daily-s" element={<Dailys />} />
               <Route path="/org" element={<Org />} />
+              <Route path="/reimbursement" element={<ReimbursementRequest />} />
+              <Route path="/team-member/:empId" element={<TeamMemberDetails />} />
+              <Route path="/team-overview" element={<TeamOverview />} />
             </Routes>
           </ProtectedRoute>
         }

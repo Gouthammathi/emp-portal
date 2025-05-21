@@ -27,10 +27,11 @@ const Login = () => {
  
     try {
       await signInWithEmailAndPassword(auth, email, password); // Sign in with email and password
-      navigate("/dashboard"); // Redirect to dashboard on success
+      localStorage.setItem("isLoggedIn", "true"); //save login status
+      navigate("/dashboard",{replace:true}); // Redirect to dashboard on success
  
       // Assuming authentication is successful
-      const isAuthenticated = true; // Replace with actual authentication check
+      const isAuthenticated = true; // R eplace with actual authentication check
       if (isAuthenticated) {
         // Define the hierarchy for report sending
         const reportHierarchy = {

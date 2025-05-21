@@ -9,6 +9,7 @@ import {
   FaBook,
   FaSitemap,
   FaUserCircle,
+  FaFileInvoiceDollar,
 } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
  
@@ -94,6 +95,14 @@ const EmployeeDashboard = () => {
       color: 'bg-orange-500',
       hoverColor: 'hover:bg-orange-600',
       onClick: () => navigate('/org'),
+    },
+    {
+      title: 'Reimbursement',
+      icon: <FaFileInvoiceDollar className="w-8 h-8" />,
+      description: 'Submit and track expense reimbursements',
+      color: 'bg-indigo-500',
+      hoverColor: 'hover:bg-indigo-600',
+      onClick: () => navigate('/reimbursement'),
     },
   ];
  
