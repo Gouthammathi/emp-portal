@@ -57,11 +57,11 @@ const Dashboard = () => {
  
   // Render the appropriate dashboard based on user role
   switch (userData?.role) {
-    case 'manager':
+    case 'supermanager':
       return <SuperManagerDashboard />;
     case 'hr':
       return <HrDashboard />;
-    case 'TeamLead':
+    case 'manager':
       return <ManagerDashboard />;
     case 'employee':
       return <EmployeeDashboard />;

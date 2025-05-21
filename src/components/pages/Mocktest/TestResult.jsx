@@ -1,24 +1,117 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FaCheckCircle, FaTimesCircle, FaArrowLeft, FaDownload, FaPrint, FaExternalLinkAlt } from 'react-icons/fa';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-
+import { getAuth } from 'firebase/auth';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, getDoc, doc } from 'firebase/firestore';
+import { db } from '../../../firebase';
+ 
 const TestResult = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const certificateRef = useRef();
-  
+  const hasSaved = useRef(false);
+  const [employeeName, setEmployeeName] = useState('');
+ 
   const { score, totalQuestions, correctAnswers, module } = location.state || {
     score: 0,
     totalQuestions: 0,
     correctAnswers: 0,
     module: 'Unknown'
   };
-
-  // Get employee name from localStorage
-  const employeeName = localStorage.getItem('employeeName') || 'Test Participant';
-
+ 
+  useEffect(() => {
+    let isMounted = true;
+ 
+    const saveTestResult = async () => {
+      // Check if already saved or component unmounted
+      if (hasSaved.current || !isMounted) {
+        console.log('Test result already saved or component unmounted, skipping...');
+        return;
+      }
+ 
+      try {
+        const auth = getAuth();
+        const user = auth.currentUser;
+       
+        if (!user) {
+          console.error('No user logged in');
+          return;
+        }
+ 
+        // First try to get user data by uid
+        let userData;
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+       
+        if (userDoc.exists()) {
+          userData = userDoc.data();
+        } else {
+          // If not found by uid, try querying by uid field
+          const userQuery = query(collection(db, "users"), where("uid", "==", user.uid));
+          const userSnapshot = await getDocs(userQuery);
+         
+          if (userSnapshot.empty) {
+            console.error('User data not found in Firestore');
+            return;
+          }
+         
+          userData = userSnapshot.docs[0].data();
+        }
+ 
+        // Check again if component is still mounted
+        if (!isMounted) return;
+ 
+        console.log('User data found:', JSON.stringify(userData, null, 2));
+       
+        if (!userData.empId) {
+          console.error('Employee ID not found in user data');
+          return;
+        }
+ 
+        // Construct employee name from user data
+        const fullName = `${userData.firstName} ${userData.lastName}`;
+        setEmployeeName(fullName);
+ 
+        // Save test result to Firestore
+        const testResult = {
+          empId: userData.empId,
+          module: module,
+          score: score,
+          totalQuestions: totalQuestions,
+          correctAnswers: correctAnswers,
+          submittedAt: serverTimestamp(),
+          employeeName: fullName
+        };
+       
+        // Check again if component is still mounted
+        if (!isMounted) return;
+ 
+        console.log('Saving test result:', JSON.stringify(testResult, null, 2));
+        const docRef = await addDoc(collection(db, "mockTests"), testResult);
+        console.log('Test result saved with ID:', docRef.id);
+       
+        // Mark as saved only if component is still mounted
+        if (isMounted) {
+          hasSaved.current = true;
+        }
+ 
+      } catch (error) {
+        console.error('Error saving test result:', error);
+      }
+    };
+ 
+    // Only run the save operation if not already saved
+    if (!hasSaved.current) {
+      saveTestResult();
+    }
+ 
+    // Cleanup function
+    return () => {
+      isMounted = false;
+    };
+  }, []); // Empty dependency array
+ 
   const getModuleName = (moduleId) => {
     const moduleNames = {
       'btp': 'SAP BTP',
@@ -28,44 +121,44 @@ const TestResult = () => {
     };
     return moduleNames[moduleId] || moduleId;
   };
-
+ 
   const getPassStatus = () => {
     return score >= 70;
   };
-
+ 
   const handleBackToModules = () => {
     navigate('/module-selection');
   };
-
+ 
   const printCertificate = () => {
     window.print();
   };
-
+ 
   const downloadCertificate = () => {
     const certificate = certificateRef.current;
-    
+   
     html2canvas(certificate, { scale: 2 }).then(canvas => {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('landscape', 'mm', 'a4');
       const imgWidth = 297; // A4 width in landscape
       const imgHeight = canvas.height * imgWidth / canvas.width;
-      
+     
       pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
       pdf.save(`${getModuleName(module)}_Certificate.pdf`);
     });
   };
-
+ 
   const viewCertificatePage = () => {
     navigate(`/certificate/${module}`, { state: { score } });
   };
-
+ 
   const formatDate = (date) => {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return date.toLocaleDateString('en-US', options);
   };
-
+ 
   const currentDate = new Date();
-
+ 
   return (
     <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
@@ -74,7 +167,7 @@ const TestResult = () => {
           <div className="bg-orange-500 px-6 py-4">
             <h2 className="text-xl font-bold text-white">{getModuleName(module)} Test Results</h2>
           </div>
-          
+         
           <div className="p-6">
             <div className="text-center mb-8">
               {getPassStatus() ? (
@@ -89,7 +182,7 @@ const TestResult = () => {
                 </div>
               )}
             </div>
-            
+           
             <div className="grid grid-cols-2 gap-6 mb-8">
               <div className="bg-gray-50 p-4 rounded-lg text-center">
                 <p className="text-sm text-gray-500 mb-1">Score</p>
@@ -100,44 +193,44 @@ const TestResult = () => {
                 <p className="text-3xl font-bold text-gray-800">{correctAnswers} / {totalQuestions}</p>
               </div>
             </div>
-            
+           
             <div className="bg-gray-50 p-4 rounded-lg mb-8">
               <h4 className="text-lg font-semibold text-gray-800 mb-2">Passing Criteria</h4>
               <p className="text-gray-600">You need at least 70% to pass this test.</p>
             </div>
           </div>
         </div>
-
+ 
         {/* Certificate */}
         <div className="mb-8">
           <div className="flex justify-between mb-4">
             <h3 className="text-xl font-bold text-gray-800">Your Certificate</h3>
             <div className="flex space-x-2">
-              <button 
-                onClick={printCertificate} 
+              <button
+                onClick={printCertificate}
                 className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
               >
                 <FaPrint className="mr-2" /> Print
               </button>
-              <button 
-                onClick={downloadCertificate} 
+              <button
+                onClick={downloadCertificate}
                 className="flex items-center px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
               >
                 <FaDownload className="mr-2" /> Download
               </button>
-              <button 
-                onClick={viewCertificatePage} 
+              <button
+                onClick={viewCertificatePage}
                 className="flex items-center px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600"
               >
                 <FaExternalLinkAlt className="mr-2" /> View Certificate
               </button>
             </div>
           </div>
-
+ 
           <div
             ref={certificateRef}
             className="bg-white border-8 border-double border-gray-300 p-8 rounded-lg shadow-lg"
-            style={{ 
+            style={{
               backgroundImage: "url('data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23f3f4f6' fill-opacity='0.4' fill-rule='evenodd'/%3E%3C/svg%3E')",
               backgroundSize: "cover",
               position: "relative"
@@ -148,7 +241,7 @@ const TestResult = () => {
               <div className="text-lg text-gray-600 mb-2">Certificate of Completion</div>
               <div className="w-48 h-1 bg-orange-500 mx-auto mb-8"></div>
             </div>
-
+ 
             <div className="text-center mb-10">
               <p className="text-lg mb-1">This certifies that</p>
               <p className="text-2xl font-bold mb-1 text-gray-800 border-b-2 border-gray-300 inline-block px-8">{employeeName}</p>
@@ -159,14 +252,14 @@ const TestResult = () => {
                 <span className="text-3xl font-bold">{score.toFixed(0)}%</span>
               </div>
             </div>
-
+ 
             <div className="flex justify-between items-center mt-12">
               <div className="text-center">
                 <div className="w-40 border-t-2 border-gray-400 mb-2"></div>
                 <p className="font-semibold">Date</p>
                 <p>{formatDate(currentDate)}</p>
               </div>
-
+ 
               <div className="flex-shrink-0">
                 <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="text-orange-500 fill-current opacity-50">
                   <path d="M50 0C22.4 0 0 22.4 0 50s22.4 50 50 50 50-22.4 50-50S77.6 0 50 0zm0 86c-19.9 0-36-16.1-36-36s16.1-36 36-36 36 16.1 36 36-16.1 36-36 36z"/>
@@ -174,7 +267,7 @@ const TestResult = () => {
                   <circle cx="50" cy="50" r="6"/>
                 </svg>
               </div>
-
+ 
               <div className="text-center">
                 <div className="w-40 border-t-2 border-gray-400 mb-2"></div>
                 <p className="font-semibold">Signature</p>
@@ -183,7 +276,7 @@ const TestResult = () => {
             </div>
           </div>
         </div>
-
+ 
         {/* Back Button */}
         <div className="flex gap-4">
           <button
@@ -192,7 +285,7 @@ const TestResult = () => {
           >
             <FaArrowLeft className="mr-2" /> Back to Modules
           </button>
-          
+         
           <button
             onClick={viewCertificatePage}
             className="w-full py-3 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-lg flex items-center justify-center"
@@ -204,5 +297,5 @@ const TestResult = () => {
     </div>
   );
 };
-
-export default TestResult; 
+ 
+export default TestResult;

@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
 import { collection, query, where, getDocs, getDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../firebase';
-import orgChartData from '../../../data/orgchart.json';
+import orgChartData from '../../../data/orgchart.json';  
  
 const TeamOverview = () => {
   const [teamMembers, setTeamMembers] = useState([]);
   const [selectedMember, setSelectedMember] = useState(null);
   const [memberData, setMemberData] = useState({
     timesheets: [],
-    statusReports: [],
+    statusReports: [],  
     mockTests: []
   });
   const [loading, setLoading] = useState(true);
@@ -159,11 +159,13 @@ const TeamOverview = () => {
         collection(db, "mockTests"),
         where("empId", "==", empId)
       );
+      console.log("Fetching mock tests for empId:", empId);
       const mockTestsSnapshot = await getDocs(mockTestsQuery);
       const mockTests = mockTestsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
+      console.log("Fetched mock tests:", mockTests);
  
       setMemberData({
         timesheets,
@@ -443,15 +445,54 @@ const TeamOverview = () => {
             <div>
               <h3 className="text-xl font-semibold text-gray-800 mb-4">Mock Tests</h3>
               <div className="space-y-4">
-                {memberData.mockTests.map((test) => (
-                  <div key={test.id} className="border rounded-lg p-4">
-                    <p className="font-semibold">Module: {test.module}</p>
-                    <p>Score: {test.score}%</p>
-                    <p>Date: {new Date(test.submittedAt?.toDate()).toLocaleDateString()}</p>
-                    <p>Correct Answers: {test.correctAnswers} out of {test.totalQuestions}</p>
+                {memberData.mockTests.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full bg-white border border-gray-200 rounded-lg">
+                      <thead>
+                        <tr className="bg-gray-50">
+                          <th className="px-6 py-3 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Module</th>
+                          <th className="px-6 py-3 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
+                          <th className="px-6 py-3 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Correct Answers</th>
+                          <th className="px-6 py-3 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Questions</th>
+                          <th className="px-6 py-3 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                          <th className="px-6 py-3 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {memberData.mockTests.map((test) => (
+                          <tr key={test.id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                              {test.module.toUpperCase()}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                test.score >= 70 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                              }`}>
+                                {test.score.toFixed(1)}%
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {test.correctAnswers}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {test.totalQuestions}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {new Date(test.submittedAt?.toDate()).toLocaleDateString()}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                test.score >= 70 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                              }`}>
+                                {test.score >= 70 ? 'Passed' : 'Failed'}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                ))}
-                {memberData.mockTests.length === 0 && (
+                ) : (
                   <p className="text-gray-500">No mock tests found</p>
                 )}
               </div>
