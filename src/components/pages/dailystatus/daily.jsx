@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
-import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
+import { collection, addDoc, getDoc, doc } from 'firebase/firestore';
 import { db } from '../../../firebase';
+import orgChartData from '../../../data/orgchart.json';
  
 const DailyStatus = () => {
   const [status, setStatus] = useState({
     date: new Date().toISOString().split('T')[0],
     empId: '',
     employeeName: '',
-    department: '',
     manager: '',
     tasks: [
       {
@@ -20,43 +20,61 @@ const DailyStatus = () => {
     ]
   });
  
-  const [userData, setUserData] = useState(null);
- 
   useEffect(() => {
     const fetchUserData = async () => {
       const auth = getAuth();
       const user = auth.currentUser;
      
+      console.log("Current user:", user); // Debug log
+     
       if (user) {
-        const userQuery = query(collection(db, "users"), where("uid", "==", user.uid));
-        const userSnapshot = await getDocs(userQuery);
+        // Get the user document directly using the UID as document ID
+        const userDoc = await getDoc(doc(db, "users", user.uid));
        
-        if (!userSnapshot.empty) {
-          const data = userSnapshot.docs[0].data();
+        console.log("User document exists:", userDoc.exists()); // Debug log
+       
+        if (userDoc.exists()) {
+          const data = userDoc.data();
           console.log("Fetched user data:", data);
-          setUserData(data);
-          // Only set initial values if they're not already set
-          setStatus(prev => ({
-            ...prev,
-            empId: prev.empId || data.empId,
-            employeeName: prev.employeeName || `${data.firstName} ${data.lastName}`,
-            department: prev.department || data.department || '',
-            manager: prev.manager || data.manager || ''
-          }));
+         
+          // Find manager name from orgchart
+          let managerName = '';
+          if (data.empId) {
+            const employeeInOrgChart = orgChartData.organizationChart.find(
+              emp => String(emp.empId) === String(data.empId)
+            );
+           
+            if (employeeInOrgChart && employeeInOrgChart.managerId) {
+              const managerInOrgChart = orgChartData.organizationChart.find(
+                emp => String(emp.empId) === String(employeeInOrgChart.managerId)
+              );
+              if (managerInOrgChart) {
+                managerName = managerInOrgChart.employeeName;
+              }
+            }
+          }
+         
+          // Set all initial values from user data
+          setStatus(prev => {
+            const newStatus = {
+              ...prev,
+              empId: data.empId ?? '',
+              employeeName: data.firstName && data.lastName ? `${data.firstName} ${data.lastName}` : '',
+              manager: managerName
+            };
+            console.log("Updated status:", newStatus); // Debug log
+            return newStatus;
+          });
+        } else {
+          console.log("No user data found in Firestore"); // Debug log
         }
+      } else {
+        console.log("No authenticated user found"); // Debug log
       }
     };
  
     fetchUserData();
   }, []);
- 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setStatus(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
  
   const handleTaskChange = (index, field, value) => {
     const updatedTasks = [...status.tasks];
@@ -166,19 +184,8 @@ const DailyStatus = () => {
                 type="date"
                 name="date"
                 value={status.date}
-                onChange={handleInputChange}
-                className="w-full border rounded px-3 py-2"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Employee Name</label>
-              <input
-                type="text"
-                name="employeeName"
-                value={status.employeeName}
-                onChange={handleInputChange}
-                className="w-full border rounded px-3 py-2"
-                placeholder="Enter your name"
+                className="w-full border rounded px-3 py-2 bg-gray-50"
+                readOnly
               />
             </div>
             <div>
@@ -187,31 +194,29 @@ const DailyStatus = () => {
                 type="text"
                 name="empId"
                 value={status.empId}
-                onChange={handleInputChange}
-                className="w-full border rounded px-3 py-2"
-                placeholder="Enter your employee ID"
+                className="w-full border rounded px-3 py-2 bg-gray-50"
+                readOnly
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Department</label>
+              <label className="block text-sm font-medium mb-1">Employee Name</label>
               <input
                 type="text"
-                name="department"
-                value={status.department}
-                onChange={handleInputChange}
-                className="w-full border rounded px-3 py-2"
-                placeholder="Enter your department"
+                name="employeeName"
+                value={status.employeeName}
+                className="w-full border rounded px-3 py-2 bg-gray-50"
+                readOnly
               />
             </div>
+           
             <div>
               <label className="block text-sm font-medium mb-1">Manager</label>
               <input
                 type="text"
                 name="manager"
                 value={status.manager}
-                onChange={handleInputChange}
-                className="w-full border rounded px-3 py-2"
-                placeholder="Enter your manager's name"
+                className="w-full border rounded px-3 py-2 bg-gray-50"
+                readOnly
               />
             </div>
           </div>
@@ -307,3 +312,4 @@ const DailyStatus = () => {
 };
  
 export default DailyStatus;
+ 
