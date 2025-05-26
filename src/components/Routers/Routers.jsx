@@ -14,12 +14,18 @@ import EWMTest from '../pages/Mocktest/Tests/EWMTest';
 import TestResult from '../pages/Mocktest/TestResult';
 import Certificate from '../pages/Mocktest/Certificate';
 import Timesheet from '../pages/Timesheet/Timesheet';
-import Holidaycal from '../pages/holidaycal/holcal';
+import Holidaycal from '../pages/leave/holcal';
 import Dailys from '../pages/dailystatus/daily';
 import Org from '../pages/Org';
 import ReimbursementRequest from '../pages/ReimbursementRequest';
 import TeamMemberDetails from '../pages/dashboard/TeamMemberDetails';
 import TeamOverview from '../pages/dashboard/TeamOverview';
+import Engage from '../pages/Engage';
+import Payslip from '../pages/salary/Payslips';
+import ITStatement from '../pages/salary/ItStatemnet';
+import LeaveApply from '../pages/leave/LeaveApply';
+import LeaveBalances from '../pages/leave/LeaveBalances';
+import DocumentCenter from '../pages/document/DocumentCenter';
 function Routers() {
   return (
     <Routes>
@@ -37,6 +43,7 @@ function Routers() {
           <ProtectedRoute>
             <Routes>
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/engage" element={<Engage />} />
               <Route path="/module-selection" element={<Moduleselection />} />
               <Route path="/test-instructions/:moduleId" element={<Testins />} />
               <Route path="/test/:moduleId" element={<Test />} />
@@ -44,12 +51,17 @@ function Routers() {
               <Route path="/mocktest/result" element={<TestResult />} />
               <Route path="/certificate/:moduleId" element={<Certificate />} />
               <Route path="/timesheet" element={<Timesheet />} />
+              <Route path="/salary/payslips" element={<Payslip />} />
+              <Route path="/salary/it-statement" element={<ITStatement />} />
+              <Route path="/leave/apply" element={<LeaveApply />} />
+              <Route path="/leave/balances" element={<LeaveBalances />} />
               <Route path="/holiday-calendar" element={<Holidaycal />} />
               <Route path="/daily-s" element={<Dailys />} />
               <Route path="/org" element={<Org />} />
               <Route path="/reimbursement" element={<ReimbursementRequest />} />
               <Route path="/team-member/:empId" element={<TeamMemberDetails />} />
               <Route path="/team-overview" element={<TeamOverview />} />
+              <Route path="/document-center" element={<DocumentCenter />} />
             </Routes>
           </ProtectedRoute>
         }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaUserCircle } from 'react-icons/fa';
+import { FaUserCircle, FaSearchPlus, FaSearchMinus, FaRedo, FaTimes } from 'react-icons/fa';
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 
 
@@ -179,142 +179,162 @@ function Org() {
 
 
   const PersonNode = ({ person }) => {
-  const borderColor = getBorderColor(person.title);
-  const bgColor = getBackgroundColor(person.title);
+    const borderColor = getBorderColor(person.title);
+    const bgColor = getBackgroundColor(person.title);
 
-  return (
-    <div
-      onClick={() => setSelectedPerson(person)}
-      className={`flex items-center cursor-pointer hover:scale-105 transition-transform ${bgColor} border-2 ${borderColor} rounded-lg shadow-lg p-4 w-64 min-h-[80px] space-x-3`}
-    >
-      
-      <div className="flex-shrink-0">
-        <img
-          src={person.image}
-          alt={person.name}
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = "/images/default-user.png"; 
-          }}
-          className="w-12 h-12 rounded-full object-cover"
-        />
+    return (
+      <div
+        onClick={() => setSelectedPerson(person)}
+        className={`flex items-center cursor-pointer hover:scale-105 transition-transform ${bgColor} border-2 ${borderColor} rounded-lg shadow-lg p-4 w-64 min-h-[80px] space-x-3 hover:shadow-xl`}
+      >
+        <div className="flex-shrink-0">
+          <img
+            src={person.image}
+            alt={person.name}
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = "/images/default-user.png"; 
+            }}
+            className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md"
+          />
+        </div>
+        <div className="flex flex-col justify-center flex-grow overflow-hidden">
+          <p className="font-semibold text-sm text-gray-800 truncate" title={person.name}>
+            {person.name}
+          </p>
+          <p className="text-xs text-gray-600 truncate" title={person.title}>
+            {person.title}
+          </p>
+          <p className="text-xs text-gray-500 truncate">ID: {person.empId}</p>
+        </div>
       </div>
-          <div className="flex flex-col justify-center flex-grow overflow-hidden">
-  <p className="font-semibold text-sm text-gray-800 truncate" title={person.name}>
-    {person.name}
-  </p>
-  <p className="text-xs text-gray-600 truncate" title={person.title}>
-    {person.title}
-  </p>
-  <p className="text-xs text-gray-500 truncate">ID: {person.empId}</p>
-</div>
-
-    </div>
-  );
-};
+    );
+  };
 
 
 
   const OrgTree = ({ person, level = 0, parent = null }) => {
-  const isExpanded = expandedNodes.has(person.empId);
-  const hasChildren = person.children && person.children.length > 0;
-  const connectorColor = getConnectorColor(level);
+    const isExpanded = expandedNodes.has(person.empId);
+    const hasChildren = person.children && person.children.length > 0;
+    const connectorColor = getConnectorColor(level);
 
-  const shouldUseRowLayout =
-    person.name === "Rajshri Rama Krishna" ||
-    person.name === "Muralidhar Reddy";
+    const shouldUseRowLayout =
+      person.name === "Rajshri Rama Krishna" ||
+      person.name === "Muralidhar Reddy";
 
-  return (
-    <div className="flex flex-col items-center relative">
-      <div className="flex flex-col items-center">
-        <PersonNode person={person} />
-        {hasChildren && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleNode(person.empId);
-            }}
-            className="mt-1 text-white bg-gray-300 hover:bg-gray-300 px-2 py-0.5 rounded-full text-xs shadow"
-          >
-            {countDescendants(person)}
-          </button>
-        )}
-      </div>
-
-      {hasChildren && isExpanded && (
-        <>
-          <div className={`h-6 w-1 ${connectorColor} mt-1`} />
-          <div
-            className={`mt-2 ${
-              shouldUseRowLayout
-                ? "flex flex-wrap justify-center gap-6"
-                : "flex flex-col items-center space-y-4"
-            }`}
-          >
-            {person.children.map((child, idx) => (
-              <div key={idx} className="relative">
-                <div
-                  className={`absolute top-0 left-1/2 transform -translate-x-1/2 h-4 w-1 ${connectorColor}`}
-                />
-                <OrgTree person={child} level={level + 1} parent={person} />
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
-};
-
-return (
-    <div className="p-8 bg-gray-50 min-h-screen">
-      <h1 className="text-3xl font-bold text-center mb-10">🧭 Organization Chart</h1>
-      <div className="relative h-[80vh] overflow-hidden border rounded-xl bg-white shadow-lg">
-  <TransformWrapper
-    initialScale={0.6}
-    minScale={0.3}
-    maxScale={2}
-    centerOnInit
-    wheel={{ step: 0.1 }} 
-  >
-    {({ zoomIn, zoomOut, resetTransform }) => (
-      <>
-       
-        <div className="fixed top-4 left-4 z-50 flex space-x-2 bg-white p-2 rounded shadow-md">
-          <button onClick={() => zoomIn()} className="bg-blue-500 text-white px-2 py-1 rounded text-sm hover:bg-blue-600">Zoom In</button>
-          <button onClick={() => zoomOut()} className="bg-blue-500 text-white px-2 py-1 rounded text-sm hover:bg-blue-600">Zoom Out</button>
-          <button onClick={() => resetTransform()} className="bg-gray-500 text-white px-2 py-1 rounded text-sm hover:bg-gray-600">Reset</button>
+    return (
+      <div className="flex flex-col items-center relative">
+        <div className="flex flex-col items-center">
+          <PersonNode person={person} />
+          {hasChildren && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleNode(person.empId);
+              }}
+              className="mt-1 text-white bg-gray-300 hover:bg-gray-300 px-2 py-0.5 rounded-full text-xs shadow"
+            >
+              {countDescendants(person)}
+            </button>
+          )}
         </div>
 
-       
-        <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
-          <div className="flex justify-center items-start min-w-max min-h-full">
-            <OrgTree person={orgData} />
-          </div>
-        </TransformComponent>
-      </>
-    )}
-  </TransformWrapper>
-</div>
-  {selectedPerson && (
+        {hasChildren && isExpanded && (
+          <>
+            <div className={`h-6 w-1 ${connectorColor} mt-1`} />
+            <div
+              className={`mt-2 ${
+                shouldUseRowLayout
+                  ? "flex flex-wrap justify-center gap-6"
+                  : "flex flex-col items-center space-y-4"
+              }`}
+            >
+              {person.children.map((child, idx) => (
+                <div key={idx} className="relative">
+                  <div
+                    className={`absolute top-0 left-1/2 transform -translate-x-1/2 h-4 w-1 ${connectorColor}`}
+                  />
+                  <OrgTree person={child} level={level + 1} parent={person} />
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="p-8 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+      <h1 className="text-4xl font-bold text-center mb-10 text-gray-800">
+        <span className="text-blue-600">🧭</span> Organization Chart
+      </h1>
+      <div className="relative h-[85vh] overflow-hidden border rounded-xl bg-white shadow-xl">
+        <TransformWrapper
+          initialScale={0.6}
+          minScale={0.3}
+          maxScale={2}
+          centerOnInit
+          wheel={{ step: 0.1 }}
+          panning={{ disabled: false }}
+        >
+          {({ zoomIn, zoomOut, resetTransform }) => (
+            <>
+              <div className="absolute top-4 right-4 z-50 flex flex-col space-y-2 bg-white/90 backdrop-blur-sm p-2 rounded-lg shadow-lg">
+                <button 
+                  onClick={() => zoomIn()} 
+                  className="p-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  title="Zoom In"
+                >
+                  <FaSearchPlus size={20} />
+                </button>
+                <button 
+                  onClick={() => zoomOut()} 
+                  className="p-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  title="Zoom Out"
+                >
+                  <FaSearchMinus size={20} />
+                </button>
+                <button 
+                  onClick={() => resetTransform()} 
+                  className="p-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  title="Reset View"
+                >
+                  <FaRedo size={20} />
+                </button>
+              </div>
+
+              <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
+                <div className="flex justify-center items-start min-w-max min-h-full p-8">
+                  <OrgTree person={orgData} />
+                </div>
+              </TransformComponent>
+            </>
+          )}
+        </TransformWrapper>
+      </div>
+
+      {selectedPerson && (
         <div className="fixed bottom-6 right-6 bg-white border border-gray-300 rounded-lg shadow-2xl p-5 w-80 z-50 animate-fade-in">
           <div className="flex justify-between items-center mb-3">
             <h2 className="text-xl font-semibold text-gray-800">Person Details</h2>
             <button
               onClick={() => setSelectedPerson(null)}
-              className="text-gray-500 hover:text-red-500 text-2xl font-bold"
+              className="text-gray-500 hover:text-red-500 text-2xl font-bold transition-colors"
             >
-              ×
+              <FaTimes />
             </button>
           </div>
-          <img
-            src={selectedPerson.image}
-            alt={selectedPerson.name}
-            className="w-20 h-20 rounded-full mx-auto mb-4"
-          />
-          <p className="text-center text-lg font-bold">{selectedPerson.name}</p>
-          <p className="text-center text-gray-600">{selectedPerson.title}</p>
-          <p className="text-center text-sm text-gray-500">ID: {selectedPerson.empId}</p>
+          <div className="flex flex-col items-center">
+            <img
+              src={selectedPerson.image}
+              alt={selectedPerson.name}
+              className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-white shadow-lg"
+            />
+            <p className="text-center text-lg font-bold text-gray-800">{selectedPerson.name}</p>
+            <p className="text-center text-gray-600">{selectedPerson.title}</p>
+            <p className="text-center text-sm text-gray-500 mt-1">ID: {selectedPerson.empId}</p>
+          </div>
         </div>
       )}
 
