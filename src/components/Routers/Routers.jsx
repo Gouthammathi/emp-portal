@@ -26,6 +26,13 @@ import ITStatement from '../pages/salary/ItStatemnet';
 import LeaveApply from '../pages/leave/LeaveApply';
 import LeaveBalances from '../pages/leave/LeaveBalances';
 import DocumentCenter from '../pages/document/DocumentCenter';
+// import LeavePending from '../pages/leave/LeavePending';
+// import LeaveHistory from '../pages/leave/LeaveHistory';
+import EmpDocs from '../pages/document/Emp-Docs';
+import EmpPlayslips from '../pages/document/Emp-Payslips';
+import Form16 from '../pages/document/Form16';
+import CompanyPolicies from '../pages/document/CompaniesPolicies';
+ 
 function Routers() {
   return (
     <Routes>
@@ -55,6 +62,8 @@ function Routers() {
               <Route path="/salary/it-statement" element={<ITStatement />} />
               <Route path="/leave/apply" element={<LeaveApply />} />
               <Route path="/leave/balances" element={<LeaveBalances />} />
+              {/* <Route path="/leave/pending" element={<LeavePending />} />
+              <Route path="/leave/history" element={<LeaveHistory />} /> */}
               <Route path="/holiday-calendar" element={<Holidaycal />} />
               <Route path="/daily-s" element={<Dailys />} />
               <Route path="/org" element={<Org />} />
@@ -62,6 +71,12 @@ function Routers() {
               <Route path="/team-member/:empId" element={<TeamMemberDetails />} />
               <Route path="/team-overview" element={<TeamOverview />} />
               <Route path="/document-center" element={<DocumentCenter />} />
+              <Route path="/emp-docs" element={<EmpDocs />} />
+              <Route path="/emp-payslips" element={<EmpPlayslips />} />
+              <Route path="/form16" element={<Form16 />} />
+              <Route path="/company-policies" element={<CompanyPolicies />} />
+             
+         
             </Routes>
           </ProtectedRoute>
         }

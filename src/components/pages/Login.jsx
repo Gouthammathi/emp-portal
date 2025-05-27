@@ -1,71 +1,79 @@
 // src/components/pages/Login.jsx
-import React, { useState, useEffect } from "react"; // Import useEffect
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { FaUser, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth"; // Import Firebase auth
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
  
 const Login = () => {
-  const [email, setEmail] = useState(""); // Employee email
+  const [empId, setEmpId] = useState(""); // Employee ID
   const [password, setPassword] = useState(""); // Password
   const [error, setError] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // For toggling password visibility
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const auth = getAuth(); // Initialize Firebase auth
+  const auth = getAuth();
+  const db = getFirestore();
  
-  // Clear email and password on component mount
   useEffect(() => {
-    setEmail("");
+    setEmpId("");
     setPassword("");
   }, []);
  
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email || !password) {
+    setError("");
+ 
+    if (!empId || !password) {
       setError("Please fill in all fields");
       return;
     }
  
     try {
-      await signInWithEmailAndPassword(auth, email, password); // Sign in with email and password
-      localStorage.setItem("isLoggedIn", "true"); //save login status
-      navigate("/dashboard",{replace:true}); // Redirect to dashboard on success
+      // 🔍 Query Firestore for user with matching empId
+      const q = query(collection(db, "users"), where("empId", "==", empId));
+      const querySnapshot = await getDocs(q);
  
-      // Assuming authentication is successful
-      const isAuthenticated = true; // R eplace with actual authentication check
-      if (isAuthenticated) {
-        // Define the hierarchy for report sending
-        const reportHierarchy = {
-          222003: 111069,
-          222002: 222001,
-          222001: 222001, // 222001 sends to themselves
-        };
- 
-        // Function to send email
-        function sendEmail(to, subject, body) {
-          // ... code to send email ...
-          console.log(`Email sent to ${to} with subject: ${subject}`);
-        }
- 
-        // Function to handle employee login
-        function handleEmployeeLogin(empId, reportData) {
-          const reportRecipientId = reportHierarchy[empId];
-          if (reportRecipientId) {
-            const subject = "New Report Submission";
-            const body = `Report for employee ID ${empId}: ${reportData}`;
-            sendEmail(reportRecipientId, subject, body);
-          } else {
-            console.log("No report recipient found for this employee.");
-          }
-        }
- 
-        // Example report data (you may want to fetch this from your database)
-        const reportData = "Report data for employee " + email;
- 
-        // Call the function to handle report sending
-        handleEmployeeLogin(email, reportData);
+      if (querySnapshot.empty) {
+        setError("Employee ID not found");
+        return;
       }
+ 
+      const userDoc = querySnapshot.docs[0];
+      const userData = userDoc.data();
+      const email = userData.email;
+ 
+      // 🔐 Sign in with email and password
+      await signInWithEmailAndPassword(auth, email, password);
+      localStorage.setItem("isLoggedIn", "true");
+      navigate("/dashboard", { replace: true });
+ 
+      // Optional: Send report to reporting manager (example)
+      const reportHierarchy = {
+        222003: 111069,
+        222002: 222001,
+        222001: 222001,
+      };
+ 
+      const sendEmail = (to, subject, body) => {
+        console.log(`Email sent to ${to} with subject: ${subject}`);
+      };
+ 
+      const handleEmployeeLogin = (empId, reportData) => {
+        const reportRecipientId = reportHierarchy[empId];
+        if (reportRecipientId) {
+          const subject = "New Report Submission";
+          const body = `Report for employee ID ${empId}: ${reportData}`;
+          sendEmail(reportRecipientId, subject, body);
+        } else {
+          console.log("No report recipient found for this employee.");
+        }
+      };
+ 
+      const reportData = "Report data for employee " + empId;
+      handleEmployeeLogin(empId, reportData);
+ 
     } catch (err) {
-      console.error("Login error:", err); // Log the error to the console
+      console.error("Login error:", err);
       setError("Login failed. Please check your credentials.");
     }
   };
@@ -86,11 +94,7 @@ const Login = () => {
           <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
             <div className="flex">
               <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-red-500"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
+                <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
                   <path
                     fillRule="evenodd"
                     d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
@@ -107,32 +111,27 @@ const Login = () => {
  
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
-            {/* Email */}
+            {/* Employee ID */}
             <div className="relative">
-  <label htmlFor="email" className="sr-only">
-    Email
-  </label>
-  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-    <FaUser className="h-5 w-5 text-gray-400" />
-  </div>
-  <input
-    id="email"
-    name="email"
-    type="email"
-    required
-    className="appearance-none rounded-t-md relative block w-full px-3 py-3 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-0 sm:text-sm"
-    placeholder="Email"
-    value={email}
-    onChange={(e) => setEmail(e.target.value)}
-  />
-</div>
- 
+              <label htmlFor="empId" className="sr-only">Employee ID</label>
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                <FaUser className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                id="empId"
+                name="empId"
+                type="text"
+                required
+                className="appearance-none rounded-t-md relative block w-full px-3 py-3 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-0 sm:text-sm"
+                placeholder="Employee ID"
+                value={empId}
+                onChange={(e) => setEmpId(e.target.value)}
+              />
+            </div>
  
             {/* Password */}
             <div className="relative">
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
+              <label htmlFor="password" className="sr-only">Password</label>
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
                 <FaLock className="h-5 w-5 text-gray-400" />
               </div>
@@ -164,7 +163,7 @@ const Login = () => {
             <button
               type="button"
               className="text-sm text-orange-600 hover:text-orange-800 font-medium transition duration-150 ease-in-out"
-              onClick={() => navigate("/forget-password")} // Redirect to the Forget Password page
+              onClick={() => navigate("/forget-password")}
             >
               Forgot Password?
             </button>
@@ -196,3 +195,5 @@ const Login = () => {
 };
  
 export default Login;
+ 
+ 
