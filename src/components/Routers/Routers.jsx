@@ -1,12 +1,20 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Routes, Route, Outlet, Navigate } from 'react-router-dom';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../../firebase';
+ 
+import ProtectedRoute from '../ProtectedRoute/ProtectedRoute';
+import PublicRoute from '../ProtectedRoute/PublicRoute';
+ 
+import AccessDenied from '../pages/AccessDenied';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
-import Dashboard from '../pages/Dashboard';
-import ProtectedRoute from '../ProtectedRoute/ProtectedRoute';
 import CheckEmail from '../pages/CheckEmail';
 import SetNewPassword from '../pages/SetNewPassword';
 import ForgetPassword from '../pages/ForgetPassword';
+ 
+import Dashboard from '../pages/Dashboard';
 import Moduleselection from '../pages/Mocktest/Moduleselection';
 import Testins from '../pages/Mocktest/Testins';
 import Test from '../pages/Mocktest/Test';
@@ -25,62 +33,116 @@ import Payslip from '../pages/salary/Payslips';
 import ITStatement from '../pages/salary/ItStatemnet';
 import LeaveApply from '../pages/leave/LeaveApply';
 import LeaveBalances from '../pages/leave/LeaveBalances';
-import DocumentCenter from '../pages/document/DocumentCenter';
 // import LeavePending from '../pages/leave/LeavePending';
 // import LeaveHistory from '../pages/leave/LeaveHistory';
+import DocumentCenter from '../pages/document/DocumentCenter';
 import EmpDocs from '../pages/document/Emp-Docs';
 import EmpPlayslips from '../pages/document/Emp-Payslips';
 import Form16 from '../pages/document/Form16';
 import CompanyPolicies from '../pages/document/CompaniesPolicies';
  
+import Layout from '../layout/Layout';
+import AdminRouter from '../../admin/routes/AdminRouter'; // ✅ Imported here
+ 
+const UserLayoutWrapper = () => (
+  <Layout>
+    <Outlet />
+  </Layout>
+);
+ 
+// Role-based redirect after login
+const RoleBasedRedirect = () => {
+  const auth = getAuth();
+  const [userRole, setUserRole] = useState(null);
+  const [loading, setLoading] = useState(true);
+ 
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          if (userDoc.exists()) {
+            setUserRole(userDoc.data().role?.toLowerCase());
+          }
+        } catch (error) {
+          console.error('Error fetching user role:', error);
+        }
+      }
+      setLoading(false);
+    });
+ 
+    return () => unsubscribe();
+  }, []);
+ 
+  if (loading) return <div>Loading...</div>;
+ 
+  return <Navigate to={userRole === 'admin' ? '/admin/dashboard' : '/dashboard'} replace />;
+};
+ 
 function Routers() {
   return (
     <Routes>
       {/* Public Routes */}
-      <Route path="/" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/check-email" element={<CheckEmail />} />
-      <Route path="/setnewpassword" element={<SetNewPassword />} />
-      <Route path="/forget-password" element={<ForgetPassword />} />
+      <Route path="/" element={<PublicRoute><Login /></PublicRoute>} />
+      <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+      <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+      <Route path="/check-email" element={<PublicRoute><CheckEmail /></PublicRoute>} />
+      <Route path="/setnewpassword" element={<PublicRoute><SetNewPassword /></PublicRoute>} />
+      <Route path="/forget-password" element={<PublicRoute><ForgetPassword /></PublicRoute>} />
+      <Route path="/access-denied" element={<AccessDenied />} />
+      <Route path="/redirect" element={<RoleBasedRedirect />} />
  
-      {/* Protected Routes */}
+      {/* Admin Routes (using external AdminRouter) */}
       <Route
-        path="*"
+        path="/admin/*"
         element={
-          <ProtectedRoute>
-            <Routes>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/engage" element={<Engage />} />
-              <Route path="/module-selection" element={<Moduleselection />} />
-              <Route path="/test-instructions/:moduleId" element={<Testins />} />
-              <Route path="/test/:moduleId" element={<Test />} />
-              <Route path="/ewm-test" element={<EWMTest />} />
-              <Route path="/mocktest/result" element={<TestResult />} />
-              <Route path="/certificate/:moduleId" element={<Certificate />} />
-              <Route path="/timesheet" element={<Timesheet />} />
-              <Route path="/salary/payslips" element={<Payslip />} />
-              <Route path="/salary/it-statement" element={<ITStatement />} />
-              <Route path="/leave/apply" element={<LeaveApply />} />
-              <Route path="/leave/balances" element={<LeaveBalances />} />
-              {/* <Route path="/leave/pending" element={<LeavePending />} />
-              <Route path="/leave/history" element={<LeaveHistory />} /> */}
-              <Route path="/holiday-calendar" element={<Holidaycal />} />
-              <Route path="/daily-s" element={<Dailys />} />
-              <Route path="/org" element={<Org />} />
-              <Route path="/reimbursement" element={<ReimbursementRequest />} />
-              <Route path="/team-member/:empId" element={<TeamMemberDetails />} />
-              <Route path="/team-overview" element={<TeamOverview />} />
-              <Route path="/document-center" element={<DocumentCenter />} />
-              <Route path="/emp-docs" element={<EmpDocs />} />
-              <Route path="/emp-payslips" element={<EmpPlayslips />} />
-              <Route path="/form16" element={<Form16 />} />
-              <Route path="/company-policies" element={<CompanyPolicies />} />
-            </Routes>
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminRouter />
           </ProtectedRoute>
         }
       />
+ 
+      {/* Employee / Manager / HR Routes */}
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute allowedRoles={['employee', 'manager', 'hr', 'supermanager']}>
+            <UserLayoutWrapper />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Dashboard />} />
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="engage" element={<Engage />} />
+        <Route path="module-selection" element={<Moduleselection />} />
+        <Route path="test-instructions/:moduleId" element={<Testins />} />
+        <Route path="test/:moduleId" element={<Test />} />
+        <Route path="ewm-test" element={<EWMTest />} />
+        <Route path="mocktest/result" element={<TestResult />} />
+        <Route path="certificate/:moduleId" element={<Certificate />} />
+        <Route path="timesheet" element={<Timesheet />} />
+        <Route path="salary/payslips" element={<Payslip />} />
+        <Route path="salary/it-statement" element={<ITStatement />} />
+        <Route path="leave/apply" element={<LeaveApply />} />
+        <Route path="leave/balances" element={<LeaveBalances />} />
+        {/* <Route path="leave/pending" element={<LeavePending />} />
+        <Route path="leave/history" element={<LeaveHistory />} /> */}
+        <Route path="holiday-calendar" element={<Holidaycal />} />
+        <Route path="daily-s" element={<Dailys />} />
+        <Route path="org" element={<Org />} />
+        <Route path="reimbursement" element={<ReimbursementRequest />} />
+        <Route path="team-member/:empId" element={<TeamMemberDetails />} />
+        <Route path="team-overview" element={<TeamOverview />} />
+        <Route path="document-center" element={<DocumentCenter />} />
+        <Route path="emp-docs" element={<EmpDocs />} />
+        <Route path="emp-payslips" element={<EmpPlayslips />} />
+        <Route path="form16" element={<Form16 />} />
+        <Route path="company-policies" element={<CompanyPolicies />} />
+      </Route>
     </Routes>
   );
 }
  
 export default Routers;
+ 
+ 

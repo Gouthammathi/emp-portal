@@ -6,8 +6,8 @@ import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
  
 const Login = () => {
-  const [empId, setEmpId] = useState(""); // Employee ID
-  const [password, setPassword] = useState(""); // Password
+  const [empId, setEmpId] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
@@ -29,7 +29,7 @@ const Login = () => {
     }
  
     try {
-      // 🔍 Query Firestore for user with matching empId
+      // 🔍 Query Firestore for user by empId
       const q = query(collection(db, "users"), where("empId", "==", empId));
       const querySnapshot = await getDocs(q);
  
@@ -42,12 +42,16 @@ const Login = () => {
       const userData = userDoc.data();
       const email = userData.email;
  
-      // 🔐 Sign in with email and password
+      // 🔐 Sign in using Firebase Auth
       await signInWithEmailAndPassword(auth, email, password);
-      localStorage.setItem("isLoggedIn", "true");
-      navigate("/dashboard", { replace: true });
  
-      // Optional: Send report to reporting manager (example)
+      // 💾 Save login state
+      localStorage.setItem("isLoggedIn", "true");
+ 
+      // 🚀 Redirect to role-based redirect route
+      navigate("/redirect", { replace: true });
+ 
+      // Optional: notify reporting manager
       const reportHierarchy = {
         222003: 111069,
         222002: 222001,
@@ -111,7 +115,6 @@ const Login = () => {
  
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
-            {/* Employee ID */}
             <div className="relative">
               <label htmlFor="empId" className="sr-only">Employee ID</label>
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
@@ -129,7 +132,6 @@ const Login = () => {
               />
             </div>
  
-            {/* Password */}
             <div className="relative">
               <label htmlFor="password" className="sr-only">Password</label>
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
@@ -158,28 +160,25 @@ const Login = () => {
             </div>
           </div>
  
-          {/* Forgot Password */}
           <div className="flex justify-between mt-6">
             <button
               type="button"
-              className="text-sm text-orange-600 hover:text-orange-800 font-medium transition duration-150 ease-in-out"
+              className="text-sm text-orange-600 hover:text-orange-800 font-medium"
               onClick={() => navigate("/forget-password")}
             >
               Forgot Password?
             </button>
           </div>
  
-          {/* Sign In Button */}
           <div>
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-all duration-300 ease-in-out"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-all duration-300"
             >
               Sign In
             </button>
           </div>
  
-          {/* Registration Link */}
           <div className="text-center mt-6">
             <p className="text-sm text-gray-600">
               Don't have an account?{" "}

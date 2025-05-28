@@ -1,62 +1,68 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from '../header/Header';
 import Footer from '../footer/Footer';
 import Sidebar from '../sidebar/Sidebar';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { useLocation } from 'react-router-dom';
-
+ 
 function Layout({ children }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const location = useLocation();
-  const isLoginPage = location.pathname === '/' || location.pathname === '/login';
-
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+ 
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsAuthenticated(!!user);
-      setIsAuthLoading(false);
+      setAuthChecked(true);
     });
-
+ 
     return () => unsubscribe();
   }, []);
-
-  if (isAuthLoading) {
-    return null;
-  }
-
-  // For login page, render only the content without header, sidebar, and footer
-  if (isLoginPage) {
+ 
+  if (!authChecked) {
     return (
-      <main className="min-h-screen bg-gray-50">
-        {children}
-      </main>
+      <div className="flex items-center justify-center min-h-screen">
+        <p>Loading...</p>
+      </div>
     );
   }
-
+ 
+  // Define routes where the sidebar should be hidden
+  const noSidebarRoutes = ['/login', '/signup', '/forgot-password'];
+  const isSidebarVisible = isAuthenticated && !noSidebarRoutes.includes(location.pathname);
+ 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="flex flex-col min-h-screen">
+      {/* Header (fixed height assumed 64px) */}
       <Header />
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sticky Sidebar */}
-        {isAuthenticated && (
-          <div className="w-64 flex-shrink-0 h-[calc(100vh-4rem)] sticky top-16">
-            <div className="h-full overflow-y-auto scrollbar-hide">
-              <Sidebar />
-            </div>
+ 
+      {/* Main content wrapper (sidebar + page content) */}
+      <div className="flex flex-1 h-[calc(100vh-64px)] relative">
+        {/* Fixed Sidebar */}
+        {isSidebarVisible && (
+          <div className="w-64 fixed top-16 left-0 h-[calc(100vh-64px)] bg-white border-r z-10">
+            <Sidebar />
           </div>
         )}
-
-        {/* Main content with separate scrolling */}
-        <main className={`flex-1 overflow-y-auto h-[calc(100vh-4rem)] ${isAuthenticated ? '' : 'w-full'}`}>
-          <div className="p-4 bg-gray-50">
-            {children}
-          </div>
+ 
+        {/* Scrollable content with left margin if sidebar is present */}
+        <main
+          className={`flex-1 p-4 overflow-y-auto bg-gray-50 ${
+            isSidebarVisible ? 'ml-64' : ''
+          }`}
+          style={{ height: 'calc(100vh - 64px)' }}
+        >
+          {children}
         </main>
       </div>
+ 
+      {/* Footer */}
       <Footer />
     </div>
   );
 }
-
+ 
 export default Layout;
+ 
+ 
