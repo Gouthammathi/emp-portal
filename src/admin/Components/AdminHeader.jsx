@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { 
   Users, Calendar, DollarSign, FileText, 
   Search, ChevronDown, LogOut, User,
-  Bell, Settings, Menu
+  Bell, Settings, Menu, BarChart2,
+  UserPlus, Clock, Receipt
 } from 'lucide-react'
 import { auth } from '../../firebase'
 import { signOut } from 'firebase/auth'
@@ -16,23 +17,32 @@ const AdminHeader = () => {
   const handleLogout = async () => {
     try {
       await signOut(auth)
-      // Clear any admin-specific data from localStorage if needed
       localStorage.removeItem('adminData')
-      // Redirect to login page
       navigate('/login')
     } catch (error) {
       console.error('Error signing out:', error)
     }
   }
 
+  // Most frequently used features in header
   const headerNavItems = [
+    {
+      title: "Dashboard",
+      icon: BarChart2,
+      link: "/admin/dashboard",
+      submenu: [
+        { title: "Overview", link: "/admin/dashboard" },
+        { title: "Analytics", link: "/admin/analytics" }
+      ]
+    },
     {
       title: "Employees",
       icon: Users,
       link: "/admin/employees",
       submenu: [
         { title: "All Employees", link: "/admin/employees" },
-        { title: "Add Employee", link: "/admin/employees/add" }
+        { title: "Add Employee", link: "/admin/employees/add" },
+        { title: "Attendance", link: "/admin/attendance" }
       ]
     },
     {
@@ -41,7 +51,8 @@ const AdminHeader = () => {
       link: "/admin/leave",
       submenu: [
         { title: "Requests", link: "/admin/leave/requests" },
-        { title: "Calendar", link: "/admin/leave/calendar" }
+        { title: "Calendar", link: "/admin/leave/calendar" },
+        { title: "Balances", link: "/admin/leave/balances" }
       ]
     },
     {
@@ -50,16 +61,8 @@ const AdminHeader = () => {
       link: "/admin/payroll",
       submenu: [
         { title: "Process Payroll", link: "/admin/payroll/process" },
-        { title: "Reports", link: "/admin/payroll/reports" }
-      ]
-    },
-    {
-      title: "Documents",
-      icon: FileText,
-      link: "/admin/documents",
-      submenu: [
-        { title: "Company Policies", link: "/admin/documents/policies" },
-        { title: "Employee Docs", link: "/admin/documents/employee" }
+        { title: "Reports", link: "/admin/payroll/reports" },
+        { title: "Reimbursements", link: "/admin/reimbursements" }
       ]
     }
   ]
