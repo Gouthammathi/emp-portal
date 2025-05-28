@@ -1,14 +1,29 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { 
   Users, Calendar, DollarSign, FileText, 
   Search, ChevronDown, LogOut, User,
   Bell, Settings, Menu
 } from 'lucide-react'
+import { auth } from '../../firebase'
+import { signOut } from 'firebase/auth'
 
 const AdminHeader = () => {
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth)
+      // Clear any admin-specific data from localStorage if needed
+      localStorage.removeItem('adminData')
+      // Redirect to login page
+      navigate('/login')
+    } catch (error) {
+      console.error('Error signing out:', error)
+    }
+  }
 
   const headerNavItems = [
     {
@@ -145,7 +160,7 @@ const AdminHeader = () => {
                         Settings
                       </Link>
                       <button
-                        onClick={() => {/* Handle logout */}}
+                        onClick={handleLogout}
                         className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                       >
                         <LogOut className="h-4 w-4 mr-2" />
