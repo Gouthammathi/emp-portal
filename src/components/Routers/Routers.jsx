@@ -1,19 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Routes, Route, Outlet, Navigate } from 'react-router-dom';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../../firebase';
- 
+import { auth } from '../../firebase';
+import { useAuthState } from 'react-firebase-hooks/auth';
+
 import ProtectedRoute from '../ProtectedRoute/ProtectedRoute';
 import PublicRoute from '../ProtectedRoute/PublicRoute';
- 
+
 import AccessDenied from '../pages/AccessDenied';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
 import CheckEmail from '../pages/CheckEmail';
 import SetNewPassword from '../pages/SetNewPassword';
 import ForgetPassword from '../pages/ForgetPassword';
- 
+
 import Dashboard from '../pages/Dashboard';
 import Moduleselection from '../pages/Mocktest/Moduleselection';
 import Testins from '../pages/Mocktest/Testins';
@@ -33,75 +32,45 @@ import Payslip from '../pages/salary/Payslips';
 import ITStatement from '../pages/salary/ItStatemnet';
 import LeaveApply from '../pages/leave/LeaveApply';
 import LeaveBalances from '../pages/leave/LeaveBalances';
-// import LeavePending from '../pages/leave/LeavePending';
-// import LeaveHistory from '../pages/leave/LeaveHistory';
 import DocumentCenter from '../pages/document/DocumentCenter';
 import EmpDocs from '../pages/document/Emp-Docs';
 import EmpPlayslips from '../pages/document/Emp-Payslips';
 import Form16 from '../pages/document/Form16';
 import CompanyPolicies from '../pages/document/CompaniesPolicies';
- 
+
 import Layout from '../layout/Layout';
-import AdminRouter from '../../admin/routes/AdminRouter'; // ✅ Imported here
- 
+import AdminRouter from '../../admin/routes/AdminRouter';
+
 const UserLayoutWrapper = () => (
   <Layout>
     <Outlet />
   </Layout>
 );
- 
-// Role-based redirect after login
-const RoleBasedRedirect = () => {
-  const auth = getAuth();
-  const [userRole, setUserRole] = useState(null);
-  const [loading, setLoading] = useState(true);
- 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        try {
-          const userDoc = await getDoc(doc(db, 'users', user.uid));
-          if (userDoc.exists()) {
-            setUserRole(userDoc.data().role?.toLowerCase());
-          }
-        } catch (error) {
-          console.error('Error fetching user role:', error);
-        }
-      }
-      setLoading(false);
-    });
- 
-    return () => unsubscribe();
-  }, []);
- 
-  if (loading) return <div>Loading...</div>;
- 
-  return <Navigate to={userRole === 'admin' ? '/admin/dashboard' : '/dashboard'} replace />;
-};
- 
-function Routers() {
+
+const Routers = () => {
+  const [user, loading] = useAuthState(auth);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <Routes>
       {/* Public Routes */}
-      <Route path="/" element={<PublicRoute><Login /></PublicRoute>} />
-      <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-      <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
-      <Route path="/check-email" element={<PublicRoute><CheckEmail /></PublicRoute>} />
-      <Route path="/setnewpassword" element={<PublicRoute><SetNewPassword /></PublicRoute>} />
-      <Route path="/forget-password" element={<PublicRoute><ForgetPassword /></PublicRoute>} />
+      <Route path="/login" element={!user ? <Login /> : <Navigate to="/admin/dashboard" />} />
+      <Route path="/register" element={!user ? <Register /> : <Navigate to="/admin/dashboard" />} />
+      <Route path="/check-email" element={!user ? <CheckEmail /> : <Navigate to="/admin/dashboard" />} />
+      <Route path="/setnewpassword" element={!user ? <SetNewPassword /> : <Navigate to="/admin/dashboard" />} />
+      <Route path="/forget-password" element={!user ? <ForgetPassword /> : <Navigate to="/admin/dashboard" />} />
       <Route path="/access-denied" element={<AccessDenied />} />
-      <Route path="/redirect" element={<RoleBasedRedirect />} />
- 
-      {/* Admin Routes (using external AdminRouter) */}
-      <Route
-        path="/admin/*"
-        element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <AdminRouter />
-          </ProtectedRoute>
-        }
-      />
- 
+
+      {/* Admin Routes */}
+      <Route path="/admin/*" element={
+        <ProtectedRoute>
+          <AdminRouter />
+        </ProtectedRoute>
+      } />
+
       {/* Employee / Manager / HR Routes */}
       <Route
         path="/"
@@ -125,8 +94,6 @@ function Routers() {
         <Route path="salary/it-statement" element={<ITStatement />} />
         <Route path="leave/apply" element={<LeaveApply />} />
         <Route path="leave/balances" element={<LeaveBalances />} />
-        {/* <Route path="leave/pending" element={<LeavePending />} />
-        <Route path="leave/history" element={<LeaveHistory />} /> */}
         <Route path="holiday-calendar" element={<Holidaycal />} />
         <Route path="daily-s" element={<Dailys />} />
         <Route path="org" element={<Org />} />
@@ -139,10 +106,13 @@ function Routers() {
         <Route path="form16" element={<Form16 />} />
         <Route path="company-policies" element={<CompanyPolicies />} />
       </Route>
+
+      {/* Default Route - Redirect to Login */}
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
-}
- 
+};
+
 export default Routers;
  
  

@@ -77,7 +77,7 @@ const AdminHeader = () => {
               <Menu className="h-6 w-6" />
             </button>
             <Link to="/admin/dashboard" className="ml-2 lg:ml-0 text-xl font-bold text-gray-900">
-              HR Portal
+              Admin Portal
             </Link>
           </div>
 
