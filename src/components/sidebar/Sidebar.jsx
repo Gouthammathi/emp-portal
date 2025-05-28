@@ -5,13 +5,13 @@ import {
   FaFolderOpen, FaSitemap, FaFileInvoiceDollar, FaChevronDown,
   FaChevronUp, FaUmbrellaBeach
 } from 'react-icons/fa';
-
+ 
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [salaryOpen, setSalaryOpen] = useState(false);
   const [leaveOpen, setLeaveOpen] = useState(false);
-
+ 
   const handleNavigate = (path) => {
     navigate(path);
   };
@@ -19,7 +19,7 @@ const Sidebar = () => {
   const isSelected = (path) => {
     return location.pathname === path;
   };
-
+ 
   return (
     <aside className="w-64 bg-white border-r border-gray-200 h-[calc(100vh-64px)] shadow-lg overflow-hidden">
       <div className="flex flex-col h-full">
@@ -66,18 +66,18 @@ const Sidebar = () => {
                 Finance
               </div>
             </div>
-
-            {/* Salary Dropdown */}
-            <SidebarDropdown
+ 
+          {/* Salary Dropdown */}
+          <SidebarDropdown
               icon={<FaFileInvoiceDollar className="text-green-600 group-hover:text-green-700" />}
-              label="Salary"
-              isOpen={salaryOpen}
-              onToggle={() => setSalaryOpen(!salaryOpen)}
-              items={[
-                { label: 'Payslips', path: '/salary/payslips' },
-                { label: 'IT Statement', path: '/salary/it-statement' },
-              ]}
-              handleNavigate={handleNavigate}
+            label="Salary"
+            isOpen={salaryOpen}
+            onToggle={() => setSalaryOpen(!salaryOpen)}
+            items={[
+              { label: 'Payslips', path: '/salary/payslips' },
+              { label: 'IT Statement', path: '/salary/it-statement' },
+            ]}
+            handleNavigate={handleNavigate}
               isSelected={isSelected('/salary/payslips') || isSelected('/salary/it-statement')}
               currentPath={location.pathname}
             />
@@ -87,19 +87,19 @@ const Sidebar = () => {
                 Time Off
               </div>
             </div>
-
-            {/* Leave Dropdown */}
-            <SidebarDropdown
+ 
+          {/* Leave Dropdown */}
+          <SidebarDropdown
               icon={<FaUmbrellaBeach className="text-indigo-500 group-hover:text-indigo-600" />}
-              label="Leave"
-              isOpen={leaveOpen}
-              onToggle={() => setLeaveOpen(!leaveOpen)}
-              items={[
-                { label: 'Leave Apply', path: '/leave/apply' },
-                { label: 'Leave Balances', path: '/leave/balances' },
-                { label: 'Holiday Calendar', path: '/holiday-calendar' },
-              ]}
-              handleNavigate={handleNavigate}
+            label="Leave"
+            isOpen={leaveOpen}
+            onToggle={() => setLeaveOpen(!leaveOpen)}
+            items={[
+              { label: 'Leave Apply', path: '/leave/apply' },
+              { label: 'Leave Balances', path: '/leave/balances' },
+              { label: 'Holiday Calendar', path: '/holiday-calendar' },
+            ]}
+            handleNavigate={handleNavigate}
               isSelected={isSelected('/leave/apply') || isSelected('/leave/balances') || isSelected('/holiday-calendar')}
               currentPath={location.pathname}
             />
@@ -128,17 +128,17 @@ const Sidebar = () => {
               onClick={() => handleNavigate('/reimbursement')}
               isSelected={isSelected('/reimbursement')}
             />
-          </ul>
-        </div>
-
-        <div className="text-center p-4 text-gray-500 text-sm border-t">
-          © {new Date().getFullYear()} Artihcus Global
+        </ul>
+      </div>
+ 
+      <div className="text-center p-4 text-gray-500 text-sm border-t">
+        © {new Date().getFullYear()} Artihcus Global
         </div>
       </div>
     </aside>
   );
 };
-
+ 
 const SidebarItem = ({ icon, label, onClick, isSelected }) => (
   <li
     onClick={onClick}
@@ -149,7 +149,7 @@ const SidebarItem = ({ icon, label, onClick, isSelected }) => (
       }`}
   >
     <span className={`text-lg transition-transform ${isSelected ? 'scale-110' : 'group-hover:scale-110'}`}>
-      {icon}
+    {icon}
     </span>
     <span className={`font-medium tracking-wide ${isSelected ? 'text-blue-700' : ''}`}>
       {label}
@@ -159,7 +159,7 @@ const SidebarItem = ({ icon, label, onClick, isSelected }) => (
     )}
   </li>
 );
-
+ 
 const SidebarDropdown = ({ icon, label, isOpen, onToggle, items, handleNavigate, isSelected, currentPath }) => (
   <li className="text-gray-700">
     <div
@@ -172,14 +172,14 @@ const SidebarDropdown = ({ icon, label, isOpen, onToggle, items, handleNavigate,
     >
       <div className="flex items-center gap-3">
         <span className={`text-lg transition-transform ${isSelected ? 'scale-110' : 'group-hover:scale-110'}`}>
-          {icon}
+        {icon}
         </span>
         <span className={`font-medium tracking-wide ${isSelected ? 'text-blue-700' : ''}`}>
           {label}
         </span>
       </div>
       <span className={`transition-colors ${isSelected ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'}`}>
-        {isOpen ? <FaChevronUp /> : <FaChevronDown />}
+      {isOpen ? <FaChevronUp /> : <FaChevronDown />}
       </span>
       {isSelected && (
         <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-600 rounded-r-full" />
@@ -204,6 +204,6 @@ const SidebarDropdown = ({ icon, label, isOpen, onToggle, items, handleNavigate,
     )}
   </li>
 );
-
+ 
 export default Sidebar;
  
