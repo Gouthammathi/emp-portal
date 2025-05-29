@@ -32,7 +32,8 @@ import {
   FileArchive,
   ClipboardList,
   Users2,
-  GraduationCap
+  GraduationCap,
+  Upload
 } from 'lucide-react';
 
 const AdminSidebar = () => {
@@ -55,6 +56,8 @@ const AdminSidebar = () => {
 
   const menuItems = {
     hr: [
+      { name: 'Employees', path: '/admin/A-employees', icon: <Users size={20} /> },
+      { name: 'Add Employee', path: '/admin/A-employees/import', icon: <Upload size={20} /> },
       { name: 'Performance Reviews', path: '/admin/performance', icon: <Award size={20} /> },
       { name: 'Training Programs', path: '/admin/training', icon: <GraduationCap size={20} /> },
       { name: 'Employee Documents', path: '/admin/employee-documents', icon: <FolderOpen size={20} /> },

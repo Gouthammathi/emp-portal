@@ -57,16 +57,16 @@ const Routers = () => {
   return (
     <Routes>
       {/* Public Routes */}
-      <Route path="/login" element={!user ? <Login /> : <Navigate to="/admin/dashboard" />} />
-      <Route path="/register" element={!user ? <Register /> : <Navigate to="/admin/dashboard" />} />
-      <Route path="/check-email" element={!user ? <CheckEmail /> : <Navigate to="/admin/dashboard" />} />
-      <Route path="/setnewpassword" element={!user ? <SetNewPassword /> : <Navigate to="/admin/dashboard" />} />
-      <Route path="/forget-password" element={!user ? <ForgetPassword /> : <Navigate to="/admin/dashboard" />} />
+      <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+      <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+      <Route path="/check-email" element={<PublicRoute><CheckEmail /></PublicRoute>} />
+      <Route path="/setnewpassword" element={<PublicRoute><SetNewPassword /></PublicRoute>} />
+      <Route path="/forget-password" element={<PublicRoute><ForgetPassword /></PublicRoute>} />
       <Route path="/access-denied" element={<AccessDenied />} />
 
       {/* Admin Routes */}
       <Route path="/admin/*" element={
-        <ProtectedRoute>
+        <ProtectedRoute allowedRoles={['admin']}>
           <AdminRouter />
         </ProtectedRoute>
       } />
@@ -75,7 +75,7 @@ const Routers = () => {
       <Route
         path="/"
         element={
-          <ProtectedRoute allowedRoles={['employee', 'manager', 'hr', 'supermanager']}>
+          <ProtectedRoute allowedRoles={['employee', 'manager', 'hr', 'supermanager', 'tl']}>
             <UserLayoutWrapper />
           </ProtectedRoute>
         }

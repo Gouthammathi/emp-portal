@@ -48,8 +48,24 @@ const Login = () => {
       // 💾 Save login state
       localStorage.setItem("isLoggedIn", "true");
  
-      // 🚀 Redirect to role-based redirect route
-      navigate("/redirect", { replace: true });
+      // 🚀 Redirect based on role
+      const role = userData.role?.toLowerCase();
+      switch (role) {
+        case 'admin':
+          navigate("/admin/dashboard");
+          break;
+        case 'hr':
+          navigate("/dashboard");
+          break;
+        case 'manager':
+        case 'supermanager':
+        case 'tl':
+        case 'employee':
+          navigate("/dashboard");
+          break;
+        default:
+          navigate("/access-denied");
+      }
  
       // Optional: notify reporting manager
       const reportHierarchy = {
@@ -173,9 +189,9 @@ const Login = () => {
           <div>
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-all duration-300"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
             >
-              Sign In
+              Sign in
             </button>
           </div>
  
