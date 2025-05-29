@@ -58,7 +58,7 @@ const AdminSidebar = () => {
   const menuItems = {
     hr: [
       { path: '/admin/A-employees', name: 'Employees', icon: <FaUsers /> },
-      { path: '/admin/A-employees/import', name: 'Import Employees', icon: <FaUpload /> },
+      { path: '/admin/A-employees/import', name: 'Add Employees', icon: <FaUpload /> },
       { path: '/admin/A-org-chart', name: 'Org Chart', icon: <FaSitemap /> },
       { path: '/admin/A-attendence', name: 'Attendance', icon: <FaCalendarAlt /> },
       { path: '/admin/A-documents', name: 'Documents', icon: <FaFileAlt /> },

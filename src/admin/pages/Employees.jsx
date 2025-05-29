@@ -3,7 +3,7 @@ import { collection, getDocs, doc, deleteDoc, updateDoc, query, where, getDocs a
 import { db } from '../../firebase';
 import { FaEdit, FaTrash, FaSearch, FaPlus, FaUserEdit, FaFilter, FaTimes } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const ROLE_OPTIONS = [
   { value: 'employee', label: 'Employee' },
@@ -26,6 +26,7 @@ const Employees = () => {
     status: '',
   });
   const [departments, setDepartments] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchEmployees();
@@ -90,8 +91,7 @@ const Employees = () => {
   });
 
   const handleEdit = (employee) => {
-    setSelectedEmployee(employee);
-    setIsEditModalOpen(true);
+    navigate(`/admin/A-employees/edit/${employee.id}`);
   };
 
   const handleDelete = (employee) => {
