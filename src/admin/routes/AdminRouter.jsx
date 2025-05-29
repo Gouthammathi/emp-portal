@@ -6,7 +6,8 @@ import AdminDashboard from '../pages/Dashboard';
 import Employees from '../pages/Employees';
 import Attendence from '../pages/Attendence';
 import Documents from '../pages/AdminDocuments';
-import EmployeeImport from '../pages/EmployeeImport';
+import EmployeeImport from '../pages/AddEmployee';
+import AdminOrgChart from '../pages/AdminOrgChart';
 import { getAuth } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
@@ -36,6 +37,7 @@ const AdminRouter = () => {
         <Route path="A-employees/import" element={<EmployeeImport />} />
         <Route path="A-attendence" element={<Attendence />} />
         <Route path="A-documents" element={<Documents />} />
+        <Route path="A-org-chart" element={<AdminOrgChart />} />
         <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
       </Route>
     </Routes>

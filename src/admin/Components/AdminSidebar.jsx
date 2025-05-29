@@ -35,6 +35,7 @@ import {
   GraduationCap,
   Upload
 } from 'lucide-react';
+import { FaUsers, FaUpload, FaSitemap, FaCalendarAlt, FaFileAlt } from 'react-icons/fa';
 
 const AdminSidebar = () => {
   const location = useLocation();
@@ -56,8 +57,11 @@ const AdminSidebar = () => {
 
   const menuItems = {
     hr: [
-      { name: 'Employees', path: '/admin/A-employees', icon: <Users size={20} /> },
-      { name: 'Add Employee', path: '/admin/A-employees/import', icon: <Upload size={20} /> },
+      { path: '/admin/A-employees', name: 'Employees', icon: <FaUsers /> },
+      { path: '/admin/A-employees/import', name: 'Import Employees', icon: <FaUpload /> },
+      { path: '/admin/A-org-chart', name: 'Org Chart', icon: <FaSitemap /> },
+      { path: '/admin/A-attendence', name: 'Attendance', icon: <FaCalendarAlt /> },
+      { path: '/admin/A-documents', name: 'Documents', icon: <FaFileAlt /> },
       { name: 'Performance Reviews', path: '/admin/performance', icon: <Award size={20} /> },
       { name: 'Training Programs', path: '/admin/training', icon: <GraduationCap size={20} /> },
       { name: 'Employee Documents', path: '/admin/employee-documents', icon: <FolderOpen size={20} /> },
