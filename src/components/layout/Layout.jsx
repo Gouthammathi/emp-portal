@@ -4,16 +4,26 @@ import Header from '../header/Header';
 import Footer from '../footer/Footer';
 import Sidebar from '../sidebar/Sidebar';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../../firebase';
  
 function Layout({ children }) {
   const location = useLocation();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [userRole, setUserRole] = useState(null);
  
   useEffect(() => {
     const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setIsAuthenticated(!!user);
+      if (user) {
+        // Fetch user role from Firestore
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+          setUserRole(userDoc.data().role);
+        }
+      }
       setAuthChecked(true);
     });
  
@@ -42,7 +52,7 @@ function Layout({ children }) {
         {/* Fixed Sidebar */}
         {isSidebarVisible && (
           <div className="w-64 fixed top-16 left-0 h-[calc(100vh-64px)] bg-white border-r z-10">
-            <Sidebar />
+            <Sidebar role={userRole} />
           </div>
         )}
  
@@ -64,5 +74,4 @@ function Layout({ children }) {
 }
  
 export default Layout;
- 
  

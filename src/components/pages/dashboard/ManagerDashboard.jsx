@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getAuth, signOut } from 'firebase/auth';
 import { doc, getDoc, collection, query, where, getDocs, onSnapshot } from 'firebase/firestore';
 import { db } from '../../../firebase';
-import { FaClipboardList, FaCalendarAlt, FaClock, FaBook, FaUsers, FaChartLine, FaTasks, FaSitemap, FaBell, FaTimes, FaChevronDown } from 'react-icons/fa';
+import { FaClipboardList, FaCalendarAlt, FaClock, FaBook, FaUsers, FaChartLine, FaTasks, FaSitemap, FaBell, FaTimes, FaChevronDown, FaTicketAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import OrgChartPage from '../Org';
 import TeamOverview from './TeamOverview';
@@ -210,8 +210,14 @@ const ManagerDashboard = () => {
       hoverColor: 'hover:bg-indigo-600',
       onClick: () => navigate('/team-overview')
     },
-   
-   
+    {
+      title: 'Tickets',
+      icon: <FaTicketAlt className="w-8 h-8" />,
+      description: 'Manage and track team tickets',
+      color: 'bg-red-500',
+      hoverColor: 'hover:bg-red-600',
+      onClick: () => navigate('/tickets')
+    },
     {
       title: 'Org Chart',
       icon: <FaSitemap className="w-8 h-8" />,
@@ -240,79 +246,121 @@ const ManagerDashboard = () => {
   }
  
   return (
-    <div className="min-h-screen bg-gray-50 py-6 px-4 sm:px-6 lg:px-8">
-      {/* Header and Name Card */}
-      <div className="flex justify-between items-center mb-8">
-        <div className="flex items-center">
-          <h1 className="text-3xl font-bold text-gray-900 mr-4">Dashboard</h1>
-          <span className="bg-blue-100 text-blue-600 px-4 py-1 rounded-full text-lg font-medium">Team Lead View</span>
-        </div>
-        <div className="flex items-center space-x-4 relative">
-          {/* Notification Bell */}
-          <div className="relative">
-            <button className="relative" onClick={handleBellClick}>
-              <FaBell className="w-7 h-7 text-gray-700" />
-              {notifications.length > 0 && (
-                <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
-              )}
-            </button>
-            {/* Notification Dropdown - now positioned below bell */}
-            {showNotifications && (
-              <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
-                <div className="flex items-center justify-between p-4 border-b font-semibold text-gray-700">
-                  <span>Notifications</span>
-                  <div className="flex items-center space-x-2">
-                    <button onClick={() => setShowNotifications(false)} className="p-1 hover:bg-gray-200 rounded-full" title="Hide">
-                      <FaChevronDown className="w-4 h-4" />
-                    </button>
-                    <button onClick={clearNotifications} className="p-1 hover:bg-gray-200 rounded-full" title="Clear All">
-                      <FaTimes className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-                {notifications.length === 0 ? (
-                  <div className="p-4 text-gray-500">No new notifications</div>
-                ) : (
-                  notifications.map((notif, idx) => (
-                    <div key={idx} className="p-4 border-b last:border-b-0 hover:bg-gray-50">
-                      <div className="font-medium text-gray-800">{notif.title}</div>
-                      <div className="text-sm text-gray-500">{notif.time}</div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header with gradient background */}
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-4">
+              <h1 className="text-3xl font-bold">Dashboard</h1>
+              <span className="bg-white/20 px-4 py-1 rounded-full text-sm font-medium">Team Lead View</span>
+            </div>
+            <div className="flex items-center space-x-4">
+              {/* Notification Bell */}
+              <div className="relative">
+                <button className="relative text-white hover:text-gray-200 transition-colors" onClick={handleBellClick}>
+                  <FaBell className="w-7 h-7" />
+                  {notifications.length > 0 && (
+                    <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-indigo-700"></span>
+                  )}
+                </button>
+                {/* Notification Dropdown */}
+                {showNotifications && (
+                  <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
+                    <div className="flex items-center justify-between p-4 border-b font-semibold text-gray-700">
+                      <span>Notifications</span>
+                      <div className="flex items-center space-x-2">
+                        <button onClick={() => setShowNotifications(false)} className="p-1 hover:bg-gray-200 rounded-full" title="Hide">
+                          <FaChevronDown className="w-4 h-4" />
+                        </button>
+                        <button onClick={clearNotifications} className="p-1 hover:bg-gray-200 rounded-full" title="Clear All">
+                          <FaTimes className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
-                  ))
+                    {notifications.length === 0 ? (
+                      <div className="p-4 text-gray-500">No new notifications</div>
+                    ) : (
+                      notifications.map((notif, idx) => (
+                        <div key={idx} className="p-4 border-b last:border-b-0 hover:bg-gray-50">
+                          <div className="font-medium text-gray-800">{notif.title}</div>
+                          <div className="text-sm text-gray-500">{notif.time}</div>
+                        </div>
+                      ))
+                    )}
+                  </div>
                 )}
               </div>
-            )}
-          </div>
-          {/* Profile Card */}
-          <div className="relative">
-            <div className="flex items-center space-x-3 cursor-pointer" onClick={handleProfileClick}>
-              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white text-xl font-bold">
-                {userData?.firstName?.[0]}{userData?.lastName?.[0]}
-              </div>
-              <div>
-                <p className="text-lg font-semibold text-gray-900">{userData?.firstName} {userData?.lastName}</p>
-                <p className="text-sm text-purple-500 font-medium">Team Lead</p>
+              {/* Profile Section */}
+              <div className="relative">
+                <div className="flex items-center space-x-3 cursor-pointer" onClick={handleProfileClick}>
+                  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white text-xl font-bold">
+                    {userData?.firstName?.[0]}{userData?.lastName?.[0]}
+                  </div>
+                  <div>
+                    <p className="text-lg font-semibold">{userData?.firstName} {userData?.lastName}</p>
+                    <p className="text-sm text-white/80">Team Lead</p>
+                  </div>
+                </div>
+                {showProfileDropdown && (
+                  <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-xl z-50">
+                    <button onClick={handleLogout} className="block w-full text-left px-4 py-3 text-red-600 hover:bg-gray-100 rounded-b-lg">Logout</button>
+                  </div>
+                )}
               </div>
             </div>
-            {/* Profile Dropdown */}
-            {showProfileDropdown && (
-              <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg z-50">
-                <button onClick={handleLogout} className="block w-full text-left px-4 py-3 text-red-600 hover:bg-gray-100 rounded-b-lg">Logout</button>
-              </div>
-            )}
           </div>
         </div>
       </div>
-      <div className="max-w-7xl mx-auto">
-        {/* Team Lead Features Section */}
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Quick Stats Section */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Team Members</p>
+                <p className="text-2xl font-bold text-gray-900">{teamMembersCount}</p>
+              </div>
+              <div className="p-3 bg-indigo-100 rounded-lg">
+                <FaUsers className="w-6 h-6 text-indigo-600" />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Active Tickets</p>
+                <p className="text-2xl font-bold text-gray-900">0</p>
+              </div>
+              <div className="p-3 bg-red-100 rounded-lg">
+                <FaTicketAlt className="w-6 h-6 text-red-600" />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Team Meetings</p>
+                <p className="text-2xl font-bold text-gray-900">0</p>
+              </div>
+              <div className="p-3 bg-blue-100 rounded-lg">
+                <FaCalendarAlt className="w-6 h-6 text-blue-600" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Team Management Section */}
         <div className="mb-8">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Team Management</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-6">Team Management</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {teamLeadTiles.map((tile, index) => (
               <div
                 key={index}
                 onClick={tile.onClick}
-                className={`${tile.color} ${tile.hoverColor} rounded-lg shadow-lg p-6 text-white transform transition-all duration-300 hover:scale-105 cursor-pointer`}
+                className={`${tile.color} ${tile.hoverColor} rounded-xl shadow-lg p-6 text-white transform transition-all duration-300 hover:scale-105 cursor-pointer border border-white/10`}
               >
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold">{tile.title}</h2>
@@ -323,71 +371,34 @@ const ManagerDashboard = () => {
             ))}
           </div>
         </div>
- 
-        {/* Employee Features Section */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Employee Features</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            {employeeTiles.map((tile, index) => (
-              <div
-                key={index}
-                onClick={tile.onClick}
-                className={`${tile.color} ${tile.hoverColor} rounded-lg shadow-lg p-6 text-white transform transition-all duration-300 hover:scale-105 cursor-pointer`}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold">{tile.title}</h2>
-                  {tile.icon}
-                </div>
-                <p className="text-sm opacity-90">{tile.description}</p>
-              </div>
-            ))}
+
+        {/* Quick Actions Section */}
+        <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <button
+              onClick={() => window.open('msteams://teams.microsoft.com/calendar', '_blank')}
+              className="flex items-center justify-center gap-2 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <FaCalendarAlt className="w-5 h-5" />
+              Schedule Team Meeting
+            </button>
+            <button
+              onClick={() => navigate('/tickets')}
+              className="flex items-center justify-center gap-2 bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 transition-colors"
+            >
+              <FaTicketAlt className="w-5 h-5" />
+               Tickets
+            </button>
+            <button
+              onClick={() => navigate('/team-overview')}
+              className="flex items-center justify-center gap-2 bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              <FaUsers className="w-5 h-5" />
+              View Team Members
+            </button>
           </div>
         </div>
- 
-        {/* Team Overview Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Team Overview</h2>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">Total Team Members</span>
-                <span className="font-semibold">{teamMembersCount}</span>
-              </div>
-            </div>
-          </div>
- 
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
-            <div className="space-y-3">
-              <button
-                onClick={() => window.open('msteams://teams.microsoft.com/calendar', '_blank')}
-                className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-              >
-                <FaCalendarAlt className="w-5 h-5" />
-                Schedule Team Meeting
-              </button>
-            </div>
-          </div>
-        </div>
- 
-        {/* Recent Activities Section */}
-        {/* <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Recent Activities</h2>
-          <div className="space-y-4">
-            <div className="border-l-4 border-blue-500 pl-4 py-2">
-              <p className="text-gray-800">Team meeting scheduled for tomorrow</p>
-              <p className="text-sm text-gray-500">2 hours ago</p>
-            </div>
-            <div className="border-l-4 border-green-500 pl-4 py-2">
-              <p className="text-gray-800">Project milestone completed</p>
-              <p className="text-sm text-gray-500">1 day ago</p>
-            </div>
-            <div className="border-l-4 border-purple-500 pl-4 py-2">
-              <p className="text-gray-800">New team member onboarded</p>
-              <p className="text-sm text-gray-500">2 days ago</p>
-            </div>
-          </div>
-        </div> */}
       </div>
     </div>
   );

@@ -37,6 +37,8 @@ import EmpDocs from '../pages/document/Emp-Docs';
 import EmpPlayslips from '../pages/document/Emp-Payslips';
 import Form16 from '../pages/document/Form16';
 import CompanyPolicies from '../pages/document/CompaniesPolicies';
+import Tickets from '../pages/Tickets';
+import EmployeeTickets from '../pages/EmployeeTickets';
 
 import Layout from '../layout/Layout';
 import AdminRouter from '../../admin/routes/AdminRouter';
@@ -105,6 +107,8 @@ const Routers = () => {
         <Route path="emp-payslips" element={<EmpPlayslips />} />
         <Route path="form16" element={<Form16 />} />
         <Route path="company-policies" element={<CompanyPolicies />} />
+        <Route path="tickets" element={<Tickets />} />
+        <Route path="my-tickets" element={<EmployeeTickets />} />
       </Route>
 
       {/* Default Route - Redirect to Login */}

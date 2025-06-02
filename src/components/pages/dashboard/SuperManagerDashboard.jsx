@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { getAuth } from 'firebase/auth';
+import { getAuth, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../firebase';
-import { FaClipboardList, FaCalendarAlt, FaClock, FaBook, FaUsers, FaChartLine, FaTasks, FaSitemap } from 'react-icons/fa';
+import { FaClipboardList, FaCalendarAlt, FaClock, FaBook, FaUsers, FaChartLine, FaTasks, FaSitemap, FaBell, FaTimes, FaChevronDown } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
  
 const SuperManagerDashboard = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const navigate = useNavigate();
  
   useEffect(() => {
@@ -27,17 +28,44 @@ const SuperManagerDashboard = () => {
     fetchUserData();
   }, []);
  
+  const handleProfileClick = () => setShowProfileDropdown((prev) => !prev);
+  const handleLogout = async () => {
+    const auth = getAuth();
+    await signOut(auth);
+    navigate('/');
+  };
+ 
   if (loading) {
     return <div>Loading...</div>;
   }
  
   return (
     <div className="p-6">
-      <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">
-          Welcome, {userData?.firstName} {userData?.lastName}
-        </h1>
-        <p className="text-gray-600">Super Manager Dashboard</p>
+      {/* Header with Profile */}
+      <div className="flex justify-between items-center mb-6">
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">
+            Welcome, {userData?.firstName} {userData?.lastName}
+          </h1>
+          <p className="text-gray-600">Super Manager Dashboard</p>
+        </div>
+        <div className="relative">
+          <div className="flex items-center space-x-3 cursor-pointer" onClick={handleProfileClick}>
+            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center text-white text-xl font-bold">
+              {userData?.firstName?.[0]}{userData?.lastName?.[0]}
+            </div>
+            <div>
+              <p className="text-lg font-semibold text-gray-900">{userData?.firstName} {userData?.lastName}</p>
+              <p className="text-sm text-purple-500 font-medium">Super Manager</p>
+            </div>
+          </div>
+          {/* Profile Dropdown */}
+          {showProfileDropdown && (
+            <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg z-50">
+              <button onClick={handleLogout} className="block w-full text-left px-4 py-3 text-red-600 hover:bg-gray-100 rounded-b-lg">Logout</button>
+            </div>
+          )}
+        </div>
       </div>
  
       {/* Manager Features Section */}
