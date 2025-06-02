@@ -5,7 +5,7 @@ import { db } from '../../../firebase';
 import orgChartData from '../../../data/orgchart.json';
 import { useNavigate } from 'react-router-dom';
 import { FaClock, FaClipboardList, FaFileInvoiceDollar, FaBook } from 'react-icons/fa';
-
+ 
 const TeamOverview = () => {
   const [teamMembers, setTeamMembers] = useState([]);
   const [filteredMembers, setFilteredMembers] = useState([]);
@@ -22,7 +22,7 @@ const TeamOverview = () => {
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
-
+ 
   useEffect(() => {
     const fetchTeamMembers = async () => {
       const auth = getAuth();
@@ -134,13 +134,13 @@ const TeamOverview = () => {
  
     fetchTeamMembers();
   }, []);
-
+ 
   // Add search functionality
   useEffect(() => {
     if (searchQuery.trim() === '') {
       setFilteredMembers(teamMembers);
     } else {
-      const filtered = teamMembers.filter(member => 
+      const filtered = teamMembers.filter(member =>
         member.employeeName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         member.empId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         member.email?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -189,7 +189,7 @@ const TeamOverview = () => {
         ...doc.data()
       }));
       console.log("Fetched mock tests:", mockTests);
-
+ 
       // Fetch reimbursement requests
       const reimbursementsQuery = query(
         collection(db, "reimbursements"),
@@ -200,7 +200,7 @@ const TeamOverview = () => {
         id: doc.id,
         ...doc.data()
       }));
-
+ 
       setMemberData({
         timesheets,
         statusReports,
@@ -217,7 +217,7 @@ const TeamOverview = () => {
     // Navigate to the team member details page
     navigate(`/team-member/${member.empId}`, { state: { member } });
   };
-
+ 
   const closeModal = () => {
     setShowModal(false);
     setSelectedMember(null);
@@ -264,7 +264,7 @@ const TeamOverview = () => {
       alert('Error approving status report. Please try again.');
     }
   };
-
+ 
   const handleApproveReimbursement = async (reimbursementId) => {
     try {
       const reimbursementRef = doc(db, "reimbursements", reimbursementId);
@@ -273,19 +273,19 @@ const TeamOverview = () => {
         approvedAt: new Date(),
         approvedBy: getAuth().currentUser.uid
       });
-      
+     
       // Refresh the reimbursement data
       if (selectedMember) {
         fetchMemberData(selectedMember.empId);
       }
-      
+     
       alert('Reimbursement request approved successfully!');
     } catch (error) {
       console.error("Error approving reimbursement:", error);
       alert('Error approving reimbursement request. Please try again.');
     }
   };
-
+ 
   const handleRejectReimbursement = async (reimbursementId, comments) => {
     try {
       const reimbursementRef = doc(db, "reimbursements", reimbursementId);
@@ -295,19 +295,19 @@ const TeamOverview = () => {
         rejectedBy: getAuth().currentUser.uid,
         approverComments: comments
       });
-      
+     
       // Refresh the reimbursement data
       if (selectedMember) {
         fetchMemberData(selectedMember.empId);
       }
-      
+     
       alert('Reimbursement request rejected successfully!');
     } catch (error) {
       console.error("Error rejecting reimbursement:", error);
       alert('Error rejecting reimbursement request. Please try again.');
     }
   };
-
+ 
   const getDesignation = (member) => {
     // Check if the member has a role in the hierarchy
     if (member.role) {
@@ -319,7 +319,7 @@ const TeamOverview = () => {
     }
     return 'Employee';
   };
-
+ 
   const getCardColor = (member) => {
     const role = member.role?.toLowerCase();
     switch (role) {
@@ -333,7 +333,7 @@ const TeamOverview = () => {
         return 'from-orange-500 to-orange-600';
     }
   };
-
+ 
   const renderTabContent = () => {
     switch (activeTab) {
       case 'timesheets':
@@ -604,7 +604,7 @@ const TeamOverview = () => {
         return null;
     }
   };
-
+ 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -612,7 +612,7 @@ const TeamOverview = () => {
       </div>
     );
   }
-
+ 
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -623,7 +623,7 @@ const TeamOverview = () => {
       </div>
     );
   }
-
+ 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200">
       <div className="container mx-auto px-4 py-8">
@@ -658,7 +658,7 @@ const TeamOverview = () => {
             </div>
           </div>
         </div>
-        
+       
         {/* Team Members Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredMembers.map((member) => (
@@ -669,7 +669,7 @@ const TeamOverview = () => {
             >
               {/* Glossy effect overlay */}
               <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-transparent opacity-50 group-hover:opacity-70 transition-opacity"></div>
-              
+             
               <div className="relative z-10 h-full flex flex-col">
                 {/* Header Section */}
                 <div className={`p-4 bg-gradient-to-r ${getCardColor(member)} text-white`}>
@@ -689,7 +689,7 @@ const TeamOverview = () => {
                     </div>
                   </div>
                 </div>
-
+ 
                 {/* Content Section */}
                 <div className="flex-1 p-4">
                   <div className="space-y-3">
@@ -702,7 +702,7 @@ const TeamOverview = () => {
                         <p className="text-sm font-medium text-gray-800 truncate">{member.email}</p>
                       </div>
                     </div>
-
+ 
                     <div className="flex items-center space-x-3">
                       <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -714,7 +714,7 @@ const TeamOverview = () => {
                     </div>
                   </div>
                 </div>
-
+ 
                 {/* Footer Section */}
                 <div className="p-3 bg-gray-50 border-t border-gray-100">
                   <div className="flex justify-between items-center">
@@ -742,5 +742,6 @@ const TeamOverview = () => {
     </div>
   );
 };
-
+ 
 export default TeamOverview;
+ 

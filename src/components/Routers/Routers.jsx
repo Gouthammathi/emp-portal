@@ -2,17 +2,17 @@ import React from 'react';
 import { Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import { auth } from '../../firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
-
+ 
 import ProtectedRoute from '../ProtectedRoute/ProtectedRoute';
 import PublicRoute from '../ProtectedRoute/PublicRoute';
-
+ 
 import AccessDenied from '../pages/AccessDenied';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
 import CheckEmail from '../pages/CheckEmail';
 import SetNewPassword from '../pages/SetNewPassword';
 import ForgetPassword from '../pages/ForgetPassword';
-
+ 
 import Dashboard from '../pages/Dashboard';
 import Moduleselection from '../pages/Mocktest/Moduleselection';
 import Testins from '../pages/Mocktest/Testins';
@@ -27,6 +27,7 @@ import Org from '../pages/Org';
 import ReimbursementRequest from '../pages/ReimbursementRequest';
 import TeamMemberDetails from '../pages/dashboard/TeamMemberDetails';
 import TeamOverview from '../pages/dashboard/TeamOverview';
+import SuperManagerTeamOverview from '../pages/dashboard/SuperManagerTeamOverview';
 import Engage from '../pages/Engage';
 import Payslip from '../pages/salary/Payslips';
 import ITStatement from '../pages/salary/ItStatemnet';
@@ -37,25 +38,23 @@ import EmpDocs from '../pages/document/Emp-Docs';
 import EmpPlayslips from '../pages/document/Emp-Payslips';
 import Form16 from '../pages/document/Form16';
 import CompanyPolicies from '../pages/document/CompaniesPolicies';
-import Tickets from '../pages/Tickets';
-import EmployeeTickets from '../pages/EmployeeTickets';
-
+ 
 import Layout from '../layout/Layout';
 import AdminRouter from '../../admin/routes/AdminRouter';
-
+ 
 const UserLayoutWrapper = () => (
   <Layout>
     <Outlet />
   </Layout>
 );
-
+ 
 const Routers = () => {
   const [user, loading] = useAuthState(auth);
-
+ 
   if (loading) {
     return <div>Loading...</div>;
   }
-
+ 
   return (
     <Routes>
       {/* Public Routes */}
@@ -65,14 +64,14 @@ const Routers = () => {
       <Route path="/setnewpassword" element={<PublicRoute><SetNewPassword /></PublicRoute>} />
       <Route path="/forget-password" element={<PublicRoute><ForgetPassword /></PublicRoute>} />
       <Route path="/access-denied" element={<AccessDenied />} />
-
+ 
       {/* Admin Routes */}
       <Route path="/admin/*" element={
         <ProtectedRoute allowedRoles={['admin']}>
           <AdminRouter />
         </ProtectedRoute>
       } />
-
+ 
       {/* Employee / Manager / HR Routes */}
       <Route
         path="/"
@@ -102,21 +101,21 @@ const Routers = () => {
         <Route path="reimbursement" element={<ReimbursementRequest />} />
         <Route path="team-member/:empId" element={<TeamMemberDetails />} />
         <Route path="team-overview" element={<TeamOverview />} />
+        <Route path="supermanager-team-overview" element={<SuperManagerTeamOverview />} />
         <Route path="document-center" element={<DocumentCenter />} />
         <Route path="emp-docs" element={<EmpDocs />} />
         <Route path="emp-payslips" element={<EmpPlayslips />} />
         <Route path="form16" element={<Form16 />} />
         <Route path="company-policies" element={<CompanyPolicies />} />
-        <Route path="tickets" element={<Tickets />} />
-        <Route path="my-tickets" element={<EmployeeTickets />} />
       </Route>
-
+ 
       {/* Default Route - Redirect to Login */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 };
-
+ 
 export default Routers;
+ 
  
  
