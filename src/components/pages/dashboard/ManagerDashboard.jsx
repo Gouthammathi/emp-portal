@@ -4,7 +4,6 @@ import { doc, getDoc, collection, query, where, getDocs, onSnapshot } from 'fire
 import { db } from '../../../firebase';
 import { FaClipboardList, FaCalendarAlt, FaClock, FaBook, FaUsers, FaChartLine, FaTasks, FaSitemap, FaBell, FaTimes, FaChevronDown, FaTicketAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import OrgChartPage from '../Org';
 import TeamOverview from './TeamOverview';
 import orgChartData from '../../../data/orgchart.json';
 
@@ -218,14 +217,14 @@ const ManagerDashboard = () => {
       hoverColor: 'hover:bg-red-600',
       onClick: () => navigate('/tickets')
     },
-    {
-      title: 'Org Chart',
-      icon: <FaSitemap className="w-8 h-8" />,
-      description: 'View the organization structure',
-      color: 'bg-orange-500',
-      hoverColor: 'hover:bg-orange-600',
-      onClick: () => navigate('/org')
-    },
+    // {
+    //   title: 'Org Chart',
+    //   icon: <FaSitemap className="w-8 h-8" />,
+    //   description: 'View the organization structure',
+    //   color: 'bg-orange-500',
+    //   hoverColor: 'hover:bg-orange-600',
+    //   onClick: () => navigate('/org')
+    // },
   ];
  
   // Notification bell click handler

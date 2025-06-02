@@ -59,6 +59,7 @@ const AdminSidebar = () => {
     hr: [
       { path: '/admin/A-employees', name: 'Employees', icon: <FaUsers /> },
       { path: '/admin/A-employees/import', name: 'Add Employees', icon: <FaUpload /> },
+      { name: 'Team Management', path: '/admin/A-teams', icon: <Users2 size={20} /> },
       { path: '/admin/A-org-chart', name: 'Org Chart', icon: <FaSitemap /> },
       { path: '/admin/A-attendence', name: 'Attendance', icon: <FaCalendarAlt /> },
       { path: '/admin/A-documents', name: 'Documents', icon: <FaFileAlt /> },
@@ -66,7 +67,6 @@ const AdminSidebar = () => {
       { name: 'Training Programs', path: '/admin/training', icon: <GraduationCap size={20} /> },
       { name: 'Employee Documents', path: '/admin/employee-documents', icon: <FolderOpen size={20} /> },
       { name: 'Recruitment', path: '/admin/recruitment', icon: <UserPlus size={20} /> },
-      { name: 'Team Management', path: '/admin/teams', icon: <Users2 size={20} /> }
     ],
     finance: [
       { name: 'Financial Reports', path: '/admin/financial-reports', icon: <FileSpreadsheet size={20} /> },

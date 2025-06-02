@@ -25,6 +25,81 @@ const Tickets = () => {
   const [userData, setUserData] = useState(null);
   const [userRole, setUserRole] = useState(null);
 
+  // Sample tickets data
+  const sampleTickets = [
+    // New Tickets
+    {
+      id: '1',
+      title: 'Implement User Authentication',
+      description: 'Set up secure user authentication system with JWT tokens and refresh token mechanism',
+      priority: 'high',
+      status: 'new',
+      dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      assignedBy: 'John Doe',
+      createdAt: new Date().toISOString(),
+      assignedTo: null
+    },
+    {
+      id: '2',
+      title: 'Design System Implementation',
+      description: 'Create and implement a consistent design system across the application',
+      priority: 'medium',
+      status: 'new',
+      dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+      assignedBy: 'Jane Smith',
+      createdAt: new Date().toISOString(),
+      assignedTo: null
+    },
+    // Ongoing Tickets
+    {
+      id: '3',
+      title: 'Dashboard Performance Optimization',
+      description: 'Optimize dashboard loading time and implement lazy loading for better performance',
+      priority: 'high',
+      status: 'ongoing',
+      dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+      assignedBy: 'Mike Johnson',
+      createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+      assignedTo: 'emp100'
+    },
+    {
+      id: '4',
+      title: 'API Integration',
+      description: 'Integrate third-party API for payment processing and implement error handling',
+      priority: 'medium',
+      status: 'ongoing',
+      dueDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
+      assignedBy: 'Sarah Wilson',
+      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+      assignedTo: 'emp101'
+    },
+    // Closed Tickets
+    {
+      id: '5',
+      title: 'Bug Fix: Login Page',
+      description: 'Fix authentication issues on the login page and implement proper error messages',
+      priority: 'high',
+      status: 'closed',
+      dueDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+      assignedBy: 'Alex Brown',
+      createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+      closedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+      assignedTo: 'emp102'
+    },
+    {
+      id: '6',
+      title: 'Database Migration',
+      description: 'Migrate existing data to new database schema and update related queries',
+      priority: 'medium',
+      status: 'closed',
+      dueDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+      assignedBy: 'Emily Davis',
+      createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
+      closedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+      assignedTo: 'emp103'
+    }
+  ];
+
   useEffect(() => {
     const fetchUserData = async () => {
       const auth = getAuth();
@@ -66,35 +141,29 @@ const Tickets = () => {
     };
 
     const fetchTickets = async () => {
-      let ticketsQuery;
-      
-      // If user is an employee, only fetch their assigned tickets
-      if (userData?.role === 'employee') {
-        ticketsQuery = query(
-          collection(db, 'tickets'),
-          where('assignedTo', '==', userData.empId),
-          orderBy('createdAt', 'desc')
-        );
-      } else {
-        // For team leads and managers, fetch all tickets
-        ticketsQuery = query(
-          collection(db, 'tickets'),
-          orderBy('createdAt', 'desc')
-        );
+      try {
+        // For demo purposes, we'll use the sample tickets
+        setTickets(sampleTickets);
+        
+        // Uncomment below code when ready to use real data
+        // const ticketsRef = collection(db, 'tickets');
+        // const q = query(ticketsRef);
+        // const querySnapshot = await getDocs(q);
+        // const ticketsData = querySnapshot.docs.map(doc => ({
+        //   id: doc.id,
+        //   ...doc.data()
+        // }));
+        // setTickets(ticketsData);
+      } catch (error) {
+        console.error('Error fetching tickets:', error);
+      } finally {
+        setLoading(false);
       }
-
-      const snapshot = await getDocs(ticketsQuery);
-      const ticketList = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setTickets(ticketList);
-      setLoading(false);
     };
 
     fetchUserData();
     fetchTickets();
-  }, [userData]);
+  }, []);
 
   const handleCreateTicket = async (e) => {
     e.preventDefault();
