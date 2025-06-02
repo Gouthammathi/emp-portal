@@ -12,6 +12,7 @@ import Register from '../pages/Register';
 import CheckEmail from '../pages/CheckEmail';
 import SetNewPassword from '../pages/SetNewPassword';
 import ForgetPassword from '../pages/ForgetPassword';
+import ForgotPassword from '../pages/ForgotPassword';
 
 import Dashboard from '../pages/Dashboard';
 import Moduleselection from '../pages/Mocktest/Moduleselection';
@@ -39,9 +40,11 @@ import Form16 from '../pages/document/Form16';
 import CompanyPolicies from '../pages/document/CompaniesPolicies';
 import Tickets from '../pages/Tickets';
 import EmployeeTickets from '../pages/EmployeeTickets';
+import MyTickets from '../pages/MyTickets';
 
 import Layout from '../layout/Layout';
 import AdminRouter from '../../admin/routes/AdminRouter';
+import EmployeeRouter from '../../employee/routes/EmployeeRouter';
 
 const UserLayoutWrapper = () => (
   <Layout>
@@ -64,6 +67,7 @@ const Routers = () => {
       <Route path="/check-email" element={<PublicRoute><CheckEmail /></PublicRoute>} />
       <Route path="/setnewpassword" element={<PublicRoute><SetNewPassword /></PublicRoute>} />
       <Route path="/forget-password" element={<PublicRoute><ForgetPassword /></PublicRoute>} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/access-denied" element={<AccessDenied />} />
 
       {/* Admin Routes */}
@@ -110,6 +114,10 @@ const Routers = () => {
         <Route path="tickets" element={<Tickets />} />
         <Route path="my-tickets" element={<EmployeeTickets />} />
       </Route>
+
+      {/* Protected Routes */}
+      <Route path="/employee/*" element={<EmployeeRouter />} />
+      <Route path="/my-tickets" element={<MyTickets />} />
 
       {/* Default Route - Redirect to Login */}
       <Route path="*" element={<Navigate to="/login" replace />} />
