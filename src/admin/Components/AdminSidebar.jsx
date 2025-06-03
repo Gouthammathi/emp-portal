@@ -35,7 +35,8 @@ import {
   GraduationCap,
   Upload
 } from 'lucide-react';
-import { FaUsers, FaUpload, FaSitemap, FaCalendarAlt, FaFileAlt } from 'react-icons/fa';
+import { FaUsers, FaUpload, FaSitemap, FaCalendarAlt, FaFileAlt, FaHome, FaUserPlus, FaBuilding, FaTicketAlt } from 'react-icons/fa';
+import { NavLink } from 'react-router-dom';
 
 const AdminSidebar = () => {
   const location = useLocation();
@@ -67,6 +68,7 @@ const AdminSidebar = () => {
       { name: 'Training Programs', path: '/admin/training', icon: <GraduationCap size={20} /> },
       { name: 'Employee Documents', path: '/admin/employee-documents', icon: <FolderOpen size={20} /> },
       { name: 'Recruitment', path: '/admin/recruitment', icon: <UserPlus size={20} /> },
+      { name: 'Client Management', path: '/admin/A-clients', icon: <FaBuilding /> },
     ],
     finance: [
       { name: 'Financial Reports', path: '/admin/financial-reports', icon: <FileSpreadsheet size={20} /> },

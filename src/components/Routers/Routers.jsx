@@ -20,6 +20,7 @@ import Test from '../pages/Mocktest/Test';
 import EWMTest from '../pages/Mocktest/Tests/EWMTest';
 import TestResult from '../pages/Mocktest/TestResult';
 import Certificate from '../pages/Mocktest/Certificate';
+
 import Timesheet from '../pages/Timesheet/Timesheet';
 import Holidaycal from '../pages/leave/holcal';
 import Dailys from '../pages/dailystatus/daily';
@@ -27,22 +28,28 @@ import Org from '../pages/Org';
 import ReimbursementRequest from '../pages/ReimbursementRequest';
 import TeamMemberDetails from '../pages/dashboard/TeamMemberDetails';
 import TeamOverview from '../pages/dashboard/TeamOverview';
+import SuperManagerTeamOverview from '../pages/dashboard/SuperManagerTeamOverview';
 import Engage from '../pages/Engage';
+
 import Payslip from '../pages/salary/Payslips';
 import ITStatement from '../pages/salary/ItStatemnet';
+
 import LeaveApply from '../pages/leave/LeaveApply';
 import LeaveBalances from '../pages/leave/LeaveBalances';
+
 import DocumentCenter from '../pages/document/DocumentCenter';
 import EmpDocs from '../pages/document/Emp-Docs';
 import EmpPlayslips from '../pages/document/Emp-Payslips';
 import Form16 from '../pages/document/Form16';
 import CompanyPolicies from '../pages/document/CompaniesPolicies';
+
 import Tickets from '../pages/Tickets';
 import EmployeeTickets from '../pages/EmployeeTickets';
+import ConferenceHall from '../pages/confhall/ConferenceHall';
 
 import Layout from '../layout/Layout';
 import AdminRouter from '../../admin/routes/AdminRouter';
-import ConferenceHall from "../pages/confhall/ConferenceHall"
+
 const UserLayoutWrapper = () => (
   <Layout>
     <Outlet />
@@ -52,9 +59,7 @@ const UserLayoutWrapper = () => (
 const Routers = () => {
   const [user, loading] = useAuthState(auth);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  if (loading) return <div>Loading...</div>;
 
   return (
     <Routes>
@@ -73,15 +78,12 @@ const Routers = () => {
         </ProtectedRoute>
       } />
 
-      {/* Employee / Manager / HR Routes */}
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute allowedRoles={['employee', 'manager', 'hr', 'supermanager', 'tl']}>
-            <UserLayoutWrapper />
-          </ProtectedRoute>
-        }
-      >
+      {/* Employee / Manager / HR / TL / Supermanager */}
+      <Route path="/" element={
+        <ProtectedRoute allowedRoles={['employee', 'manager', 'hr', 'supermanager', 'tl']}>
+          <UserLayoutWrapper />
+        </ProtectedRoute>
+      }>
         <Route index element={<Dashboard />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="engage" element={<Engage />} />
@@ -102,6 +104,7 @@ const Routers = () => {
         <Route path="reimbursement" element={<ReimbursementRequest />} />
         <Route path="team-member/:empId" element={<TeamMemberDetails />} />
         <Route path="team-overview" element={<TeamOverview />} />
+        <Route path="supermanager-team-overview" element={<SuperManagerTeamOverview />} />
         <Route path="document-center" element={<DocumentCenter />} />
         <Route path="emp-docs" element={<EmpDocs />} />
         <Route path="emp-payslips" element={<EmpPlayslips />} />
@@ -112,12 +115,10 @@ const Routers = () => {
         <Route path="conference-hall" element={<ConferenceHall />} />
       </Route>
 
-      {/* Default Route - Redirect to Login */}
+      {/* Catch-All Route */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 };
 
 export default Routers;
- 
- 

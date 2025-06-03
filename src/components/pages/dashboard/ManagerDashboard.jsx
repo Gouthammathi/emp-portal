@@ -19,6 +19,7 @@ const ManagerDashboard = () => {
   const [notifications, setNotifications] = useState(globalNotifications);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [assignedProjects, setAssignedProjects] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -73,10 +74,10 @@ const ManagerDashboard = () => {
         type,
         id: docData.id || docData.empId || Math.random().toString(36)
       };
-      
+     
       globalNotifications = [newNotification, ...globalNotifications];
       setNotifications(globalNotifications);
-      
+     
       // Notify all listeners
       notificationListeners.forEach(listener => listener(globalNotifications));
     };
@@ -143,6 +144,22 @@ const ManagerDashboard = () => {
       );
       unsubscribes.push(reimbursementUnsub);
     } catch { /* ignore if collection doesn't exist */ }
+
+    // Fetch assigned projects
+    const projectsQuery = query(
+      collection(db, 'projects'),
+      where('teamLeadId', '==', userData.empId)
+    );
+
+    const projectsUnsub = onSnapshot(projectsQuery, (snapshot) => {
+      const projectList = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setAssignedProjects(projectList);
+      console.log('Manager Dashboard: Fetched Assigned Projects', projectList);
+    });
+    unsubscribes.push(projectsUnsub);
 
     // Add this component as a listener
     const listener = (newNotifications) => setNotifications(newNotifications);
@@ -299,6 +316,9 @@ const ManagerDashboard = () => {
                   <div>
                     <p className="text-lg font-semibold">{userData?.firstName} {userData?.lastName}</p>
                     <p className="text-sm text-white/80">Team Lead</p>
+                    {assignedProjects.length > 0 && assignedProjects[0]?.name && (
+                      <p className="text-xs text-white/80 mt-1">Project: {assignedProjects[0].name}</p>
+                    )}
                   </div>
                 </div>
                 {showProfileDropdown && (
@@ -398,9 +418,52 @@ const ManagerDashboard = () => {
             </button>
           </div>
         </div>
+
+        {/* Assigned Projects Section */}
+        <div className="mt-8 bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">Assigned Projects</h2>
+          {assignedProjects.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {assignedProjects.map((project) => (
+                <div key={project.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-lg font-medium text-gray-900">{project.name}</h3>
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                      project.status === 'active' ? 'bg-green-100 text-green-800' :
+                      project.status === 'completed' ? 'bg-blue-100 text-blue-800' :
+                      'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {project.status}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-4">{project.description}</p>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">Start Date:</span>
+                      <span className="text-gray-900">{new Date(project.startDate).toLocaleDateString()}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">Due Date:</span>
+                      <span className="text-gray-900">{new Date(project.dueDate).toLocaleDateString()}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">Team Members:</span>
+                      <span className="text-gray-900">{project.teamMembers?.length || 0}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500">No projects assigned yet</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 };
  
 export default ManagerDashboard;
+
