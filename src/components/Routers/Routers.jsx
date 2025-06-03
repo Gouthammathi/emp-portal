@@ -112,7 +112,7 @@ const Routers = () => {
         <Route path="company-policies" element={<CompanyPolicies />} />
         <Route path="tickets" element={<Tickets />} />
         <Route path="my-tickets" element={<EmployeeTickets />} />
-        <Route path="conference-hall" element={<ConferenceHall />} />
+        <Route path="conferencehall" element={<ConferenceHall />} />
       </Route>
 
       {/* Catch-All Route */}

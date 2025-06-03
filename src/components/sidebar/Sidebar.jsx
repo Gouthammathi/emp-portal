@@ -6,7 +6,7 @@ import {
   FaChevronUp, FaUmbrellaBeach, FaUsers, FaUserPlus, FaUserCog,
   FaChartLine, FaBuilding, FaFileAlt, FaCalendarAlt, FaTicketAlt
 } from 'react-icons/fa';
- 
+import { GiVideoConference } from "react-icons/gi";
 const Sidebar = ({ role }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -32,6 +32,11 @@ const Sidebar = ({ role }) => {
       icon: <FaSitemap className="text-emerald-500 group-hover:text-emerald-600" />,
       label: "People",
       path: "/org"
+    },
+    {
+      icon: <GiVideoConference className="text-pink-500 group-hover:text-pink-600" />,
+      label: "Conference Hall",
+      path: "/conferencehall"
     }
   ];
  
@@ -61,7 +66,8 @@ const Sidebar = ({ role }) => {
       icon: <FaTicketAlt className="text-blue-500 group-hover:text-blue-600" />,
       label: "My Tickets",
       path: "/my-tickets"
-    }
+    },
+ 
   ];
  
   // Menu items specific to HR
@@ -85,7 +91,8 @@ const Sidebar = ({ role }) => {
       icon: <FaChartLine className="text-orange-500 group-hover:text-orange-600" />,
       label: "Reports",
       path: "/hr/reports"
-    }
+    },
+
   ];
  
   // Menu items specific to Super Manager
@@ -109,7 +116,8 @@ const Sidebar = ({ role }) => {
       icon: <FaFileAlt className="text-orange-500 group-hover:text-orange-600" />,
       label: "Reports",
       path: "/manager/reports"
-    }
+    },
+
   ];
  
   // Get menu items based on role
@@ -293,5 +301,4 @@ const SidebarDropdown = ({ icon, label, isOpen, onToggle, items, handleNavigate,
 );
  
 export default Sidebar;
- 
  

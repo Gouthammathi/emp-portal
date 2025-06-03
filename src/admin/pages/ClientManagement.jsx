@@ -12,6 +12,7 @@ const ClientManagement = () => {
   const [selectedClient, setSelectedClient] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [teamLeads, setTeamLeads] = useState([]);
+  const [loadingTeamLeads, setLoadingTeamLeads] = useState(true);
   const [filterStatus, setFilterStatus] = useState('all');
 
   const [newClient, setNewClient] = useState({
@@ -36,9 +37,11 @@ const ClientManagement = () => {
 
   const fetchTeamLeads = async () => {
     try {
+      setLoadingTeamLeads(true);
       const teamLeadsQuery = query(
         collection(db, 'users'),
-        where('role', '==', 'manager')
+        where('role', '==', 'team lead'),
+        where('status', '==', 'active')
       );
       const snapshot = await getDocs(teamLeadsQuery);
       const leads = snapshot.docs.map(doc => ({
@@ -46,9 +49,11 @@ const ClientManagement = () => {
         ...doc.data()
       }));
       setTeamLeads(leads);
+      setLoadingTeamLeads(false);
     } catch (error) {
       console.error('Error fetching team leads:', error);
       toast.error('Failed to load team leads');
+      setLoadingTeamLeads(false);
     }
   };
 
@@ -72,11 +77,20 @@ const ClientManagement = () => {
   const handleAddClient = async (e) => {
     e.preventDefault();
     try {
+      // Validate team lead assignment
+      if (!newClient.assignedTeamLead) {
+        toast.warning('Please assign a team lead to the client');
+        return;
+      }
+
       // Generate a unique client ID
       const clientId = `CLI${Date.now().toString().slice(-6)}`;
+      const selectedTeamLead = teamLeads.find(lead => lead.id === newClient.assignedTeamLead);
+      
       const clientData = {
         ...newClient,
         clientId,
+        teamLeadName: selectedTeamLead ? `${selectedTeamLead.firstName} ${selectedTeamLead.lastName}` : '',
         createdAt: new Date().toISOString()
       };
 
@@ -107,9 +121,17 @@ const ClientManagement = () => {
   const handleEditClient = async (e) => {
     e.preventDefault();
     try {
+      // Validate team lead assignment
+      if (!selectedClient.assignedTeamLead) {
+        toast.warning('Please assign a team lead to the client');
+        return;
+      }
+
+      const selectedTeamLead = teamLeads.find(lead => lead.id === selectedClient.assignedTeamLead);
       const clientRef = doc(db, 'clients', selectedClient.id);
       await updateDoc(clientRef, {
         ...selectedClient,
+        teamLeadName: selectedTeamLead ? `${selectedTeamLead.firstName} ${selectedTeamLead.lastName}` : '',
         updatedAt: new Date().toISOString()
       });
       toast.success('Client updated successfully');
@@ -205,7 +227,9 @@ const ClientManagement = () => {
                   <div className="text-sm text-gray-500">{client.email}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {teamLeads.find(lead => lead.id === client.assignedTeamLead)?.name || 'Not Assigned'}
+                  {teamLeads.find(lead => lead.id === client.assignedTeamLead)?.firstName 
+                    ? `${teamLeads.find(lead => lead.id === client.assignedTeamLead)?.firstName} ${teamLeads.find(lead => lead.id === client.assignedTeamLead)?.lastName}`
+                    : 'Not Assigned'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -320,14 +344,24 @@ const ClientManagement = () => {
                     value={newClient.assignedTeamLead}
                     onChange={(e) => setNewClient({...newClient, assignedTeamLead: e.target.value})}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    required
                   >
                     <option value="">Select Team Lead</option>
-                    {teamLeads.map((lead) => (
-                      <option key={lead.id} value={lead.id}>
-                        {lead.name}
-                      </option>
-                    ))}
+                    {loadingTeamLeads ? (
+                      <option value="" disabled>Loading team leads...</option>
+                    ) : teamLeads.length === 0 ? (
+                      <option value="" disabled>No team leads available</option>
+                    ) : (
+                      teamLeads.map((lead) => (
+                        <option key={lead.id} value={lead.id}>
+                          {lead.firstName} {lead.lastName} - {lead.designation || 'Team Lead'}
+                        </option>
+                      ))
+                    )}
                   </select>
+                  {teamLeads.length === 0 && !loadingTeamLeads && (
+                    <p className="mt-1 text-sm text-red-600">Please add team leads before creating clients</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Status</label>
@@ -442,14 +476,24 @@ const ClientManagement = () => {
                     value={selectedClient.assignedTeamLead}
                     onChange={(e) => setSelectedClient({...selectedClient, assignedTeamLead: e.target.value})}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    required
                   >
                     <option value="">Select Team Lead</option>
-                    {teamLeads.map((lead) => (
-                      <option key={lead.id} value={lead.id}>
-                        {lead.name}
-                      </option>
-                    ))}
+                    {loadingTeamLeads ? (
+                      <option value="" disabled>Loading team leads...</option>
+                    ) : teamLeads.length === 0 ? (
+                      <option value="" disabled>No team leads available</option>
+                    ) : (
+                      teamLeads.map((lead) => (
+                        <option key={lead.id} value={lead.id}>
+                          {lead.firstName} {lead.lastName} - {lead.designation || 'Team Lead'}
+                        </option>
+                      ))
+                    )}
                   </select>
+                  {teamLeads.length === 0 && !loadingTeamLeads && (
+                    <p className="mt-1 text-sm text-red-600">Please add team leads before editing clients</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Status</label>
