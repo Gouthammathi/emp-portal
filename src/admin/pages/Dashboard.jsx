@@ -109,7 +109,7 @@ const Dashboard = () => {
         <div className="bg-white rounded-2xl shadow-sm p-6 mb-8 border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Welcome Back, Manager</h1>
+              <h1 className="text-3xl font-bold text-gray-900">Welcome Back, Admin</h1>
               <p className="mt-1 text-sm text-gray-500">Here's what's happening with your team today</p>
             </div>
             <div className="flex items-center space-x-4">

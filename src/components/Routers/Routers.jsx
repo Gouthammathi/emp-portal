@@ -42,7 +42,7 @@ import EmployeeTickets from '../pages/EmployeeTickets';
 
 import Layout from '../layout/Layout';
 import AdminRouter from '../../admin/routes/AdminRouter';
-
+import ConferenceHall from "../pages/confhall/ConferenceHall"
 const UserLayoutWrapper = () => (
   <Layout>
     <Outlet />
@@ -109,6 +109,7 @@ const Routers = () => {
         <Route path="company-policies" element={<CompanyPolicies />} />
         <Route path="tickets" element={<Tickets />} />
         <Route path="my-tickets" element={<EmployeeTickets />} />
+        <Route path="conference-hall" element={<ConferenceHall />} />
       </Route>
 
       {/* Default Route - Redirect to Login */}
