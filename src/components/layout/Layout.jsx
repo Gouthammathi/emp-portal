@@ -6,7 +6,6 @@ import Sidebar from '../sidebar/Sidebar';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
-import IdleTimeout from '../IdleTimeout';
  
 function Layout({ children }) {
   const location = useLocation();
@@ -41,39 +40,22 @@ function Layout({ children }) {
  
   // Define routes where the sidebar should be hidden
   const noSidebarRoutes = ['/login', '/signup', '/forgot-password'];
-  const isSidebarVisible = isAuthenticated && !noSidebarRoutes.includes(location.pathname);
+  const isSidebarVisible = isAuthenticated && !noSidebarRoutes.includes(location.pathname) && userRole !== 'client';
  
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* Header (fixed height assumed 64px) */}
-      <Header />
-      {isAuthenticated && <IdleTimeout />}
- 
-      {/* Main content wrapper (sidebar + page content) */}
-      <div className="flex flex-1 h-[calc(100vh-64px)] relative">
-        {/* Fixed Sidebar */}
-        {isSidebarVisible && (
-          <div className="w-64 fixed top-16 left-0 h-[calc(100vh-64px)] bg-white border-r z-10">
-            <Sidebar role={userRole} />
-          </div>
-        )}
- 
-        {/* Scrollable content with left margin if sidebar is present */}
-        <main
-          className={`flex-1 p-4 overflow-y-auto bg-gray-50 ${
-            isSidebarVisible ? 'ml-64' : ''
-          }`}
-          style={{ height: 'calc(100vh - 64px)' }}
-        >
+    <div className="min-h-screen bg-gray-50">
+      {isAuthenticated && userRole !== 'client' && <Header />}
+      <div className="flex">
+        {isSidebarVisible && <Sidebar role={userRole} />}
+        <main className={`flex-1 ${isSidebarVisible ? 'ml-64' : ''}`}>
           {children}
         </main>
       </div>
- 
-      {/* Footer */}
-      <Footer />
+      {isAuthenticated && userRole !== 'client' && <Footer />}
     </div>
   );
 }
  
 export default Layout;
+ 
  

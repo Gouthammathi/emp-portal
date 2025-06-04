@@ -44,8 +44,9 @@ import Form16 from '../pages/document/Form16';
 import CompanyPolicies from '../pages/document/CompaniesPolicies';
 
 import Tickets from '../pages/Tickets';
-import EmployeeTickets from '../pages/EmployeeTickets';
 import ConferenceHall from '../pages/confhall/ConferenceHall';
+import ClientForm from '../pages/Client/ClientForm';
+import EmployeeAssignedTickets from '../pages/EmployeeAssignedTickets';
 
 import Layout from '../layout/Layout';
 import AdminRouter from '../../admin/routes/AdminRouter';
@@ -57,7 +58,7 @@ const UserLayoutWrapper = () => (
 );
 
 const Routers = () => {
-  const [user, loading] = useAuthState(auth);
+  const [, loading] = useAuthState(auth);
 
   if (loading) return <div>Loading...</div>;
 
@@ -80,7 +81,7 @@ const Routers = () => {
 
       {/* Employee / Manager / HR / TL / Supermanager */}
       <Route path="/" element={
-        <ProtectedRoute allowedRoles={['employee', 'manager', 'hr', 'supermanager', 'tl']}>
+        <ProtectedRoute allowedRoles={['employee', 'manager', 'hr', 'supermanager', 'tl', 'client']}>
           <UserLayoutWrapper />
         </ProtectedRoute>
       }>
@@ -111,8 +112,9 @@ const Routers = () => {
         <Route path="form16" element={<Form16 />} />
         <Route path="company-policies" element={<CompanyPolicies />} />
         <Route path="tickets" element={<Tickets />} />
-        <Route path="my-tickets" element={<EmployeeTickets />} />
-        <Route path="conferencehall" element={<ConferenceHall />} />
+        <Route path="my-tickets" element={<EmployeeAssignedTickets />} />
+        <Route path="conference-hall" element={<ConferenceHall />} />
+        <Route path="clientform" element={<ClientForm />} />
       </Route>
 
       {/* Catch-All Route */}

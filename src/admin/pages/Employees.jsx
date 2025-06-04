@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, getDocs, doc, deleteDoc, updateDoc, query, where, getDocs as getFirestoreDocs, writeBatch, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
-import { FaEdit, FaTrash, FaSearch, FaPlus, FaUserEdit, FaFilter, FaTimes, FaTasks } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaSearch, FaPlus, FaUserEdit, FaFilter, FaTimes, FaTasks, FaUserMinus } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { Link, useNavigate } from 'react-router-dom';
  
@@ -367,6 +367,48 @@ const Employees = () => {
     }
   };
  
+  const handleRemoveTeamLead = async (employeeId) => {
+    try {
+      const batch = writeBatch(db);
+      
+      const selectedEmployeeDoc = await getDoc(doc(db, 'users', employeeId));
+      if (!selectedEmployeeDoc.exists()) {
+        throw new Error('Employee not found');
+      }
+      const selectedEmployeeData = selectedEmployeeDoc.data();
+      const employeeEmpId = selectedEmployeeData.empId;
+
+      // Find and update all projects where this employee is a team lead
+      const projectsQuery = query(collection(db, 'projects'), where('teamLeadId', '==', employeeEmpId));
+      const projectsSnapshot = await getDocs(projectsQuery);
+      
+      if (!projectsSnapshot.empty) {
+        projectsSnapshot.forEach((projectDoc) => {
+          batch.update(doc(db, 'projects', projectDoc.id), {
+            teamLeadId: null,
+            teamLeadName: null,
+            updatedAt: new Date().toISOString(),
+            updatedBy: 'admin'
+          });
+        });
+      }
+
+      // Also clear the assignedProject field for the employee in the users collection
+      batch.update(doc(db, 'users', employeeId), {
+        assignedProject: null,
+        updatedAt: new Date().toISOString()
+      });
+
+      await batch.commit();
+      toast.success('Team lead removed from projects successfully');
+      fetchEmployees();
+      fetchProjects();
+    } catch (error) {
+      console.error('Error removing team lead:', error);
+      toast.error('Failed to remove team lead from projects');
+    }
+  };
+ 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -613,6 +655,7 @@ const Employees = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end space-x-3">
                         {employee.role === 'manager' && (
+                          <>
                           <button
                             onClick={() => {
                               setSelectedEmployee(employee);
@@ -623,6 +666,14 @@ const Employees = () => {
                           >
                             <FaTasks className="h-5 w-5" />
                           </button>
+                            <button
+                              onClick={() => handleRemoveTeamLead(employee.id)}
+                              className="text-yellow-600 hover:text-yellow-900 transition-colors duration-200"
+                              title="Remove from Projects"
+                            >
+                              <FaUserMinus className="h-5 w-5" />
+                            </button>
+                          </>
                         )}
                         <button
                           onClick={() => handleEdit(employee)}

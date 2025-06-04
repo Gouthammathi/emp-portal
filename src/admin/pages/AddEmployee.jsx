@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, addDoc, writeBatch, doc } from 'firebase/firestore';
+import { collection, addDoc, writeBatch, doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { FaUser, FaEnvelope, FaPhone, FaBuilding, FaIdCard, FaBriefcase, FaSave, FaArrowLeft, FaFileUpload, FaGraduationCap, FaMoneyBillWave, FaUniversity, FaCalendarAlt, FaVenusMars, FaHeartbeat, FaExclamationTriangle, FaMapMarkerAlt } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { parseExcelFile } from '../../utils/excelParser';
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 
 const ROLE_OPTIONS = [
   { value: 'employee', label: 'Employee' },
@@ -23,6 +24,7 @@ const AddEmployee = () => {
     email: '',
     phone: '',
     empId: '',
+    password: '',
     department: '',
     designation: '',
     role: '',
@@ -131,8 +133,8 @@ const AddEmployee = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.role) {
-      toast.error('Please fill in all required fields');
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.role || !formData.password) {
+      toast.error('Please fill in all required fields, including password');
       return;
     }
 
@@ -142,20 +144,49 @@ const AddEmployee = () => {
       return;
     }
 
+    if (formData.password.length < 6) {
+      toast.error('Password must be at least 6 characters long.');
+      return;
+    }
+
     try {
       setLoading(true);
-      const batch = writeBatch(db);
 
-      const employeeRef = doc(collection(db, 'users'));
-      const newEmployeeData = {
-        ...formData,
+      const auth = getAuth();
+      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      const user = userCredential.user;
+
+      const employeeData = {
+        uid: user.uid,
+        email: formData.email,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        empId: formData.empId,
+        department: formData.department,
+        designation: formData.designation,
+        role: formData.role,
+        status: formData.status,
+        joiningDate: formData.joiningDate,
+        dateOfBirth: formData.dateOfBirth,
+        gender: formData.gender,
+        maritalStatus: formData.maritalStatus,
+        bloodGroup: formData.bloodGroup,
+        emergencyContact: formData.emergencyContact,
+        address: formData.address,
+        education: formData.education,
+        experience: formData.experience,
+        skills: formData.skills,
+        salary: formData.salary,
+        bankDetails: formData.bankDetails,
         createdAt: new Date().toISOString(),
         createdBy: 'admin',
         updatedAt: new Date().toISOString(),
         updatedBy: 'admin'
       };
 
-      batch.set(employeeRef, newEmployeeData);
+      await setDoc(doc(db, "users", user.uid), employeeData);
+
+      const batch = writeBatch(db);
 
       if (formData.role === 'manager') {
         const teamRef = doc(collection(db, 'teams'));
@@ -190,11 +221,69 @@ const AddEmployee = () => {
       });
 
       await batch.commit();
+
       toast.success('Employee added successfully');
-      navigate('/admin/A-employees');
+
+      // Log current user and role after successful save
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        console.log('AddEmployee: Current user after save:', currentUser.uid);
+        // Attempt to fetch user document again to see the role
+        try {
+          const userDocSnap = await getDoc(doc(db, 'users', currentUser.uid));
+          if (userDocSnap.exists()) {
+            console.log('AddEmployee: User role after save:', userDocSnap.data().role);
+          } else {
+            console.log('AddEmployee: User document not found for current user after save.');
+          }
+        } catch (fetchError) {
+          console.error('AddEmployee: Error fetching current user document after save:', fetchError);
+        }
+      } else {
+        console.log('AddEmployee: No current user found after save.');
+      }
+
+      // Reset form data after successful submission
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        empId: '',
+        password: '',
+        department: '',
+        designation: '',
+        role: '',
+        status: 'active',
+        joiningDate: '',
+        dateOfBirth: '',
+        gender: '',
+        maritalStatus: '',
+        bloodGroup: '',
+        emergencyContact: '',
+        address: '',
+        education: '',
+        experience: '',
+        skills: '',
+        salary: '',
+        bankDetails: {
+          accountNumber: '',
+          bankName: '',
+          ifscCode: ''
+        }
+      });
+
     } catch (error) {
       console.error('Error adding employee:', error);
-      toast.error('Failed to add employee');
+      if (error.code === 'auth/email-already-in-use') {
+        toast.error('Error: The email address is already in use by another account.');
+      } else if (error.code === 'auth/invalid-email') {
+         toast.error('Error: The email address is not valid.');
+      } else if (error.code === 'auth/weak-password') {
+         toast.error('Error: The password is too weak. Minimum 6 characters required.');
+      } else {
+        toast.error(`Failed to add employee: ${error.message}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -644,6 +733,32 @@ const AddEmployee = () => {
                     name="bankDetails.ifscCode"
                     value={formData.bankDetails.ifscCode}
                     onChange={handleInputChange}
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Password Section */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+              <FaUser className="mr-2 text-indigo-600" />
+              Password
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Password *</label>
+                <div className="mt-1 relative rounded-md shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaUser className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    required
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   />
                 </div>

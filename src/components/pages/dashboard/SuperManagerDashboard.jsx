@@ -17,7 +17,6 @@ const SuperManagerDashboard = () => {
   const [teamMembersCount, setTeamMembersCount] = useState(0);
   const [notifications, setNotifications] = useState(globalNotifications);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const navigate = useNavigate();
  
   useEffect(() => {
@@ -185,12 +184,6 @@ const SuperManagerDashboard = () => {
  
   // Notification bell click handler
   const handleBellClick = () => setShowNotifications((prev) => !prev);
-  const handleProfileClick = () => setShowProfileDropdown((prev) => !prev);
-  const handleLogout = async () => {
-    const auth = getAuth();
-    await signOut(auth);
-    navigate('/');
-  };
  
   if (loading) {
     return <div>Loading...</div>;
@@ -202,86 +195,19 @@ const SuperManagerDashboard = () => {
  
   return (
     <div className="min-h-screen bg-gray-50 py-6 px-4 sm:px-6 lg:px-8">
-      {/* Header and Name Card */}
-      <div className="flex justify-between items-center mb-8">
-        <div className="flex items-center">
-          <h1 className="text-3xl font-bold text-gray-900 mr-4">Dashboard</h1>
-          <span className="bg-purple-100 text-purple-600 px-4 py-1 rounded-full text-lg font-medium">Super Manager View</span>
-        </div>
-        <div className="flex items-center space-x-4 relative">
-          {/* Notification Bell */}
-          <div className="relative">
-            <button className="relative" onClick={handleBellClick}>
-              <FaBell className="w-7 h-7 text-gray-700" />
-              {notifications.length > 0 && (
-                <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
-              )}
-            </button>
-            {/* Notification Dropdown */}
-            {showNotifications && (
-              <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-50">
-                <div className="p-4 border-b border-gray-200">
-                  <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
-                    <button
-                      onClick={clearNotifications}
-                      className="text-sm text-gray-500 hover:text-gray-700"
-                    >
-                      Clear all
-                    </button>
-                  </div>
-                </div>
-                <div className="max-h-96 overflow-y-auto">
-                  {notifications.length === 0 ? (
-                    <div className="p-4 text-center text-gray-500">
-                      No new notifications
-                    </div>
-                  ) : (
-                    notifications.map((notification) => (
-                      <div
-                        key={notification.id}
-                        className="p-4 border-b border-gray-200 hover:bg-gray-50"
-                      >
-                        <p className="text-sm font-medium text-gray-900">{notification.title}</p>
-                        <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
- 
-          {/* Profile Dropdown */}
-          <div className="relative">
-            <div className="flex items-center space-x-3 cursor-pointer" onClick={handleProfileClick}>
-              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center text-white text-xl font-bold">
-                {userData?.firstName?.[0]}{userData?.lastName?.[0]}
-              </div>
-              <div>
-                <p className="text-lg font-semibold text-gray-900">{userData?.firstName} {userData?.lastName}</p>
-                <p className="text-sm text-purple-500 font-medium">Super Manager</p>
-              </div>
-            </div>
-            {showProfileDropdown && (
-              <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg z-50">
-                <button onClick={handleLogout} className="block w-full text-left px-4 py-3 text-red-600 hover:bg-gray-100 rounded-b-lg">Logout</button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
- 
+      {/* Header and Name Card - Handled by Header component in Layout */}
+
+      {/* Main Content */}
       <div className="max-w-7xl mx-auto">
         {/* Super Manager Features Section */}
         <div className="mb-8">
           <h2 className="text-2xl font-semibold text-gray-800 mb-4">Team Management</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {superManagerTiles.map((tile, index) => (
               <div
                 key={index}
                 onClick={tile.onClick}
-                className={`${tile.color} ${tile.hoverColor} rounded-lg shadow-lg p-6 text-white transform transition-all duration-300 hover:scale-105 cursor-pointer`}
+                className={`${tile.color} ${tile.hoverColor} rounded-xl shadow-lg p-6 text-white transform transition-all duration-300 hover:scale-105 cursor-pointer border border-white/10 flex flex-col justify-between`}
               >
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold">{tile.title}</h2>
@@ -295,22 +221,22 @@ const SuperManagerDashboard = () => {
  
         {/* Team Overview Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Team Overview</h2>
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Total Team Members</span>
-                <span className="font-semibold">{teamMembersCount}</span>
+                <span className="text-sm font-medium text-gray-500">Total Team Members</span>
+                <span className="text-3xl font-bold text-gray-900">{teamMembersCount}</span>
               </div>
             </div>
           </div>
- 
-          <div className="bg-white rounded-lg shadow-lg p-6">
+
+          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
             <div className="space-y-3">
               <button
                 onClick={() => window.open('msteams://teams.microsoft.com/calendar', '_blank')}
-                className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors shadow"
               >
                 <FaCalendarAlt className="w-5 h-5" />
                 Schedule Department Meeting
@@ -318,58 +244,58 @@ const SuperManagerDashboard = () => {
             </div>
           </div>
         </div>
- 
+
         {/* Department Overview Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Department Overview Card */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Department Overview</h2>
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Total Teams</span>
-                <span className="font-semibold">5</span>
+                <span className="text-sm font-medium text-gray-500">Total Teams</span>
+                <span className="font-semibold text-gray-900">5</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Total Employees</span>
-                <span className="font-semibold">45</span>
+                <span className="text-sm font-medium text-gray-500">Total Employees</span>
+                <span className="font-semibold text-gray-900">45</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Active Projects</span>
-                <span className="font-semibold">8</span>
+                <span className="text-sm font-medium text-gray-500">Active Projects</span>
+                <span className="font-semibold text-gray-900">8</span>
               </div>
             </div>
           </div>
- 
+
           {/* Performance Metrics Card */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Performance Metrics</h2>
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Department Productivity</span>
+                <span className="text-sm font-medium text-gray-500">Department Productivity</span>
                 <span className="font-semibold text-green-600">92%</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Project Success Rate</span>
+                <span className="text-sm font-medium text-gray-500">Project Success Rate</span>
                 <span className="font-semibold text-blue-600">88%</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Team Satisfaction</span>
+                <span className="text-sm font-medium text-gray-500">Team Satisfaction</span>
                 <span className="font-semibold text-purple-600">4.5/5</span>
               </div>
             </div>
           </div>
- 
+
           {/* Quick Actions Card */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
             <div className="space-y-3">
-              <button className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors">
+              <button className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors shadow">
                 Schedule Department Meeting
               </button>
-              <button className="w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition-colors">
+              <button className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors shadow">
                 Review Team Performance
               </button>
-              <button className="w-full bg-purple-600 text-white py-2 px-4 rounded hover:bg-purple-700 transition-colors">
+              <button className="w-full bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700 transition-colors shadow">
                 Generate Department Report
               </button>
             </div>

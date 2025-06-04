@@ -1,9 +1,9 @@
-// src/components/pages/Login.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { FaUser, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
+import artihcusLogo from '../../assets/artihcus-logo1.svg';
  
 const Login = () => {
   const [empId, setEmpId] = useState("");
@@ -29,12 +29,18 @@ const Login = () => {
     }
  
     try {
-      // 🔍 Query Firestore for user by empId
+      // 🔍 Query Firestore for user by empId or clientId
       const q = query(collection(db, "users"), where("empId", "==", empId));
-      const querySnapshot = await getDocs(q);
+      let querySnapshot = await getDocs(q);
+ 
+      // If no user found by empId, try searching by clientId
+      if (querySnapshot.empty) {
+        const clientQ = query(collection(db, "users"), where("clientId", "==", empId));
+        querySnapshot = await getDocs(clientQ);
+      }
  
       if (querySnapshot.empty) {
-        setError("Employee ID not found");
+        setError("Invalid Employee ID or Client ID");
         return;
       }
  
@@ -45,8 +51,10 @@ const Login = () => {
       // 🔐 Sign in using Firebase Auth
       await signInWithEmailAndPassword(auth, email, password);
  
-      // 💾 Save login state
+      // 💾 Save login state and user data
       localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("userRole", userData.role);
+      localStorage.setItem("userId", userDoc.id);
  
       // 🚀 Redirect based on role
       const role = userData.role?.toLowerCase();
@@ -55,12 +63,11 @@ const Login = () => {
           navigate("/admin/dashboard");
           break;
         case 'hr':
-          navigate("/dashboard");
-          break;
         case 'manager':
         case 'supermanager':
         case 'tl':
         case 'employee':
+        case 'client':
           navigate("/dashboard");
           break;
         default:
@@ -99,116 +106,163 @@ const Login = () => {
   };
  
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-100 to-orange-200 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-2xl">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Welcome Back
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Please sign in to your account
-          </p>
-        </div>
+    <div className="min-h-screen flex bg-gray-50">
+      {/* Left side - Login Form */}
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-20 xl:px-24">
+        <div className="mx-auto w-full max-w-sm lg:w-96">
+          <div>
+            <h2 className="text-4xl font-bold text-gray-900 mb-2">
+              Welcome back!
+            </h2>
+            <p className="text-gray-600 mb-8">
+              Simplify your workflow and boost your productivity<br />
+              with Artihcus. <span className="text-orange-500 font-medium">Get started .</span>
+            </p>
+          </div>
  
-        {error && (
-          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm text-red-700">{error}</p>
+          {error && (
+            <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
  
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div className="relative">
-              <label htmlFor="empId" className="sr-only">Employee ID</label>
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-                <FaUser className="h-5 w-5 text-gray-400" />
-              </div>
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            <div>
               <input
                 id="empId"
                 name="empId"
                 type="text"
                 required
-                className="appearance-none rounded-t-md relative block w-full px-3 py-3 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-0 sm:text-sm"
-                placeholder="Employee ID"
+                className="w-full px-4 py-3 border border-gray-300 rounded-full bg-gray-50 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                placeholder="Employee ID or Client ID"
                 value={empId}
                 onChange={(e) => setEmpId(e.target.value)}
               />
             </div>
  
             <div className="relative">
-              <label htmlFor="password" className="sr-only">Password</label>
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
-                <FaLock className="h-5 w-5 text-gray-400" />
-              </div>
               <input
                 id="password"
                 name="password"
                 type={showPassword ? "text" : "password"}
                 required
-                className="appearance-none rounded-b-md relative block w-full px-3 py-3 pl-10 pr-10 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
+                className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-full bg-gray-50 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
               <div
-                className="absolute inset-y-0 right-0 pr-3 flex items-center z-10 cursor-pointer"
+                className="absolute inset-y-0 right-0 pr-4 flex items-center cursor-pointer"
                 onClick={() => setShowPassword((prev) => !prev)}
               >
                 {showPassword ? (
-                  <FaEyeSlash className="h-5 w-5 text-gray-500" />
+                  <FaEyeSlash className="h-5 w-5 text-gray-400" />
                 ) : (
-                  <FaEye className="h-5 w-5 text-gray-500" />
+                  <FaEye className="h-5 w-5 text-gray-400" />
                 )}
               </div>
             </div>
-          </div>
  
-          <div className="flex justify-between mt-6">
-            <button
-              type="button"
-              className="text-sm text-orange-600 hover:text-orange-800 font-medium"
-              onClick={() => navigate("/forget-password")}
-            >
-              Forgot Password?
-            </button>
-          </div>
+            <div className="flex justify-end">
+              <button
+                type="button"
+                className="text-sm text-gray-600 hover:text-gray-800"
+                onClick={() => navigate("/forget-password")}
+              >
+                Forgot Password?
+              </button>
+            </div>
  
-          <div>
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+              className="w-full bg-black text-white py-3 px-4 rounded-full font-medium hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-200"
             >
-              Sign in
+              Login
             </button>
-          </div>
+          </form>
  
-          <div className="text-center mt-6">
+          <div className="mt-8 text-center">
             <p className="text-sm text-gray-600">
-              Don't have an account?{" "}
-              <Link to="/register" className="text-orange-600 hover:text-orange-800">
-                Register here
+              Not a member?{" "}
+              <Link to="/register" className="text-orange-500 hover:text-orange-600 font-medium">
+                Register now
               </Link>
             </p>
           </div>
-        </form>
+        </div>
+      </div>
+ 
+      {/* Right side - Illustration */}
+      <div className="hidden lg:flex flex-1 items-center justify-center bg-gradient-to-br from-orange-50 to-orange-100 relative overflow-hidden">
+        <div className="relative z-10 text-center">
+          {/* Main illustration - person meditating */}
+          <div className="relative inline-block mb-8">
+            {/* Decorative elements around the person */}
+            <div className="absolute -top-8 -left-8 w-16 h-16 bg-orange-200 rounded-full opacity-60"></div>
+            <div className="absolute -top-4 -right-12 w-12 h-12 bg-orange-300 rounded-full opacity-40"></div>
+            <div className="absolute -bottom-6 -left-16 w-20 h-20 bg-orange-200 rounded-full opacity-50"></div>
+           
+            {/* Person illustration placeholder */}
+            <div className="w-80 h-80 bg-orange-200 rounded-full flex items-center justify-center">
+              <div className="w-32 h-32 bg-orange-500 rounded-full flex items-center justify-center">
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+ 
+            {/* Floating avatars */}
+            <div className="absolute -top-12 left-12 w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-gray-400 rounded-full"></div>
+            </div>
+            <div className="absolute top-16 -right-8 w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-gray-400 rounded-full"></div>
+            </div>
+            <div className="absolute bottom-12 -left-8 w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-gray-400 rounded-full"></div>
+            </div>
+          </div>
+ 
+          {/* Task card */}
+          <div className="bg-white rounded-2xl p-6 shadow-lg max-w-xs mx-auto mb-8">
+            <div className="flex items-center justify-center h-20">
+              <img
+                src={artihcusLogo}
+                alt="Artihcus Logo"
+                className="w-full h-full object-contain"
+              />
+            </div>
+          </div>
+ 
+          {/* Bottom text */}
+          <div className="text-center">
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+              Make your work easier and organized<br />
+              with <span className="text-orange-500">Artihcus</span>
+            </h3>
+          </div>
+        </div>
+ 
+        {/* Background decorative dots */}
+       
       </div>
     </div>
   );
 };
  
 export default Login;
- 
- 

@@ -7,6 +7,8 @@ import ManagerDashboard from './dashboard/ManagerDashboard';
 import SuperManagerDashboard from './dashboard/SuperManagerDashboard';
 import EmployeeDashboard from './dashboard/EmployeeDashboard';
 import HrDashboard from './dashboard/HrDashboard';
+import ClientDashboard from './Client/ClientDashboard';
+
 const Dashboard = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -65,6 +67,8 @@ const Dashboard = () => {
       return <ManagerDashboard />;
     case 'employee':
       return <EmployeeDashboard />;
+    case 'client':
+      return <ClientDashboard />;
     default:
       return (
         <div className="min-h-screen flex items-center justify-center">

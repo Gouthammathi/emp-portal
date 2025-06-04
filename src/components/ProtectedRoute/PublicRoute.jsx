@@ -15,6 +15,7 @@ const PublicRoute = ({ children }) => {
         const docSnap = await getDoc(doc(db, 'users', user.uid));
         const role = docSnap.exists() ? docSnap.data().role?.toLowerCase() : null;
         if (role === 'admin') setRedirectPath('/admin/dashboard');
+        else if (role === 'client') setRedirectPath('/dashboard');
         else setRedirectPath('/dashboard');
       }
       setCheckingAuth(false);

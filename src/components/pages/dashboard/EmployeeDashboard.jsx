@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getAuth, signOut } from 'firebase/auth';
-import { doc, getDoc, collection, query, where, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import {
   FaUserCircle, FaSignOutAlt,
@@ -8,15 +8,14 @@ import {
   FaTicketAlt
 } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import EmployeeTickets from '../../pages/EmployeeTickets';
+
 const EmployeeDashboard = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [tickets, setTickets] = useState([]);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
- 
+
   useEffect(() => {
     const fetchUserData = async () => {
       const auth = getAuth();
@@ -29,30 +28,10 @@ const EmployeeDashboard = () => {
       }
       setLoading(false);
     };
- 
+
     fetchUserData();
   }, []);
- 
-  // Listen for tickets assigned to this employee
-  useEffect(() => {
-    if (!userData?.empId) return;
- 
-    const ticketsQuery = query(
-      collection(db, 'tickets'),
-      where('assignedTo', '==', userData.empId)
-    );
- 
-    const unsubscribe = onSnapshot(ticketsQuery, (snapshot) => {
-      const ticketList = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setTickets(ticketList);
-    });
- 
-    return () => unsubscribe();
-  }, [userData]);
- 
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -62,18 +41,17 @@ const EmployeeDashboard = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
- 
+
   const handleLogout = () => {
     const auth = getAuth();
     signOut(auth).then(() => navigate('/')).catch(console.error);
   };
- 
+
   if (loading) return <div>Loading...</div>;
- 
+
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-6">
       <div className="max-w-7xl mx-auto relative">
- 
         {/* Profile Dropdown */}
         <div className="absolute top-0 right-0 mt-4 mr-4" ref={dropdownRef}>
           <div onClick={() => setShowDropdown(!showDropdown)} className="cursor-pointer flex flex-col items-center">
@@ -92,13 +70,13 @@ const EmployeeDashboard = () => {
             </div>
           )}
         </div>
- 
+
         {/* Welcome Header */}
         <div className="bg-white rounded-lg shadow p-6 mt-14">
           <h1 className="text-3xl font-bold text-gray-900">Welcome, {userData?.firstName} {userData?.lastName}</h1>
           <p className="text-gray-600 mt-1">Employee ID: {userData?.empId}</p>
         </div>
- 
+
         {/* Quick Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
           <div className="bg-white rounded-lg shadow p-5 flex items-center gap-4">
@@ -108,7 +86,7 @@ const EmployeeDashboard = () => {
               <p className="text-sm text-gray-500">Pending for today</p>
             </div>
           </div>
- 
+
           <div className="bg-white rounded-lg shadow p-5 flex items-center gap-4">
             <FaClipboardList className="text-green-500 text-3xl" />
             <div>
@@ -116,7 +94,7 @@ const EmployeeDashboard = () => {
               <p className="text-sm text-gray-500">2 updates submitted</p>
             </div>
           </div>
- 
+
           <div className="bg-white rounded-lg shadow p-5 flex items-center gap-4">
             <FaCalendarAlt className="text-orange-500 text-3xl" />
             <div>
@@ -124,16 +102,21 @@ const EmployeeDashboard = () => {
               <p className="text-sm text-gray-500">Diwali - Nov 1</p>
             </div>
           </div>
- 
-          <div className="bg-white rounded-lg shadow p-5 flex items-center gap-4">
+
+          {/* My Tickets Tile */}
+          <div 
+            onClick={() => navigate('/my-tickets')}
+            className="bg-white rounded-lg shadow p-5 flex items-center gap-4 cursor-pointer hover:shadow-lg transition-shadow"
+          >
             <FaTicketAlt className="text-red-500 text-3xl" />
             <div>
-              <p className="text-gray-700 font-semibold">Active Tickets</p>
-              <p className="text-sm text-gray-500">{tickets.length} tickets assigned</p>
+              <p className="text-gray-700 font-semibold">My Tickets</p>
+              {/* We can add ticket count here later if needed */}
+              <p className="text-sm text-gray-500">View assigned tickets</p>
             </div>
           </div>
         </div>
- 
+
         {/* Quick Actions */}
         <div className="mt-8">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h2>
@@ -141,39 +124,9 @@ const EmployeeDashboard = () => {
             <button onClick={() => navigate('/daily-s')} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Submit Status</button>
             <button onClick={() => navigate('/Timesheet')} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">Fill Timesheet</button>
             <button onClick={() => navigate('/holiday-calendar')} className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">Holiday Calendar</button>
-            <button onClick={() => navigate('/my-tickets')} className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">View Tickets</button>
           </div>
         </div>
- 
-        {/* Tickets Section */}
-        {tickets.length > 0 && (
-          <div className="mt-8 bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Assigned Tickets</h2>
-            <div className="space-y-4">
-              {tickets.map((ticket) => (
-                <div key={ticket.id} className="border-l-4 border-red-500 pl-4 py-3 hover:bg-gray-50 rounded-r-lg">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-gray-800 font-medium">{ticket.title}</p>
-                      <p className="text-sm text-gray-500 mt-1">{ticket.description}</p>
-                    </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      ticket.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                      ticket.status === 'in-progress' ? 'bg-blue-100 text-blue-800' :
-                      'bg-green-100 text-green-800'
-                    }`}>
-                      {ticket.status}
-                    </span>
-                  </div>
-                  <div className="mt-2 text-xs text-gray-500">
-                    Assigned by: {ticket.assignedBy} • Due: {new Date(ticket.dueDate).toLocaleDateString()}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
- 
+
         {/* Activity Feed */}
         <div className="mt-8 bg-white rounded-lg shadow p-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Recent Activities</h2>
@@ -192,10 +145,9 @@ const EmployeeDashboard = () => {
             </div>
           </div>
         </div>
- 
       </div>
     </div>
   );
 };
- 
+
 export default EmployeeDashboard;
