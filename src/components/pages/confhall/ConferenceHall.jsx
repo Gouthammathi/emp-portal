@@ -207,8 +207,8 @@ function ConferenceHall() {
 
     console.log('Setting up requests listener for user:', userData.uid);
    
-    // For HR, we need to listen to all requests to show in schedule and availability
-    const requestsQuery = userData.role === 'hr'
+    // For HR and managers, we need to listen to all requests to show in schedule and availability
+    const requestsQuery = (userData.role === 'hr' )
       ? query(collection(db, "conferenceHallRequests"))
       : query(
           collection(db, "conferenceHallRequests"),
@@ -218,8 +218,8 @@ function ConferenceHall() {
     console.log('Setting up requests query with:', {
       role: userData.role,
       uid: userData.uid,
-      queryField: userData.role === 'hr' ? 'all' : 'requestedBy',
-      queryValue: userData.role === 'hr' ? 'all' : userData.uid
+      queryField: (userData.role === 'hr' ) ? 'all' : 'requestedBy',
+      queryValue: (userData.role === 'hr' ) ? 'all' : userData.uid
     });
 
     const unsubscribe = onSnapshot(requestsQuery, (snapshot) => {
@@ -508,7 +508,13 @@ function ConferenceHall() {
   }
 
   const isHR = userData?.role === 'hr';
-  const isManager = userData?.role === 'manager';
+  // const isManager = userData?.role === 'manager';
+
+  console.log('User role:', userData?.role);
+  console.log('isHR:', isHR);
+  // console.log('isManager:', isManager);
+  console.log('Active tab:', activeTab);
+  console.log('Requests:', requests);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -538,30 +544,26 @@ function ConferenceHall() {
             >
               {isHR ? 'Pending Requests' : 'My Requests'}
             </button>
-            {(!isManager || isHR) && (
-              <>
-                <button
-                  onClick={() => setActiveTab('schedule')}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === 'schedule'
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  Schedule
-                </button>
-                <button
-                  onClick={() => setActiveTab('availability')}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === 'availability'
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  Availability
-                </button>
-              </>
-            )}
+            <button
+              onClick={() => setActiveTab('schedule')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'schedule'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Schedule
+            </button>
+            <button
+              onClick={() => setActiveTab('availability')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'availability'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Availability
+            </button>
           </nav>
         </div>
 
@@ -729,7 +731,7 @@ function ConferenceHall() {
                         }`}>
                           {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
                         </span>
-                        {(isHR || !isHR) && (
+                        {request.requestedBy === userData?.uid && (
                           <button
                             onClick={() => handleDeleteRequest(request.id)}
                             className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition-colors"
@@ -751,17 +753,10 @@ function ConferenceHall() {
                           <FaClock className="mr-2" />
                           {request.startTime} - {request.endTime}
                         </p>
-                        <p className="flex items-center text-sm text-gray-600">
-                          <FaUsers className="mr-2" />
-                          {request.members} members
-                        </p>
                       </div>
                       <div className="space-y-2">
                         <p className="text-sm text-gray-600">
                           <span className="font-medium">Requested by:</span> {request.requestedByName}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          <span className="font-medium">Role:</span> {request.role}
                         </p>
                         <p className="text-sm text-gray-600">
                           <span className="font-medium">Purpose:</span> {request.purpose}
@@ -801,48 +796,46 @@ function ConferenceHall() {
           </div>
         )}
 
-        {(!isManager || isHR) && activeTab === 'schedule' && (
+        {activeTab === 'schedule' && (
           <div className="space-y-4">
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h3 className="font-semibold text-lg mb-4">Today's Schedule</h3>
               <div className="space-y-4">
+                {console.log('Rendering schedule view')}
                 {requests
-                  .filter(request =>
-                    request.status === 'approved' &&
-                    new Date(request.date).toDateString() === new Date().toDateString()
-                  )
+                  .filter(request => {
+                    console.log('Filtering request:', request);
+                    return request.status === 'approved' &&
+                      new Date(request.date).toDateString() === new Date().toDateString();
+                  })
                   .sort((a, b) => new Date(`${a.date}T${a.startTime}`) - new Date(`${b.date}T${b.startTime}`))
                   .map(request => (
                     <div key={request.id} className="border-l-4 border-blue-500 pl-4 py-3 bg-gray-50 rounded-r-lg">
                       <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <p className="text-sm text-gray-500">Requested by: {request.requestedByName}</p>
-                              <p className="text-sm text-gray-500">Time: {request.startTime} - {request.endTime}</p>
-                              <p className="text-sm text-gray-500">Purpose: {request.purpose}</p>
-                            </div>
-                            {isHR && (
-                              <div className="flex items-center space-x-2">
-                                <button
-                                  onClick={() => {
-                                    if (window.confirm(`Are you sure you want to delete this booking?\n\nTime: ${request.startTime} - ${request.endTime}\nBooked by: ${request.requestedByName}`)) {
-                                      handleDeleteRequest(request.id);
-                                    }
-                                  }}
-                                  className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition-colors"
-                                  title="Delete booking"
-                                  disabled={loading}
-                                >
-                                  <RiDeleteBin6Line className="w-5 h-5" />
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                          <div className="text-sm text-gray-500 mt-2">
-                            Approved by: {request.approvedByName}
-                          </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Requested by: {request.requestedByName}</p>
+                          <p className="text-sm text-gray-500">Time: {request.startTime} - {request.endTime}</p>
+                          <p className="text-sm text-gray-500">Purpose: {request.purpose}</p>
                         </div>
+                        {isHR && (
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={() => {
+                                if (window.confirm(`Are you sure you want to delete this booking?\n\nTime: ${request.startTime} - ${request.endTime}\nBooked by: ${request.requestedByName}`)) {
+                                  handleDeleteRequest(request.id);
+                                }
+                              }}
+                              className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition-colors"
+                              title="Delete booking"
+                              disabled={loading}
+                            >
+                              <RiDeleteBin6Line className="w-5 h-5" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-sm text-gray-500 mt-2">
+                        Approved by: {request.approvedByName}
                       </div>
                     </div>
                   ))}
@@ -860,18 +853,20 @@ function ConferenceHall() {
           </div>
         )}
 
-        {(!isManager || isHR) && activeTab === 'availability' && (
+        {activeTab === 'availability' && (
           <div className="space-y-4">
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h3 className="font-semibold text-lg mb-4">Room Status</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-gray-50 rounded-lg p-4">
                   <h4 className="font-medium mb-3">Today's Time Slots</h4>
+                  {console.log('Rendering availability view')}
                   <TimeSlotGrid
-                    bookings={requests.filter(request =>
-                      request.status === 'approved' &&
-                      new Date(request.date).toDateString() === new Date().toDateString()
-                    )}
+                    bookings={requests.filter(request => {
+                      console.log('Filtering booking for TimeSlotGrid:', request);
+                      return request.status === 'approved' &&
+                        new Date(request.date).toDateString() === new Date().toDateString();
+                    })}
                     date={new Date().toISOString().split('T')[0]}
                   />
                 </div>
