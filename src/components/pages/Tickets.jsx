@@ -32,7 +32,8 @@ import {
   Users,
   Activity,
   Zap,
-  TrendingUp
+  TrendingUp,
+  Phone
 } from 'lucide-react';
 import { collection, query, onSnapshot, doc, updateDoc, deleteDoc, orderBy, serverTimestamp, where, getDoc, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase';
@@ -59,6 +60,7 @@ function TicketsPage() {
   const [userProject, setUserProject] = useState(null);
   const [userEmpId, setUserEmpId] = useState(null);
   const [teamMembers, setTeamMembers] = useState([]);
+  const [employeeNames, setEmployeeNames] = useState({});
 
   // Function to fetch registered team members based on manager's empId and orgchart
   const fetchRegisteredTeamMembers = async (managerEmpId) => {
@@ -240,6 +242,24 @@ function TicketsPage() {
           setTeamMembers([]); // Clear team members if not manager or userEmpId not set
       }
   }, [userRole, userEmpId]); // Rerun effect when userRole or userEmpId changes
+
+  // Add useEffect to fetch employee names when team members are fetched
+  useEffect(() => {
+    const fetchEmployeeNames = async () => {
+      const names = {};
+      for (const member of teamMembers) {
+        const userDocRef = doc(db, 'users', member.id);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists()) {
+          const userData = userDocSnap.data();
+          names[member.id] = { name: member.employeeName, email: userData.email, phone: userData.phone };
+        }
+      }
+      setEmployeeNames(names);
+    };
+
+    fetchEmployeeNames();
+  }, [teamMembers]);
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -459,22 +479,48 @@ function TicketsPage() {
               <div className="flex items-center space-x-3 mb-3">
                 <h3 className="font-semibold text-gray-900 text-lg">{ticket.subject}</h3>
               </div>
-              <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
-                <div className="flex items-center space-x-2">
-                  <User className="w-4 h-4 text-gray-400" />
-                  <span>{ticket.customer}</span>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="flex items-center space-x-2 bg-gray-50 p-2 rounded-lg">
+                  <User className="w-4 h-4 text-blue-500" />
+                  <div>
+                    <p className="text-xs text-gray-500">Client Name</p>
+                    <p className="text-gray-700 font-medium">{ticket.customer}</p>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <MessageSquare className="w-4 h-4 text-gray-400" />
-                  <span>{ticket.project}</span>
+                <div className="flex items-center space-x-2 bg-gray-50 p-2 rounded-lg">
+                  <Mail className="w-4 h-4 text-blue-500" />
+                  <div>
+                    <p className="text-xs text-gray-500">Email</p>
+                    <p className="text-gray-700 font-medium">{ticket.email}</p>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Clock className="w-4 h-4 text-gray-400" />
-                  <span>{new Date(ticket.created?.toDate()).toLocaleString()}</span>
+                <div className="flex items-center space-x-2 bg-gray-50 p-2 rounded-lg">
+                  <Phone className="w-4 h-4 text-blue-500" />
+                  <div>
+                    <p className="text-xs text-gray-500">Phone</p>
+                    <p className="text-gray-700 font-medium">{ticket.phone}</p>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Calendar className="w-4 h-4 text-gray-400" />
-                  <span>{getDueDateText(ticket.priority, ticket.created)}</span>
+                <div className="flex items-center space-x-2 bg-gray-50 p-2 rounded-lg">
+                  <MessageSquare className="w-4 h-4 text-blue-500" />
+                  <div>
+                    <p className="text-xs text-gray-500">Project</p>
+                    <p className="text-gray-700 font-medium">{ticket.project}</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2 bg-gray-50 p-2 rounded-lg">
+                  <Clock className="w-4 h-4 text-blue-500" />
+                  <div>
+                    <p className="text-xs text-gray-500">Created</p>
+                    <p className="text-gray-700 font-medium">{new Date(ticket.created?.toDate()).toLocaleString()}</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2 bg-gray-50 p-2 rounded-lg">
+                  <Calendar className="w-4 h-4 text-blue-500" />
+                  <div>
+                    <p className="text-xs text-gray-500">Due Date</p>
+                    <p className="text-gray-700 font-medium">{getDueDateText(ticket.priority, ticket.created)}</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -633,16 +679,10 @@ function TicketsPage() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Tickets</h1>
+                
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              {/* <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-2">
-                <Bell className="w-5 h-5 text-gray-600" />
-                <span className="text-sm font-medium text-gray-700">3 New</span>
-              </div> */}
-              
-              
-            </div>
+           
           </div>
         </div>
       </div>
@@ -951,39 +991,7 @@ function TicketsPage() {
                   </div>
                 </div>
               )}
-              {/* <div>
-                <h3 className="font-medium text-gray-900 mb-2">Description</h3>
-                <p className="text-gray-700">{selectedTicket.description}</p>
-              </div> */}
-             
-             {/* <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h3 className="font-medium text-gray-900 mb-1">Status</h3>
-                  <div className="flex items-center space-x-2">
-                    {getStatusIcon(selectedTicket.status)}
-                    <span>{selectedTicket.status}</span>
-                  </div>
-                </div>
-               
-             
-               
-               
-               
-                <div>
-                  <h3 className="font-medium text-gray-900 mb-1">Department</h3>
-                  <p className="text-gray-700">{selectedTicket.department}</p>
-                </div>
-              </div>
-             
-              <div>
-                <h3 className="font-medium text-gray-900 mb-1">Created</h3>
-                <p className="text-gray-700">{new Date(selectedTicket.created?.toDate()).toLocaleString()}</p>
-              </div>
-             
-              <div>
-                <h3 className="font-medium text-gray-900 mb-1">Due Date</h3>
-                <p className="text-gray-700">{new Date(selectedTicket.dueDate?.toDate()).toLocaleString()}</p>
-              </div> */}
+        
 
               {/* Communication Thread */}
               <div className="bg-gray-50 rounded-xl p-4">

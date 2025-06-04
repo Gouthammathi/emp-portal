@@ -25,6 +25,7 @@ import {
 import { collection, query, onSnapshot, doc, updateDoc, serverTimestamp, getDoc, where, orderBy } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { getAuth, signOut } from 'firebase/auth';
+import { fetchUserNamesByIds } from '../../../utils/userUtils';
 
 function ClientDashboard() {
   const [tickets, setTickets] = useState([]);
@@ -38,6 +39,7 @@ function ClientDashboard() {
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
+  const [assignedEmployeeNames, setAssignedEmployeeNames] = useState({});
 
   const handleLogout = async () => {
     try {
@@ -81,11 +83,12 @@ function ClientDashboard() {
               // Set up the snapshot listener
               console.log('ClientDashboard: Setting up onSnapshot for query:', q);
               unsubscribe = onSnapshot(q,
-                  (querySnapshot) => {
+                  async (querySnapshot) => {
                     console.log('ClientDashboard: onSnapshot triggered. Snapshot size:', querySnapshot.size);
                     console.log('ClientDashboard: onSnapshot snapshot data:', querySnapshot.docs.map(doc => doc.data()));
                     try {
                       const ticketsData = [];
+                      const assignedToIds = new Set(); // Collect unique assignedTo IDs
                       querySnapshot.forEach((doc) => {
                         const data = doc.data();
                         ticketsData.push({
@@ -100,9 +103,22 @@ function ClientDashboard() {
                           customerResponses: data.customerResponses || [],
                           employeeResponses: data.employeeResponses || [],
                           customer: data.customer || 'Unknown',
-                          project: data.project || 'General'
+                          project: data.project || 'General',
+                          assignedTo: data.assignedTo || null // Include assignedTo
                         });
+                        if (data.assignedTo) {
+                          assignedToIds.add(data.assignedTo);
+                        }
                       });
+
+                      // Fetch assigned employee names
+                      if (assignedToIds.size > 0) {
+                        const names = await fetchUserNamesByIds(Array.from(assignedToIds));
+                        setAssignedEmployeeNames(names);
+                      } else {
+                        setAssignedEmployeeNames({});
+                      }
+
                       // Sort tickets by created date in memory
                       ticketsData.sort((a, b) => {
                         const dateA = a.created?.toDate?.() || new Date(a.created);
@@ -429,6 +445,12 @@ function ClientDashboard() {
                               <Tag className="w-4 h-4" />
                               <span>{ticket.project}</span>
                             </div>
+                            {ticket.assignedTo && assignedEmployeeNames[ticket.assignedTo] && (
+                              <div className="flex items-center space-x-1 text-sm text-gray-500 mt-2">
+                                <User className="w-4 h-4" />
+                                <span>Assigned to: {assignedEmployeeNames[ticket.assignedTo]}</span>
+                              </div>
+                            )}
                           </div>
                         </div>
                         <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0 ml-2" />

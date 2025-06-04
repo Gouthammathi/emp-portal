@@ -1,22 +1,22 @@
 import * as XLSX from 'xlsx';
-
+ 
 export const parseExcelFile = (file) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    
+   
     reader.onload = (e) => {
       try {
         const data = e.target.result;
         const workbook = XLSX.read(data, { type: 'binary' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
-        
+       
         // First try with header: 1 to get raw data
         const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-        
+       
         // Log the first few rows for debugging
         console.log('Excel Data:', jsonData.slice(0, 3));
-
+ 
         // Get headers from first row and clean them
         const headers = jsonData[0].map(header => {
           if (typeof header === 'string') {
@@ -24,17 +24,17 @@ export const parseExcelFile = (file) => {
           }
           return '';
         });
-
+ 
         console.log('Headers:', headers);
-
+ 
         // Process data rows
         const mappedData = jsonData.slice(1).map(row => {
           const rowData = {};
-          
+         
           // Map each column to its corresponding field
           headers.forEach((header, index) => {
             const value = row[index];
-            
+           
             // Map the Excel column to our form field
             switch(header) {
               case 'first name':
@@ -143,7 +143,7 @@ export const parseExcelFile = (file) => {
                 break;
             }
           });
-
+ 
           // Ensure bankDetails is properly structured
           if (!rowData.bankDetails) {
             rowData.bankDetails = {
@@ -152,29 +152,29 @@ export const parseExcelFile = (file) => {
               ifscCode: ''
             };
           }
-
+ 
           // Log the mapped data for debugging
           console.log('Mapped Row Data:', rowData);
-
+ 
           return rowData;
         });
-
+ 
         resolve(mappedData);
       } catch (error) {
         console.error('Excel parsing error:', error);
         reject(new Error('Error parsing Excel file: ' + error.message));
       }
     };
-
+ 
     reader.onerror = (error) => {
       console.error('File reading error:', error);
       reject(new Error('Error reading file: ' + error.message));
     };
-
+ 
     reader.readAsBinaryString(file);
   });
 };
-
+ 
 // Helper function to map role names to our system roles
 const mapRole = (role) => {
   const roleMap = {
@@ -190,20 +190,20 @@ const mapRole = (role) => {
     'supermanager': 'supermanager',
     'humanresources': 'hr'
   };
-  
+ 
   const normalizedRole = role.toLowerCase().trim();
   return roleMap[normalizedRole] || 'employee';
 };
-
+ 
 // Helper function to format dates
 const formatDate = (date) => {
   if (!date) return '';
-  
+ 
   // If it's already a string in YYYY-MM-DD format, return as is
   if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
     return date;
   }
-  
+ 
   // If it's a Date object or Excel date number
   try {
     const d = new Date(date);
@@ -213,6 +213,6 @@ const formatDate = (date) => {
   } catch (e) {
     console.error('Error formatting date:', e);
   }
-  
+ 
   return '';
-}; 
+};

@@ -84,43 +84,63 @@ const AddEmployee = () => {
         const employeeData = data[0];
         console.log('Employee Data to Import:', employeeData);
         
-        // Validate required fields
-        const missingFields = [];
-        if (!employeeData.firstName) missingFields.push('First Name');
-        if (!employeeData.lastName) missingFields.push('Last Name');
-        if (!employeeData.email) missingFields.push('Email');
-        if (!employeeData.role) missingFields.push('Role');
+        // Only validate essential fields
+        const missingRequiredFields = [];
+        if (!employeeData.firstName) missingRequiredFields.push('First Name');
+        if (!employeeData.lastName) missingRequiredFields.push('Last Name');
+        if (!employeeData.email) missingRequiredFields.push('Email');
+        if (!employeeData.role) missingRequiredFields.push('Role');
 
-        if (missingFields.length > 0) {
-          console.error('Missing fields:', missingFields);
-          console.error('Employee data:', employeeData);
-          toast.error(`Missing required fields: ${missingFields.join(', ')}`);
-          return;
+        if (missingRequiredFields.length > 0) {
+          toast.warning(`Missing required fields: ${missingRequiredFields.join(', ')}. Please fill them manually.`);
         }
 
-        // Validate email format
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(employeeData.email)) {
-          toast.error('Invalid email format in Excel file');
-          return;
+        // Validate email format if email is provided
+        if (employeeData.email) {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(employeeData.email)) {
+            toast.error('Invalid email format in Excel file. Please correct it manually.');
+            delete employeeData.email; // Remove invalid email
+          }
         }
 
-        // Update form data with imported values
+        // Update form data with imported values, preserving existing values for missing fields
         setFormData(prevData => {
           const newData = {
             ...prevData,
-            ...employeeData,
+            // Only update fields that exist in the Excel data
+            ...(employeeData.firstName && { firstName: employeeData.firstName }),
+            ...(employeeData.lastName && { lastName: employeeData.lastName }),
+            ...(employeeData.email && { email: employeeData.email }),
+            ...(employeeData.phone && { phone: employeeData.phone }),
+            ...(employeeData.empId && { empId: employeeData.empId }),
+            ...(employeeData.department && { department: employeeData.department }),
+            ...(employeeData.designation && { designation: employeeData.designation }),
+            ...(employeeData.role && { role: employeeData.role }),
+            ...(employeeData.status && { status: employeeData.status }),
+            ...(employeeData.joiningDate && { joiningDate: employeeData.joiningDate }),
+            ...(employeeData.dateOfBirth && { dateOfBirth: employeeData.dateOfBirth }),
+            ...(employeeData.gender && { gender: employeeData.gender }),
+            ...(employeeData.maritalStatus && { maritalStatus: employeeData.maritalStatus }),
+            ...(employeeData.bloodGroup && { bloodGroup: employeeData.bloodGroup }),
+            ...(employeeData.emergencyContact && { emergencyContact: employeeData.emergencyContact }),
+            ...(employeeData.address && { address: employeeData.address }),
+            ...(employeeData.education && { education: employeeData.education }),
+            ...(employeeData.experience && { experience: employeeData.experience }),
+            ...(employeeData.skills && { skills: employeeData.skills }),
+            ...(employeeData.salary && { salary: employeeData.salary }),
             bankDetails: {
-              accountNumber: employeeData.bankDetails?.accountNumber || '',
-              bankName: employeeData.bankDetails?.bankName || '',
-              ifscCode: employeeData.bankDetails?.ifscCode || ''
+              ...prevData.bankDetails,
+              ...(employeeData.bankDetails?.accountNumber && { accountNumber: employeeData.bankDetails.accountNumber }),
+              ...(employeeData.bankDetails?.bankName && { bankName: employeeData.bankDetails.bankName }),
+              ...(employeeData.bankDetails?.ifscCode && { ifscCode: employeeData.bankDetails.ifscCode })
             }
           };
           console.log('Updated Form Data:', newData);
           return newData;
         });
         
-        toast.success('Employee data imported successfully');
+        toast.success('Employee data imported successfully. Please review and fill in any missing required fields.');
       } else {
         toast.error('No data found in Excel file');
       }
