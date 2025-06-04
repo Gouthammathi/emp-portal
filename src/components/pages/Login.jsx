@@ -55,6 +55,12 @@ const Login = () => {
       localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("userRole", userData.role);
       localStorage.setItem("userId", userDoc.id);
+      localStorage.setItem("userInfo", JSON.stringify({
+        name: `${userData.firstName} ${userData.lastName}`,
+        empId: userData.empId,
+        clientId: userData.clientId,
+        role: userData.role
+      }));
  
       // 🚀 Redirect based on role
       const role = userData.role?.toLowerCase();
@@ -75,7 +81,12 @@ const Login = () => {
       }
  
       // Optional: notify reporting manager
-     
+      const reportHierarchy = {
+        222003: 111069,
+        222002: 222001,
+        222001: 222001,
+      };
+ 
       const sendEmail = (to, subject, body) => {
         console.log(`Email sent to ${to} with subject: ${subject}`);
       };
@@ -183,13 +194,20 @@ const Login = () => {
  
             <button
               type="submit"
-              className="w-full bg-orange-500 text-white py-3 px-4 rounded-full font-medium hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-200"
+              className="w-full bg-orange-500 text-white py-3 px-4 rounded-full font-medium hover:bg-orange-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-200"
             >
               Login
             </button>
           </form>
  
-         
+          <div className="mt-8 text-center">
+            <p className="text-sm text-gray-600">
+              Not a member?{" "}
+              <Link to="/register" className="text-orange-500 hover:text-orange-600 font-medium">
+                Register now
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
  

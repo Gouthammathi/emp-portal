@@ -706,7 +706,7 @@ function TicketsPage() {
                   <span className={`ml-auto text-sm px-2 py-1 rounded-full ${
                     activeTab === 'tickets' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600'
                   }`}>
-                    {tickets.length}
+                    {statusCounts.Open + statusCounts['In Progress']}
                   </span>
                 </button>
                
