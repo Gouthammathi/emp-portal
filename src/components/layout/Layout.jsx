@@ -6,6 +6,7 @@ import Sidebar from '../sidebar/Sidebar';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
+import IdleTimeout from '../IdleTimeout';
  
 function Layout({ children }) {
   const location = useLocation();
@@ -46,6 +47,7 @@ function Layout({ children }) {
     <div className="flex flex-col min-h-screen">
       {/* Header (fixed height assumed 64px) */}
       <Header />
+      {isAuthenticated && <IdleTimeout />}
  
       {/* Main content wrapper (sidebar + page content) */}
       <div className="flex flex-1 h-[calc(100vh-64px)] relative">

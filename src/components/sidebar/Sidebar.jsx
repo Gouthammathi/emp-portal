@@ -135,7 +135,7 @@ const Sidebar = ({ role }) => {
   };
  
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 h-[calc(100vh-64px)] shadow-lg overflow-hidden">
+    <aside className="fixed top-16 left-0 w-64 bg-white border-r border-gray-200 h-[calc(100vh-64px)] shadow-lg overflow-y-auto">
       <div className="flex flex-col h-full">
         <div className="p-6 text-2xl font-bold text-gray-800 border-b">
           <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -224,12 +224,13 @@ const Sidebar = ({ role }) => {
               />
             </>
           )}
+          <div className="text-center p-4 text-gray-500 text-sm border-t">
+        © {new Date().getFullYear()} Artihcus Global
+      </div>
         </ul>
       </div>
  
-      <div className="text-center p-4 text-gray-500 text-sm border-t">
-        © {new Date().getFullYear()} Artihcus Global
-      </div>
+      
     </aside>
   );
 };
@@ -292,10 +293,12 @@ const SidebarDropdown = ({ icon, label, isOpen, onToggle, items, handleNavigate,
                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
           >
+            
             {item.label}
           </li>
         ))}
       </ul>
+      
     )}
   </li>
 );
