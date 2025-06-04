@@ -200,14 +200,14 @@ const Login = () => {
             </button>
           </form>
  
-          <div className="mt-8 text-center">
+          {/* <div className="mt-8 text-center">
             <p className="text-sm text-gray-600">
               Not a member?{" "}
               <Link to="/register" className="text-orange-500 hover:text-orange-600 font-medium">
                 Register now
               </Link>
             </p>
-          </div>
+          </div> */}
         </div>
       </div>
  
