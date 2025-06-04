@@ -36,7 +36,7 @@ const Sidebar = ({ role }) => {
     {
       icon: <GiVideoConference className="text-pink-500 group-hover:text-pink-600" />,
       label: "Conference Hall",
-      path: "/conferencehall"
+      path: "/conference-hall"
     }
   ];
  
