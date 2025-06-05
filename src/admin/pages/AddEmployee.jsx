@@ -34,6 +34,7 @@ const AddEmployee = () => {
     joiningDate: '',
     managerId: '',
     superManagerId: '',
+    cid: '',
 
     // Additional Information
     dateOfBirth: '',
@@ -123,6 +124,9 @@ const AddEmployee = () => {
             ...(employeeData.role && { role: employeeData.role }),
             ...(employeeData.status && { status: employeeData.status }),
             ...(employeeData.joiningDate && { joiningDate: employeeData.joiningDate }),
+            ...(employeeData.managerId && { managerId: employeeData.managerId }),
+            ...(employeeData.superManagerId && { superManagerId: employeeData.superManagerId }),
+            ...(employeeData.cid && { cid: employeeData.cid }),
             ...(employeeData.dateOfBirth && { dateOfBirth: employeeData.dateOfBirth }),
             ...(employeeData.gender && { gender: employeeData.gender }),
             ...(employeeData.maritalStatus && { maritalStatus: employeeData.maritalStatus }),
@@ -193,6 +197,7 @@ const AddEmployee = () => {
         joiningDate: formData.joiningDate,
         managerId: formData.managerId,
         superManagerId: formData.superManagerId,
+        cid: formData.cid,
         dateOfBirth: formData.dateOfBirth,
         gender: formData.gender,
         maritalStatus: formData.maritalStatus,
@@ -226,7 +231,8 @@ const AddEmployee = () => {
         designation: formData.designation,
         image: `/image/Employee/${formData.empId}.jpg`,
         createdAt: new Date().toISOString(),
-        createdBy: 'admin'
+        createdBy: 'admin',
+        cid: formData.cid || null
       });
 
       if (formData.role === 'manager') {
@@ -268,6 +274,7 @@ const AddEmployee = () => {
         joiningDate: '',
         managerId: '',
         superManagerId: '',
+        cid: '',
         dateOfBirth: '',
         gender: '',
         maritalStatus: '',
@@ -524,6 +531,22 @@ const AddEmployee = () => {
                 </div>
               </div>
               
+              <div>
+                <label className="block text-sm font-medium text-gray-700">CID</label>
+                <div className="mt-1 relative rounded-md shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaIdCard className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    name="cid"
+                    value={formData.cid}
+                    onChange={handleInputChange}
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    placeholder="Enter CID"
+                  />
+                </div>
+              </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">Joining Date</label>

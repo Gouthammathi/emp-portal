@@ -45,7 +45,8 @@ const EditEmployee = () => {
       ifscCode: ''
     },
     managerId: '',
-    superManagerId: ''
+    superManagerId: '',
+    cid: ''
   });
 
   useEffect(() => {
@@ -66,7 +67,8 @@ const EditEmployee = () => {
             accountNumber: '',
             bankName: '',
             ifscCode: ''
-          }
+          },
+          cid: data.cid || ''
         });
       } else {
         toast.error('Employee not found');
@@ -130,7 +132,8 @@ const EditEmployee = () => {
         ...formData,
         updatedAt: new Date().toISOString(),
         updatedBy: 'admin',
-        lastModified: new Date().toISOString()
+        lastModified: new Date().toISOString(),
+        cid: formData.cid
       };
 
       // Update the main user document
@@ -147,6 +150,7 @@ const EditEmployee = () => {
           batch.update(doc(db, 'orgChart', orgChartDoc.id), {
             role: formData.role,
             title: formData.designation,
+            cid: formData.cid || null,
             updatedAt: new Date().toISOString()
           });
         }
@@ -672,12 +676,14 @@ const EditEmployee = () => {
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>
+              
+              {/* CID Field */}
               <div>
                 <label className="block text-sm font-medium text-gray-700">CID</label>
                 <input
                   type="text"
-                  name="superManagerId"
-                  value={formData.superManagerId || ''}
+                  name="cid"
+                  value={formData.cid || ''}
                   onChange={handleInputChange}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
