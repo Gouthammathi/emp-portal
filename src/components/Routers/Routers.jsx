@@ -50,6 +50,7 @@ import EmployeeAssignedTickets from '../pages/EmployeeAssignedTickets';
 
 import Layout from '../layout/Layout';
 import AdminRouter from '../../admin/routes/AdminRouter';
+import CSuiteDashboard from '../pages/dashboard/CSuiteDashboard';
 
 const UserLayoutWrapper = () => (
   <Layout>
@@ -79,7 +80,14 @@ const Routers = () => {
         </ProtectedRoute>
       } />
 
-      {/* Employee / Manager / HR / TL / Supermanager */}
+      {/* C-Suite Dashboard Route */}
+      <Route path="/csuite" element={
+        <ProtectedRoute allowedRoles={['c-suite']}>
+          <CSuiteDashboard />
+        </ProtectedRoute>
+      } />
+
+      {/* Employee / Manager / HR / TL / Supermanager / Client Routes */}
       <Route path="/" element={
         <ProtectedRoute allowedRoles={['employee', 'manager', 'hr', 'supermanager', 'tl', 'client']}>
           <UserLayoutWrapper />

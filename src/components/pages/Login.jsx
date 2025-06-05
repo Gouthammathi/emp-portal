@@ -68,6 +68,9 @@ const Login = () => {
         case 'admin':
           navigate("/admin/dashboard");
           break;
+        case 'c-suite':
+          navigate("/csuite");
+          break;
         case 'hr':
         case 'manager':
         case 'supermanager':
@@ -81,11 +84,7 @@ const Login = () => {
       }
  
       // Optional: notify reporting manager
-      const reportHierarchy = {
-        222003: 111069,
-        222002: 222001,
-        222001: 222001,
-      };
+      
  
       const sendEmail = (to, subject, body) => {
         console.log(`Email sent to ${to} with subject: ${subject}`);

@@ -13,7 +13,8 @@ const ROLE_OPTIONS = [
   { value: 'employee', label: 'Employee' },
   { value: 'manager', label: 'Team Lead' },
   { value: 'supermanager', label: 'Manager' },
-  { value: 'hr', label: 'HR' }
+  { value: 'hr', label: 'HR' },
+  { value: 'c-suite', label: 'C-Suite' }
 ];
 
 const AddEmployee = () => {

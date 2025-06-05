@@ -10,6 +10,7 @@ const ROLE_OPTIONS = [
   { value: 'manager', label: 'Team Lead' },
   { value: 'supermanager', label: 'Manager' },
   { value: 'hr', label: 'HR' },
+  { value: 'c-suite', label: 'C-Suite' }
 ];
  
 const PREDEFINED_PROJECTS = [
@@ -52,16 +53,17 @@ const Employees = () => {
   }, []);
  
   const fetchEmployees = async () => {
+    setLoading(true);
     try {
-      const querySnapshot = await getDocs(collection(db, 'users'));
-      const employeeList = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setEmployees(employeeList);
+      // Filter out users with the role 'client'
+      const q = query(collection(db, 'users'), where('role', '!=', 'client'));
+      const querySnapshot = await getDocs(q);
+      const employeesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setEmployees(employeesData);
+      setFilteredEmployees(employeesData);
      
       // Extract unique departments
-      const uniqueDepartments = [...new Set(employeeList.map(emp => emp.department))].filter(Boolean);
+      const uniqueDepartments = [...new Set(employeesData.map(emp => emp.department))].filter(Boolean);
       setDepartments(uniqueDepartments);
      
       setLoading(false);
@@ -653,22 +655,22 @@ const Employees = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex justify-end space-x-3">
+                      <div className="flex justify-end space-x-1">
                         {employee.role === 'manager' && (
                           <>
-                          <button
-                            onClick={() => {
-                              setSelectedEmployee(employee);
-                              setIsProjectModalOpen(true);
-                            }}
-                            className="text-green-600 hover:text-green-900 transition-colors duration-200"
-                            title="Assign Project"
-                          >
-                            <FaTasks className="h-5 w-5" />
-                          </button>
+                            <button
+                              onClick={() => {
+                                setSelectedEmployee(employee);
+                                setIsProjectModalOpen(true);
+                              }}
+                              className="p-2 rounded-full text-green-600 hover:bg-green-100 hover:text-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition-all duration-200"
+                              title="Assign Project"
+                            >
+                              <FaTasks className="h-5 w-5" />
+                            </button>
                             <button
                               onClick={() => handleRemoveTeamLead(employee.id)}
-                              className="text-yellow-600 hover:text-yellow-900 transition-colors duration-200"
+                              className="p-2 rounded-full text-yellow-600 hover:bg-yellow-100 hover:text-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-opacity-50 transition-all duration-200"
                               title="Remove from Projects"
                             >
                               <FaUserMinus className="h-5 w-5" />
@@ -677,14 +679,14 @@ const Employees = () => {
                         )}
                         <button
                           onClick={() => handleEdit(employee)}
-                          className="text-indigo-600 hover:text-indigo-900 transition-colors duration-200"
+                          className="p-2 rounded-full text-indigo-600 hover:bg-indigo-100 hover:text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition-all duration-200"
                           title="Edit Employee"
                         >
                           <FaEdit className="h-5 w-5" />
                         </button>
                         <button
                           onClick={() => handleDelete(employee)}
-                          className="text-red-600 hover:text-red-900 transition-colors duration-200"
+                          className="p-2 rounded-full text-red-600 hover:bg-red-100 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition-all duration-200"
                           title="Delete Employee"
                         >
                           <FaTrash className="h-5 w-5" />
