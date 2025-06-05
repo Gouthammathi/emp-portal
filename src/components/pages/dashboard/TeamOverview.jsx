@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
 import { collection, query, where, getDocs, getDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../firebase';
-import orgChartData from '../../../data/orgchart.json';
 import { useNavigate } from 'react-router-dom';
 import { FaClock, FaClipboardList, FaFileInvoiceDollar, FaBook } from 'react-icons/fa';
- 
+
 const TeamOverview = () => {
   const [teamMembers, setTeamMembers] = useState([]);
   const [filteredMembers, setFilteredMembers] = useState([]);
@@ -22,7 +21,7 @@ const TeamOverview = () => {
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
- 
+
   useEffect(() => {
     const fetchTeamMembers = async () => {
       const auth = getAuth();
@@ -33,108 +32,59 @@ const TeamOverview = () => {
         setLoading(false);
         return;
       }
- 
+
       try {
-        // Step 1: Get current user's data from Firestore
-        const userQuery = query(collection(db, "users"), where("uid", "==", user.uid));
-        const userSnapshot = await getDocs(userQuery);
-       
-        let userData;
-        if (userSnapshot.empty) {
-          const userDoc = await getDoc(doc(db, "users", user.uid));
-          if (!userDoc.exists()) {
-            setError("User data not found");
-            setLoading(false);
-            return;
-          }
-          userData = userDoc.data();
-        } else {
-          userData = userSnapshot.docs[0].data();
+        // Get current user's data from Firestore
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (!userDoc.exists()) {
+          setError("User data not found");
+          setLoading(false);
+          return;
         }
- 
+
+        const userData = userDoc.data();
         console.log("User data from Firestore:", userData);
- 
+
         if (!userData?.empId) {
           setError("Employee ID not found");
           setLoading(false);
           return;
         }
- 
-        // Step 2: Check if the current user is a manager in orgchart.json
-        console.log("Looking for user in orgchart with empId:", userData.empId);
-       
-        const currentUserInOrgChart = orgChartData.organizationChart.find(
-          emp => String(emp.empId) === String(userData.empId)
+
+        // Find all employees who have this manager's empId as their managerId
+        const teamMembersQuery = query(
+          collection(db, "users"),
+          where("managerId", "==", userData.empId),
+          where("status", "==", "active")
         );
- 
-        console.log("Found user in orgchart:", currentUserInOrgChart);
- 
-        if (!currentUserInOrgChart) {
-          setError("User not found in organization chart");
+        
+        const teamMembersSnapshot = await getDocs(teamMembersQuery);
+        const teamMembersData = teamMembersSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          employeeName: `${doc.data().firstName} ${doc.data().lastName}`
+        }));
+
+        console.log("Found team members:", teamMembersData);
+
+        if (teamMembersData.length === 0) {
+          setError("No team members found");
           setLoading(false);
           return;
         }
- 
-        // Step 3: Find all employees who have this manager's empId as their managerId
-        console.log("Finding team members with managerId:", userData.empId);
-        const orgChartTeamMembers = orgChartData.organizationChart.filter(
-          emp => String(emp.managerId) === String(userData.empId)
-        );
- 
-        console.log("Found team members in orgchart:", orgChartTeamMembers);
- 
-        if (orgChartTeamMembers.length === 0) {
-          setError("No team members found in organization chart");
-          setLoading(false);
-          return;
-        }
- 
-        // Step 4: Check which of these employees are registered in the database
-        const registeredTeamMembers = [];
-       
-        for (const member of orgChartTeamMembers) {
-          console.log("Checking registration for employee:", member.empId);
-         
-          // Check if employee is registered in users collection
-          const userQuery = query(
-            collection(db, "users"),
-            where("empId", "==", member.empId)
-          );
-          const userSnapshot = await getDocs(userQuery);
-         
-          console.log("Registration check result for", member.empId, ":", !userSnapshot.empty);
-         
-          if (!userSnapshot.empty) {
-            // Employee is registered, add their data
-            const userData = userSnapshot.docs[0].data();
-            registeredTeamMembers.push({
-              ...member,
-              ...userData,
-              isRegistered: true
-            });
-          }
-        }
- 
-        console.log("Final registered team members:", registeredTeamMembers);
- 
-        if (registeredTeamMembers.length === 0) {
-          setError("No registered team members found");
-          setLoading(false);
-          return;
-        }
- 
-        setTeamMembers(registeredTeamMembers);
-        setFilteredMembers(registeredTeamMembers);
+
+        setTeamMembers(teamMembersData);
+        setFilteredMembers(teamMembersData);
       } catch (error) {
         console.error("Error fetching team members:", error);
         setError("Error loading team members: " + error.message);
       }
       setLoading(false);
     };
- 
+
     fetchTeamMembers();
   }, []);
- 
+
   // Add search functionality
   useEffect(() => {
     if (searchQuery.trim() === '') {
@@ -148,12 +98,12 @@ const TeamOverview = () => {
       setFilteredMembers(filtered);
     }
   }, [searchQuery, teamMembers]);
- 
+
   const fetchMemberData = async (empId) => {
     setLoading(true);
     try {
       console.log("Fetching data for employee:", empId);
- 
+
       // Fetch timesheets
       const timesheetsQuery = query(
         collection(db, "timesheets"),
@@ -165,7 +115,7 @@ const TeamOverview = () => {
         ...doc.data()
       }));
       console.log("Fetched timesheets:", timesheets);
- 
+
       // Fetch status reports
       const statusQuery = query(
         collection(db, "statusReports"),
@@ -176,7 +126,7 @@ const TeamOverview = () => {
         id: doc.id,
         ...doc.data()
       }));
- 
+
       // Fetch mock tests
       const mockTestsQuery = query(
         collection(db, "mockTests"),
@@ -189,7 +139,7 @@ const TeamOverview = () => {
         ...doc.data()
       }));
       console.log("Fetched mock tests:", mockTests);
- 
+
       // Fetch reimbursement requests
       const reimbursementsQuery = query(
         collection(db, "reimbursements"),
@@ -200,7 +150,7 @@ const TeamOverview = () => {
         id: doc.id,
         ...doc.data()
       }));
- 
+
       setMemberData({
         timesheets,
         statusReports,
@@ -212,17 +162,17 @@ const TeamOverview = () => {
     }
     setLoading(false);
   };
- 
+
   const handleMemberClick = (member) => {
     // Navigate to the team member details page
     navigate(`/team-member/${member.empId}`, { state: { member } });
   };
- 
+
   const closeModal = () => {
     setShowModal(false);
     setSelectedMember(null);
   };
- 
+
   const handleApproveTimesheet = async (timesheetId) => {
     try {
       const timesheetRef = doc(db, "timesheets", timesheetId);
@@ -243,7 +193,7 @@ const TeamOverview = () => {
       alert('Error approving timesheet. Please try again.');
     }
   };
- 
+
   const handleApproveStatusReport = async (statusReportId) => {
     try {
       const statusReportRef = doc(db, "statusReports", statusReportId);
@@ -264,7 +214,7 @@ const TeamOverview = () => {
       alert('Error approving status report. Please try again.');
     }
   };
- 
+
   const handleApproveReimbursement = async (reimbursementId) => {
     try {
       const reimbursementRef = doc(db, "reimbursements", reimbursementId);
@@ -285,7 +235,7 @@ const TeamOverview = () => {
       alert('Error approving reimbursement request. Please try again.');
     }
   };
- 
+
   const handleRejectReimbursement = async (reimbursementId, comments) => {
     try {
       const reimbursementRef = doc(db, "reimbursements", reimbursementId);
@@ -307,19 +257,7 @@ const TeamOverview = () => {
       alert('Error rejecting reimbursement request. Please try again.');
     }
   };
- 
-  const getDesignation = (member) => {
-    // Check if the member has a role in the hierarchy
-    if (member.role) {
-      return member.role.charAt(0).toUpperCase() + member.role.slice(1);
-    }
-    // If no specific role is set, check if they have a managerId
-    if (member.managerId) {
-      return 'Employee';
-    }
-    return 'Employee';
-  };
- 
+
   const getCardColor = (member) => {
     const role = member.role?.toLowerCase();
     switch (role) {
@@ -333,7 +271,11 @@ const TeamOverview = () => {
         return 'from-orange-500 to-orange-600';
     }
   };
- 
+
+  const getDesignation = (member) => {
+    return member.designation || member.title || 'Not specified';
+  };
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'timesheets':
@@ -604,28 +546,33 @@ const TeamOverview = () => {
         return null;
     }
   };
- 
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-xl text-gray-600">Loading team members...</div>
       </div>
     );
   }
- 
+
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-          <strong className="font-bold">Error: </strong>
-          <span className="block sm:inline">{error}</span>
+      <div className="min-h-screen bg-gray-50 py-6 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">Team Overview</h1>
+            <p className="mt-2 text-gray-600">View and manage your team members</p>
+          </div>
+          <div className="bg-white rounded-lg shadow-lg p-6 text-center">
+            <p className="text-red-600">{error}</p>
+          </div>
         </div>
       </div>
     );
   }
- 
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200">
+    <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 space-y-4 md:space-y-0">
@@ -742,6 +689,6 @@ const TeamOverview = () => {
     </div>
   );
 };
- 
+
 export default TeamOverview;
  

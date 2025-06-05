@@ -5,202 +5,88 @@ import { collection, doc, getDocs, addDoc, updateDoc, deleteDoc, query, where } 
 import { db } from '../../firebase';
 import { toast } from 'react-toastify';
 
-// Initial org chart data from CSV
-const initialOrgData = [
-  { empId: "111001", name: "Rajshri Rama Krishna Walse", title: "Top Level Manager", managerId: null },
-  { empId: "111002", name: "CHITTEPU LAKSHMI CHENNA KESAVA REDDY", title: "CEO", managerId: "111001" },
-  { empId: "111003", name: "Syama Sundara Reddy Obulapuram", title: "COO", managerId: "111001" },
-  { empId: "111004", name: "Muralidhar Reddy Nara", title: "CTO", managerId: "111001" },
-  { empId: "111005", name: "Hari Nadha Reddy Andluru", title: "Senior Solution Architect", managerId: "111001" },
-  { empId: "111087", name: "G P Subba Reddy", title: "Senior Solution Architect", managerId: "111001" },
-  { empId: "111088", name: "Radha Krishna Battu", title: "CFO", managerId: "111001" },
-  { empId: "111047", name: "Nigama Ambala", title: "Consultant", managerId: "111087" },
-  { empId: "111007", name: "Pothukuchi Surya Annapurna Santhy Kamal", title: "Recruitment Head", managerId: "111003" },
-  { empId: "111015", name: "SUBBA RAM REDDY JEEREDDY", title: "HR Manager", managerId: "111003" },
-  { empId: "111045", name: "Isvaiah Lyagala", title: "Consultant", managerId: "111003" },
-  { empId: "111062", name: "Dodla Sai Kumar", title: "Digital Marketing Executive", managerId: "111003" },
-  { empId: "111006", name: "Gade Sambi Reddy", title: "Consultant", managerId: "111002" },
-  { empId: "111016", name: "Anirudh Teppala", title: "Associate Consultant", managerId: "111002" },
-  { empId: "111031", name: "Chandra Sekhar . K", title: "Associate Consultant", managerId: "111002" },
-  { empId: "111078", name: "Amareshwar", title: "Associate Consultant", managerId: "111002" },
-  { empId: "111082", name: "MAQBOOL HUSSAIN SYED", title: "Associate Consultant", managerId: "111002" },
-  { empId: "111014", name: "Mandapati Vajra Reddy", title: "Lead Consultant", managerId: "111004" },
-  { empId: "111028", name: "Susmitha.P", title: "Lead Consultant", managerId: "111004" },
-  { empId: "111012", name: "Nikhileswar Reddy G", title: "Lead Consultant", managerId: "111005" },
-  { empId: "111024", name: "RAJESH.N", title: "Consultant", managerId: "111047" },
-  { empId: "111025", name: "Sreedhar Sreeram", title: "Consultant", managerId: "111047" },
-  { empId: "111041", name: "Jadapalli Devendra Goud", title: "Consultant", managerId: "111047" },
-  { empId: "111042", name: "Madupu Gayathri", title: "Consultant", managerId: "111047" },
-  { empId: "111043", name: "Gaddam Hashitha Reddy", title: "Consultant", managerId: "111047" },
-  { empId: "111048", name: "Pydikondala priyathama subhash", title: "Consultant", managerId: "111047" },
-  { empId: "111049", name: "Ramya Pasala", title: "Consultant", managerId: "111047" },
-  { empId: "111051", name: "Paloju Srilekha", title: "Consultant", managerId: "111047" },
-  { empId: "111054", name: "Naveen Kumar Reddy Malireddy", title: "Consultant", managerId: "111047" },
-  { empId: "111055", name: "Ramesh Pasuvula", title: "Consultant", managerId: "111047" },
-  { empId: "111057", name: "Uday Deepak Burela", title: "Consultant", managerId: "111047" },
-  { empId: "111066", name: "Bhavani Thumkunta", title: "Associate Consultant", managerId: "111047" },
-  { empId: "111072", name: "Sailaja Konudula", title: "Associate Consultant", managerId: "111047" },
-  { empId: "111076", name: "Moola Muni Swetha", title: "Associate Consultant", managerId: "111047" },
-  { empId: "111077", name: "Vanguri Chakradhar Reddy", title: "Associate Consultant", managerId: "111047" },
-  { empId: "111080", name: "Donthireddy Niharika", title: "Associate Consultant", managerId: "111047" },
-  { empId: "111021", name: "Dharani Obulreddy", title: "Consultant", managerId: "111028" },
-  { empId: "111023", name: "Viswanadhuni Lakshmi Kalyani", title: "Consultant", managerId: "111028" },
-  { empId: "111029", name: "Venkata Viswam .R", title: "Lead Consultant", managerId: "111028" },
-  { empId: "111032", name: "Jyothi Konda", title: "Consultant", managerId: "111028" },
-  { empId: "111046", name: "Neeraja Chinnimilli", title: "Consultant", managerId: "111028" },
-  { empId: "111050", name: "Kasireddy Sivakalyani", title: "Consultant", managerId: "111028" },
-  { empId: "111069", name: "Penthala Harsha Vardhan", title: "Associate Consultant", managerId: "111028" },
-  { empId: "111071", name: "Nithin Reddy Gangadasari", title: "Associate Consultant", managerId: "111028" },
-  { empId: "222001", name: "Ganesh Dhanasri", title: "Intern", managerId: "111028" },
-  { empId: "222002", name: "Geetha Sandesh N", title: "Intern", managerId: "111028" },
-  { empId: "222003", name: "Goutham Mathi", title: "Intern", managerId: "111028" },
-  { empId: "222004", name: "Pachigolla Navya", title: "Intern", managerId: "111028" },
-  { empId: "111064", name: "Akhila kakarla", title: "Associate Consultant", managerId: "111014" },
-  { empId: "111065", name: "Manikanteswara Reddy Mukkamalla", title: "Associate Consultant", managerId: "111014" },
-  { empId: "111009", name: "Ajay Rajashekhar Gundinahole", title: "Functional Consultant", managerId: "111012" },
-  { empId: "111010", name: "Shravan Kumar kharwar", title: "Senior Functional Consultant", managerId: "111012" },
-  { empId: "111017", name: "Gaurav Bhargav Patil", title: "Associate Consultant", managerId: "111012" },
-  { empId: "111018", name: "Gangadasari Lakshmi Narasimha Reddy", title: "Functional Consultant", managerId: "111012" },
-  { empId: "111019", name: "Prathibha Polagari", title: "Functional Consultant", managerId: "111012" },
-  { empId: "111020", name: "Sai Kumar Thalikota", title: "Associate Consultant", managerId: "111012" },
-  { empId: "111035", name: "Poojitha Bandaru", title: "Associate Consultant", managerId: "111012" },
-  { empId: "111037", name: "Aswartha Narayanamma Vulindala", title: "Consultant", managerId: "111012" },
-  { empId: "111038", name: "Harish Bathala", title: "Associate Consultant", managerId: "111012" },
-  { empId: "111044", name: "Hemanth Kumar Reddy Bollapu", title: "Consultant", managerId: "111012" },
-  { empId: "111056", name: "Chandra Sekhara Reddy Chittepu", title: "Consultant", managerId: "111012" },
-  { empId: "111061", name: "Parameswar Reddy Obulreddy", title: "Associate Consultant", managerId: "111012" },
-  { empId: "111063", name: "Nara Sai Hemanth Reddy", title: "Associate Consultant", managerId: "111012" },
-  { empId: "111067", name: "Dinesh Reddy S.", title: "Associate Consultant", managerId: "111012" },
-  { empId: "111068", name: "Ganesh Gunde", title: "Associate Consultant", managerId: "111012" },
-  { empId: "111073", name: "Pachharapalle Siva Nageswara Reddy", title: "Associate Consultant", managerId: "111012" },
-  { empId: "111074", name: "Thota Lakshminarasimha Udaya Bhaskar", title: "Associate Consultant", managerId: "111012" },
-  { empId: "111075", name: "Vijay Kumar M", title: "Associate Consultant", managerId: "111012" },
-  { empId: "111079", name: "Kavya Penugonda", title: "Associate Consultant", managerId: "111012" }
-];
-
 function AdminOrgChart() {
   const [orgData, setOrgData] = useState(null);
   const [selectedPerson, setSelectedPerson] = useState(null);
-  const [expandedNodes, setExpandedNodes] = useState(new Set(["111001"]));
+  const [expandedNodes, setExpandedNodes] = useState(new Set());
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [newEmployee, setNewEmployee] = useState({
-    name: '',
-    title: '',
-    empId: '',
-    managerId: '',
-    image: ''
-  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const initializeOrgChart = async () => {
-      try {
-        // Check if org chart data exists in Firestore
-        const orgChartRef = collection(db, 'orgChart');
-        const snapshot = await getDocs(orgChartRef);
-        
-        if (snapshot.empty) {
-          // If no data exists, initialize with CSV data
-          const batch = db.batch();
-          initialOrgData.forEach(employee => {
-            const docRef = doc(orgChartRef);
-            batch.set(docRef, {
-              ...employee,
-              image: `/image/Employee/${employee.empId}.jpg`
-            });
-          });
-          await batch.commit();
-          toast.success('Organization chart initialized successfully');
-        }
-        
-        // Fetch the data
-        await fetchOrgData();
-      } catch (error) {
-        console.error('Error initializing org chart:', error);
-        toast.error('Failed to initialize organization chart');
-        setLoading(false);
-      }
-    };
-
-    initializeOrgChart();
+    fetchOrgData();
   }, []);
 
   const fetchOrgData = async () => {
     try {
-      const orgChartRef = collection(db, 'orgChart');
-      const snapshot = await getDocs(orgChartRef);
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      
-      // Convert flat data to tree structure
-      const treeData = buildOrgTree(data);
+      const usersRef = collection(db, 'users');
+      const snapshot = await getDocs(usersRef);
+      const users = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      // Build the organization tree
+      const treeData = buildOrgTree(users);
       setOrgData(treeData);
-      setLoading(false);
+      
+      // Set the root node as expanded by default
+      if (treeData) {
+        setExpandedNodes(new Set([treeData.empId]));
+      }
     } catch (error) {
       console.error('Error fetching org chart:', error);
       toast.error('Failed to load organization chart');
+    } finally {
       setLoading(false);
     }
   };
 
-  const buildOrgTree = (data) => {
+  const buildOrgTree = (users) => {
     const map = {};
     const roots = [];
 
     // First pass: create a map of all nodes
-    data.forEach(item => {
-      map[item.empId] = { ...item, children: [] };
+    users.forEach(user => {
+      map[user.empId] = {
+        ...user,
+        name: `${user.firstName} ${user.lastName}`,
+        title: user.designation,
+        children: [],
+        image: `/image/Employee/${user.empId}.jpg`
+      };
     });
 
     // Second pass: build the tree
-    data.forEach(item => {
-      if (item.managerId) {
-        const parent = map[item.managerId];
+    users.forEach(user => {
+      if (user.managerId) {
+        const parent = map[user.managerId];
         if (parent) {
-          parent.children.push(map[item.empId]);
+          parent.children.push(map[user.empId]);
         }
       } else {
-        roots.push(map[item.empId]);
+        roots.push(map[user.empId]);
       }
     });
 
     return roots[0]; // Return the root node
   };
 
-  const handleAddEmployee = async () => {
-    try {
-      const orgChartRef = collection(db, 'orgChart');
-      await addDoc(orgChartRef, newEmployee);
-      toast.success('Employee added successfully');
-      setShowAddModal(false);
-      setNewEmployee({
-        name: '',
-        title: '',
-        empId: '',
-        managerId: '',
-        image: ''
-      });
-      fetchOrgData();
-    } catch (error) {
-      console.error('Error adding employee:', error);
-      toast.error('Failed to add employee');
-    }
-  };
-
   const handleEditEmployee = async () => {
     try {
-      const orgChartRef = collection(db, 'orgChart');
-      const q = query(orgChartRef, where('empId', '==', selectedPerson.empId));
-      const snapshot = await getDocs(q);
+      const userRef = doc(db, 'users', selectedPerson.id);
+      await updateDoc(userRef, {
+        firstName: selectedPerson.firstName,
+        lastName: selectedPerson.lastName,
+        designation: selectedPerson.title,
+        managerId: selectedPerson.managerId,
+        updatedAt: new Date().toISOString()
+      });
       
-      if (!snapshot.empty) {
-        const docRef = doc(db, 'orgChart', snapshot.docs[0].id);
-        await updateDoc(docRef, selectedPerson);
-        toast.success('Employee updated successfully');
-        setShowEditModal(false);
-        fetchOrgData();
-      }
+      toast.success('Employee updated successfully');
+      setShowEditModal(false);
+      fetchOrgData();
     } catch (error) {
       console.error('Error updating employee:', error);
       toast.error('Failed to update employee');
@@ -209,17 +95,15 @@ function AdminOrgChart() {
 
   const handleDeleteEmployee = async () => {
     try {
-      const orgChartRef = collection(db, 'orgChart');
-      const q = query(orgChartRef, where('empId', '==', selectedPerson.empId));
-      const snapshot = await getDocs(q);
+      const userRef = doc(db, 'users', selectedPerson.id);
+      await updateDoc(userRef, {
+        status: 'inactive',
+        updatedAt: new Date().toISOString()
+      });
       
-      if (!snapshot.empty) {
-        const docRef = doc(db, 'orgChart', snapshot.docs[0].id);
-        await deleteDoc(docRef);
-        toast.success('Employee deleted successfully');
-        setShowDeleteModal(false);
-        fetchOrgData();
-      }
+      toast.success('Employee deleted successfully');
+      setShowDeleteModal(false);
+      fetchOrgData();
     } catch (error) {
       console.error('Error deleting employee:', error);
       toast.error('Failed to delete employee');
@@ -332,12 +216,6 @@ function AdminOrgChart() {
         <h1 className="text-4xl font-bold text-gray-800">
           <span className="text-blue-600">🧭</span> Organization Chart
         </h1>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <FaPlus /> Add Employee
-        </button>
       </div>
 
       <div className="relative h-[85vh] overflow-hidden border rounded-xl bg-white shadow-xl">
@@ -385,66 +263,6 @@ function AdminOrgChart() {
         </TransformWrapper>
       </div>
 
-      {/* Add Employee Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-96">
-            <h2 className="text-xl font-bold mb-4">Add New Employee</h2>
-            <div className="space-y-4">
-              <input
-                type="text"
-                placeholder="Name"
-                className="w-full p-2 border rounded"
-                value={newEmployee.name}
-                onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })}
-              />
-              <input
-                type="text"
-                placeholder="Title"
-                className="w-full p-2 border rounded"
-                value={newEmployee.title}
-                onChange={(e) => setNewEmployee({ ...newEmployee, title: e.target.value })}
-              />
-              <input
-                type="text"
-                placeholder="Employee ID"
-                className="w-full p-2 border rounded"
-                value={newEmployee.empId}
-                onChange={(e) => setNewEmployee({ ...newEmployee, empId: e.target.value })}
-              />
-              <input
-                type="text"
-                placeholder="Manager ID"
-                className="w-full p-2 border rounded"
-                value={newEmployee.managerId}
-                onChange={(e) => setNewEmployee({ ...newEmployee, managerId: e.target.value })}
-              />
-              <input
-                type="text"
-                placeholder="Image URL"
-                className="w-full p-2 border rounded"
-                value={newEmployee.image}
-                onChange={(e) => setNewEmployee({ ...newEmployee, image: e.target.value })}
-              />
-            </div>
-            <div className="flex justify-end gap-2 mt-6">
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleAddEmployee}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Add
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Edit Employee Modal */}
       {showEditModal && selectedPerson && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -453,14 +271,21 @@ function AdminOrgChart() {
             <div className="space-y-4">
               <input
                 type="text"
-                placeholder="Name"
+                placeholder="First Name"
                 className="w-full p-2 border rounded"
-                value={selectedPerson.name}
-                onChange={(e) => setSelectedPerson({ ...selectedPerson, name: e.target.value })}
+                value={selectedPerson.firstName}
+                onChange={(e) => setSelectedPerson({ ...selectedPerson, firstName: e.target.value })}
               />
               <input
                 type="text"
-                placeholder="Title"
+                placeholder="Last Name"
+                className="w-full p-2 border rounded"
+                value={selectedPerson.lastName}
+                onChange={(e) => setSelectedPerson({ ...selectedPerson, lastName: e.target.value })}
+              />
+              <input
+                type="text"
+                placeholder="Designation"
                 className="w-full p-2 border rounded"
                 value={selectedPerson.title}
                 onChange={(e) => setSelectedPerson({ ...selectedPerson, title: e.target.value })}
@@ -471,13 +296,6 @@ function AdminOrgChart() {
                 className="w-full p-2 border rounded"
                 value={selectedPerson.managerId}
                 onChange={(e) => setSelectedPerson({ ...selectedPerson, managerId: e.target.value })}
-              />
-              <input
-                type="text"
-                placeholder="Image URL"
-                className="w-full p-2 border rounded"
-                value={selectedPerson.image}
-                onChange={(e) => setSelectedPerson({ ...selectedPerson, image: e.target.value })}
               />
             </div>
             <div className="flex justify-end gap-2 mt-6">

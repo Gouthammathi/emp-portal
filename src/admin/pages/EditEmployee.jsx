@@ -43,7 +43,9 @@ const EditEmployee = () => {
       accountNumber: '',
       bankName: '',
       ifscCode: ''
-    }
+    },
+    managerId: '',
+    superManagerId: ''
   });
 
   useEffect(() => {
@@ -638,6 +640,34 @@ const EditEmployee = () => {
                   type="text"
                   name="bankDetails.ifscCode"
                   value={formData.bankDetails.ifscCode}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Manager Information */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">Manager Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Manager ID</label>
+                <input
+                  type="text"
+                  name="managerId"
+                  value={formData.managerId || ''}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Super Manager ID</label>
+                <input
+                  type="text"
+                  name="superManagerId"
+                  value={formData.superManagerId || ''}
                   onChange={handleInputChange}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />

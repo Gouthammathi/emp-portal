@@ -7,6 +7,8 @@ import { toast } from 'react-toastify';
 import { parseExcelFile } from '../../utils/excelParser';
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 
+const API_URL = 'http://localhost:3001';
+
 const ROLE_OPTIONS = [
   { value: 'employee', label: 'Employee' },
   { value: 'manager', label: 'Team Lead' },
@@ -30,6 +32,8 @@ const AddEmployee = () => {
     role: '',
     status: 'active',
     joiningDate: '',
+    managerId: '',
+    superManagerId: '',
 
     // Additional Information
     dateOfBirth: '',
@@ -187,6 +191,8 @@ const AddEmployee = () => {
         role: formData.role,
         status: formData.status,
         joiningDate: formData.joiningDate,
+        managerId: formData.managerId,
+        superManagerId: formData.superManagerId,
         dateOfBirth: formData.dateOfBirth,
         gender: formData.gender,
         maritalStatus: formData.maritalStatus,
@@ -204,9 +210,24 @@ const AddEmployee = () => {
         updatedBy: 'admin'
       };
 
-      await setDoc(doc(db, "users", user.uid), employeeData);
-
       const batch = writeBatch(db);
+
+      // Save to users collection
+      batch.set(doc(db, "users", user.uid), employeeData);
+
+      // Add to orgChart collection
+      const orgChartRef = doc(collection(db, 'orgChart'));
+      batch.set(orgChartRef, {
+        empId: formData.empId,
+        employeeName: `${formData.firstName} ${formData.lastName}`,
+        managerId: formData.managerId || null,
+        SupermanagerId: formData.superManagerId || null,
+        department: formData.department,
+        designation: formData.designation,
+        image: `/image/Employee/${formData.empId}.jpg`,
+        createdAt: new Date().toISOString(),
+        createdBy: 'admin'
+      });
 
       if (formData.role === 'manager') {
         const teamRef = doc(collection(db, 'teams'));
@@ -229,39 +250,8 @@ const AddEmployee = () => {
         });
       }
 
-      const orgChartRef = doc(collection(db, 'orgChart'));
-      batch.set(orgChartRef, {
-        empId: formData.empId,
-        name: `${formData.firstName} ${formData.lastName}`,
-        role: formData.role,
-        title: formData.designation,
-        department: formData.department,
-        createdAt: new Date().toISOString(),
-        createdBy: 'admin'
-      });
-
       await batch.commit();
-
       toast.success('Employee added successfully');
-
-      // Log current user and role after successful save
-      const currentUser = auth.currentUser;
-      if (currentUser) {
-        console.log('AddEmployee: Current user after save:', currentUser.uid);
-        // Attempt to fetch user document again to see the role
-        try {
-          const userDocSnap = await getDoc(doc(db, 'users', currentUser.uid));
-          if (userDocSnap.exists()) {
-            console.log('AddEmployee: User role after save:', userDocSnap.data().role);
-          } else {
-            console.log('AddEmployee: User document not found for current user after save.');
-          }
-        } catch (fetchError) {
-          console.error('AddEmployee: Error fetching current user document after save:', fetchError);
-        }
-      } else {
-        console.log('AddEmployee: No current user found after save.');
-      }
 
       // Reset form data after successful submission
       setFormData({
@@ -276,6 +266,8 @@ const AddEmployee = () => {
         role: '',
         status: 'active',
         joiningDate: '',
+        managerId: '',
+        superManagerId: '',
         dateOfBirth: '',
         gender: '',
         maritalStatus: '',
@@ -496,6 +488,40 @@ const AddEmployee = () => {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Manager ID</label>
+                <div className="mt-1 relative rounded-md shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaUser className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    name="managerId"
+                    value={formData.managerId}
+                    onChange={handleInputChange}
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    placeholder="Enter manager's employee ID"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Super Manager ID</label>
+                <div className="mt-1 relative rounded-md shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaUser className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    name="superManagerId"
+                    value={formData.superManagerId}
+                    onChange={handleInputChange}
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    placeholder="Enter super manager's employee ID"
+                  />
+                </div>
               </div>
 
               <div>
