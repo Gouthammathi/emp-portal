@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
-import { collection, addDoc, getDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, getDoc, doc, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../../firebase';
-import orgChartData from '../../../data/orgchart.json';
- 
+
 const DailyStatus = () => {
   const [status, setStatus] = useState({
     date: new Date().toISOString().split('T')[0],
@@ -37,20 +36,41 @@ const DailyStatus = () => {
           const data = userDoc.data();
           console.log("Fetched user data:", data);
          
-          // Find manager name from orgchart
           let managerName = '';
-          if (data.empId) {
-            const employeeInOrgChart = orgChartData.organizationChart.find(
-              emp => String(emp.empId) === String(data.empId)
+          
+          // Fetch manager/super manager/CID based on user role
+          if (data.role === 'employee' && data.managerId) {
+            // For employees, fetch their manager
+            const managerQuery = query(
+              collection(db, "users"),
+              where("empId", "==", data.managerId)
             );
-           
-            if (employeeInOrgChart && employeeInOrgChart.managerId) {
-              const managerInOrgChart = orgChartData.organizationChart.find(
-                emp => String(emp.empId) === String(employeeInOrgChart.managerId)
-              );
-              if (managerInOrgChart) {
-                managerName = managerInOrgChart.employeeName;
-              }
+            const managerSnapshot = await getDocs(managerQuery);
+            if (!managerSnapshot.empty) {
+              const managerData = managerSnapshot.docs[0].data();
+              managerName = `${managerData.firstName} ${managerData.lastName}`.trim();
+            }
+          } else if (data.role === 'manager' && data.superManagerId) {
+            // For managers, fetch their super manager
+            const superManagerQuery = query(
+              collection(db, "users"),
+              where("empId", "==", data.superManagerId)
+            );
+            const superManagerSnapshot = await getDocs(superManagerQuery);
+            if (!superManagerSnapshot.empty) {
+              const superManagerData = superManagerSnapshot.docs[0].data();
+              managerName = `${superManagerData.firstName} ${superManagerData.lastName}`.trim();
+            }
+          } else if (data.role === 'super_manager' && data.cid) {
+            // For super managers, fetch their CID
+            const cidQuery = query(
+              collection(db, "users"),
+              where("empId", "==", data.cid)
+            );
+            const cidSnapshot = await getDocs(cidQuery);
+            if (!cidSnapshot.empty) {
+              const cidData = cidSnapshot.docs[0].data();
+              managerName = `${cidData.firstName} ${cidData.lastName}`.trim();
             }
           }
          

@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
-import { collection, addDoc, getDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, getDoc, doc, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../../firebase';
-import orgChartData from '../../../data/orgchart.json';
- 
+
 const shiftOptions = ['Morning', 'Evening', 'Night'];
 const dayOptions = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
  
@@ -21,6 +20,7 @@ const Timesheet = () => {
     empId: '',
     name: '',
     manager: '',
+    superManager: '',
   });
  
   const [timesheet, setTimesheet] = useState([]);
@@ -35,13 +35,54 @@ const Timesheet = () => {
  
         if (userDoc.exists()) {
           const data = userDoc.data();
+          console.log('User Data:', data);
  
           let managerName = '';
+ 
           if (data.empId) {
-            const emp = orgChartData.organizationChart.find(emp => String(emp.empId) === String(data.empId));
-            if (emp?.managerId) {
-              const manager = orgChartData.organizationChart.find(m => String(m.empId) === String(emp.managerId));
-              managerName = manager?.employeeName || '';
+            // If user is a manager, fetch their super manager
+            if (data.role === 'manager' && data.superManagerId) {
+              console.log('Manager found, superManagerId:', data.superManagerId);
+              
+              // Find the super manager's user document by empId
+              const usersRef = collection(db, 'users');
+              const q = query(usersRef, where('empId', '==', data.superManagerId));
+              const querySnapshot = await getDocs(q);
+              
+              if (!querySnapshot.empty) {
+                const superManagerDoc = querySnapshot.docs[0];
+                console.log('Super Manager Doc:', superManagerDoc.data());
+                const superManagerData = superManagerDoc.data();
+                managerName = `${superManagerData.firstName} ${superManagerData.lastName}`.trim();
+                console.log('Super Manager Name:', managerName);
+              }
+            } else if (data.role === 'super_manager' && data.cid) {
+              // If user is a super manager, fetch their CID
+              console.log('Super Manager found, CID:', data.cid);
+              
+              // Find the CID's user document by empId
+              const usersRef = collection(db, 'users');
+              const q = query(usersRef, where('empId', '==', data.cid));
+              const querySnapshot = await getDocs(q);
+              
+              if (!querySnapshot.empty) {
+                const cidDoc = querySnapshot.docs[0];
+                console.log('CID Doc:', cidDoc.data());
+                const cidData = cidDoc.data();
+                managerName = `${cidData.firstName} ${cidData.lastName}`.trim();
+                console.log('CID Name:', managerName);
+              }
+            } else {
+              // For employees, find their manager from users collection
+              const usersRef = collection(db, 'users');
+              const q = query(usersRef, where('empId', '==', data.managerId));
+              const querySnapshot = await getDocs(q);
+              
+              if (!querySnapshot.empty) {
+                const managerDoc = querySnapshot.docs[0];
+                const managerData = managerDoc.data();
+                managerName = `${managerData.firstName} ${managerData.lastName}`.trim();
+              }
             }
           }
  
@@ -51,7 +92,7 @@ const Timesheet = () => {
             month: currentMonth,
             empId: data.empId ?? '',
             name: `${data.firstName ?? ''} ${data.lastName ?? ''}`.trim(),
-            manager: managerName,
+            manager: managerName
           });
         }
       }
@@ -107,12 +148,39 @@ const Timesheet = () => {
         return;
       }
  
+      // Get current user's data from Firestore
+      const auth = getAuth();
+      const user = auth.currentUser;
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      const userData = userDoc.data();
+ 
+      // Determine the approver based on user's role
+      let approverId = '';
+      let status = 'pending';
+ 
+      if (userData.role === 'employee') {
+        // If employee submits, send to their manager
+        approverId = userData.managerId;
+        status = 'pending_manager';
+      } else if (userData.role === 'manager') {
+        // If manager submits, send to super manager
+        approverId = userData.superManagerId;
+        status = 'pending_super_manager';
+      } else if (userData.role === 'super_manager') {
+        // If super manager submits, send to CID
+        approverId = userData.cid;
+        status = 'pending_cid';
+      }
+ 
       const timesheetData = {
         ...employeeInfo,
         entries: timesheet,
         submittedAt: new Date(),
-        status: 'pending',
-        type: 'timesheet'
+        status: status,
+        type: 'timesheet',
+        submittedBy: user.uid,
+        approverId: approverId,
+        currentRole: userData.role
       };
  
       await addDoc(collection(db, 'timesheets'), timesheetData);

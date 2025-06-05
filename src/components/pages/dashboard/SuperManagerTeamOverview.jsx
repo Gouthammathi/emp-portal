@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { FaUserCircle, FaChevronDown, FaChevronRight, FaSearch } from 'react-icons/fa';
-import { orgData } from '../Org';
 import { useNavigate } from 'react-router-dom';
- 
+
 const SuperManagerTeamOverview = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -14,26 +13,62 @@ const SuperManagerTeamOverview = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredStructure, setFilteredStructure] = useState([]);
   const [error, setError] = useState(null);
- 
+
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const auth = getAuth();
         const user = auth.currentUser;
-       
+
         if (user) {
           const userDoc = await getDoc(doc(db, "users", user.uid));
           if (userDoc.exists()) {
             const data = userDoc.data();
-            console.log("User data:", data); // Debug log
-           
-            // For testing, use the super manager ID directly
-            const superManagerId = "111004"; // Muralidhar Reddy's ID
-            console.log("Using super manager ID:", superManagerId); // Debug log
-           
-            const structure = buildTeamStructure(superManagerId);
-            console.log("Built structure:", structure); // Debug log
-           
+            console.log("User data:", data);
+
+            // Get all managers under this super manager
+            const managersQuery = query(
+              collection(db, "users"),
+              where("superManagerId", "==", data.empId)
+            );
+            const managersSnapshot = await getDocs(managersQuery);
+            
+            const structure = [];
+            
+            // For each manager, get their team members
+            for (const managerDoc of managersSnapshot.docs) {
+              const managerData = managerDoc.data();
+              
+              // Get team members for this manager
+              const teamQuery = query(
+                collection(db, "users"),
+                where("managerId", "==", managerData.empId)
+              );
+              const teamSnapshot = await getDocs(teamQuery);
+              
+              const teamMembers = teamSnapshot.docs.map(memberDoc => {
+                const memberData = memberDoc.data();
+                return {
+                  empId: memberData.empId,
+                  firstName: memberData.firstName,
+                  lastName: memberData.lastName,
+                  title: memberData.designation || 'Employee',
+                  image: memberData.profileImage || null
+                };
+              });
+
+              structure.push({
+                empId: managerData.empId,
+                firstName: managerData.firstName,
+                lastName: managerData.lastName,
+                title: managerData.designation || 'Manager',
+                image: managerData.profileImage || null,
+                teamMembers: teamMembers
+              });
+            }
+
+            console.log("Built structure:", structure);
+
             if (structure.length === 0) {
               setError("No team members found under your management.");
             } else {
@@ -53,56 +88,10 @@ const SuperManagerTeamOverview = () => {
         setLoading(false);
       }
     };
- 
+
     fetchUserData();
   }, []);
- 
-  const buildTeamStructure = (superManagerId) => {
-    console.log("Building structure for manager:", superManagerId); // Debug log
-   
-    // Find the super manager in the org chart
-    const findManager = (node) => {
-      if (node.empId === superManagerId) {
-        console.log("Found manager:", node); // Debug log
-        return node;
-      }
-      if (node.children) {
-        for (const child of node.children) {
-          const found = findManager(child);
-          if (found) return found;
-        }
-      }
-      return null;
-    };
- 
-    const superManager = findManager(orgData);
-    console.log("Super manager found:", superManager); // Debug log
- 
-    if (!superManager || !superManager.children) {
-      console.log("No super manager or children found"); // Debug log
-      return [];
-    }
- 
-    // Convert the org chart structure to our team structure format
-    const structure = superManager.children.map(manager => ({
-      empId: manager.empId,
-      firstName: manager.name.split(' ')[0],
-      lastName: manager.name.split(' ').slice(1).join(' '),
-      title: manager.title,
-      image: manager.image,
-      teamMembers: manager.children ? manager.children.map(member => ({
-        empId: member.empId,
-        firstName: member.name.split(' ')[0],
-        lastName: member.name.split(' ').slice(1).join(' '),
-        title: member.title,
-        image: member.image
-      })) : []
-    }));
- 
-    console.log("Final structure:", structure); // Debug log
-    return structure;
-  };
- 
+
   const toggleTeam = (managerId) => {
     setExpandedTeams(prev => {
       const newSet = new Set(prev);
@@ -114,16 +103,16 @@ const SuperManagerTeamOverview = () => {
       return newSet;
     });
   };
- 
+
   const handleSearch = (e) => {
     const search = e.target.value.toLowerCase();
     setSearchTerm(search);
- 
+
     if (!search) {
       setFilteredStructure(teamStructure);
       return;
     }
- 
+
     const filtered = teamStructure.map(manager => {
       const filteredTeamMembers = manager.teamMembers.filter(member =>
         member.firstName?.toLowerCase().includes(search) ||
@@ -131,7 +120,7 @@ const SuperManagerTeamOverview = () => {
         member.title?.toLowerCase().includes(search) ||
         member.empId?.toLowerCase().includes(search)
       );
- 
+
       if (
         manager.firstName?.toLowerCase().includes(search) ||
         manager.lastName?.toLowerCase().includes(search) ||
@@ -146,10 +135,10 @@ const SuperManagerTeamOverview = () => {
       }
       return null;
     }).filter(Boolean);
- 
+
     setFilteredStructure(filtered);
   };
- 
+
   const handleMemberClick = (member) => {
     navigate(`/team-member/${member.empId}`, {
       state: {
@@ -161,7 +150,7 @@ const SuperManagerTeamOverview = () => {
       }
     });
   };
- 
+
   const handleManagerClick = (manager) => {
     navigate(`/team-member/${manager.empId}`, {
       state: {
@@ -173,7 +162,7 @@ const SuperManagerTeamOverview = () => {
       }
     });
   };
- 
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -181,7 +170,7 @@ const SuperManagerTeamOverview = () => {
       </div>
     );
   }
- 
+
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 py-6 px-4 sm:px-6 lg:px-8">
@@ -197,7 +186,7 @@ const SuperManagerTeamOverview = () => {
       </div>
     );
   }
- 
+
   if (teamStructure.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 py-6 px-4 sm:px-6 lg:px-8">
@@ -213,7 +202,7 @@ const SuperManagerTeamOverview = () => {
       </div>
     );
   }
- 
+
   return (
     <div className="min-h-screen bg-gray-50 py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -221,7 +210,7 @@ const SuperManagerTeamOverview = () => {
           <h1 className="text-3xl font-bold text-gray-900">Team Overview</h1>
           <p className="mt-2 text-gray-600">View and manage your team structure</p>
         </div>
- 
+
         {/* Search Bar */}
         <div className="mb-6">
           <div className="relative">
@@ -235,7 +224,7 @@ const SuperManagerTeamOverview = () => {
             <FaSearch className="absolute left-3 top-3 text-gray-400" />
           </div>
         </div>
- 
+
         {/* Team Structure */}
         <div className="bg-white rounded-lg shadow-lg p-6">
           <div className="space-y-6">
@@ -280,7 +269,7 @@ const SuperManagerTeamOverview = () => {
                     View Details
                   </button>
                 </div>
- 
+
                 {/* Team Members */}
                 {expandedTeams.has(manager.empId) && (
                   <div className="p-4 space-y-4">
@@ -312,6 +301,6 @@ const SuperManagerTeamOverview = () => {
     </div>
   );
 };
- 
+
 export default SuperManagerTeamOverview;
  
