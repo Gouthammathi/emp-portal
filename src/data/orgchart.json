@@ -11,11 +11,6 @@
       "managerId": "111001"
     },
     {
-      "empId": "111003",
-      "employeeName": "Syama Sundara Reddy Obulapuram",
-      "managerId": "111001"
-    },
-    {
       "empId": "111004",
       "employeeName": "Muralidhar Reddy Nara",
       "managerId": "111001"
@@ -38,71 +33,42 @@
     {
       "empId": "111047",
       "employeeName": "Nigama Ambala",
-     
-      "SupermanagerId": "111087"
+      "managerId": "111087"
     },
     {
-      "empId": "111007",
-      "employeeName": "Pothukuchi Surya Annapurna Santhy Kamal",
-      "managerId": "111003"
-    },
-    {
-      "empId": "111015",
-      "employeeName": "SUBBA RAM REDDY JEEREDDY",
-      "managerId": "111003"
-    },
-    {
-      "empId": "111045",
-      "employeeName": "Isvaiah Lyagala",
-      "managerId": "111003"
-    },
-    {
-      "empId": "111062",
-      "employeeName": "Dodla Sai Kumar",
-      "managerId": "111003"
+      "empId": "111048",
+      "employeeName": "Pydikondala priyathama subhash",
+      "managerId": "111087"
     },
     {
       "empId": "111006",
       "employeeName": "Gade Sambi Reddy",
-      "managerId": "111002"
-    },
-    {
-      "empId": "111016",
-      "employeeName": "Anirudh Teppala",
-      "managerId": "111002"
-    },
-    {
-      "empId": "111031",
-      "employeeName": "Chandra Sekhar . K",
-      "managerId": "111002"
-    },
-    {
-      "empId": "111078",
-      "employeeName": "Amareshwar",
-      "managerId": "111002"
-    },
-    {
-      "empId": "111082",
-      "employeeName": "MAQBOOL HUSSAIN SYED",
-      "managerId": "111002"
-    },
-    {
-      "empId": "111014",
-      "employeeName": "Mandapati Vajra Reddy",
-   
-      "SupermanagerId": "111004"
-    },
-    {
-      "empId": "111028",
-      "employeeName": "Susmitha.P",
-     
-      "SupermanagerId": "111004"
+      "cId": "111002"
     },
     {
       "empId": "111012",
       "employeeName": "Nikhileswar Reddy G",
-     
-      "SupermanagerId": "111005"
+      "managerId": "111004"
+    },
+    {
+      "empId": "111014",
+      "employeeName": "Mandapati Vajra Reddy",
+      "cId": "111004"
+    },
+    {
+      "empId": "111015",
+      "employeeName": "SUBBA RAM REDDY JEEREDDY",
+      "cId": "111004"
+    },
+    {
+      "empId": "111035",
+      "employeeName": "Poojitha Bandaru",
+      "cId": "111004"
+    },
+    {
+      "empId": "111038",
+      "employeeName": "Harish Bathala",
+      "cId": "111005"
     },
     {
       "empId": "111024",
@@ -120,18 +86,8 @@
       "managerId": "111047"
     },
     {
-      "empId": "111042",
-      "employeeName": "Madupu Gayathri",
-      "managerId": "111047"
-    },
-    {
       "empId": "111043",
       "employeeName": "Gaddam Hashitha Reddy",
-      "managerId": "111047"
-    },
-    {
-      "empId": "111048",
-      "employeeName": "Pydikondala priyathama subhash",
       "managerId": "111047"
     },
     {
@@ -142,16 +98,6 @@
     {
       "empId": "111051",
       "employeeName": "Paloju Srilekha",
-      "managerId": "111047"
-    },
-    {
-      "empId": "111054",
-      "employeeName": "Naveen Kumar Reddy Malireddy",
-      "managerId": "111047"
-    },
-    {
-      "empId": "111055",
-      "employeeName": "Ramesh Pasuvula",
       "managerId": "111047"
     },
     {
@@ -175,179 +121,204 @@
       "managerId": "111047"
     },
     {
-      "empId": "111077",
-      "employeeName": "Vanguri Chakradhar Reddy",
-      "managerId": "111047"
-    },
-    {
       "empId": "111080",
       "employeeName": "Donthireddy Niharika",
       "managerId": "111047"
     },
     {
-      "empId": "111021",
-      "employeeName": "Dharani Obulreddy",
-      "managerId": "111028"
+      "empId": "111042",
+      "employeeName": "Madupu Gayathri",
+      "managerId": "111048"
     },
     {
-      "empId": "111023",
-      "employeeName": "Viswanadhuni Lakshmi Kalyani",
-      "managerId": "111028"
+      "empId": "111054",
+      "employeeName": "Naveen Kumar Reddy Malireddy",
+      "managerId": "111048"
     },
     {
-      "empId": "111029",
-      "employeeName": "Venkata Viswam .R",
-      "managerId": "111028"
+      "empId": "111055",
+      "employeeName": "Ramesh Pasuvula",
+      "managerId": "111048"
     },
     {
-      "empId": "111032",
-      "employeeName": "Jyothi Konda",
-      "managerId": "111028"
+      "empId": "111077",
+      "employeeName": "Vanguri Chakradhar Reddy",
+      "managerId": "111048"
     },
     {
-      "empId": "111046",
-      "employeeName": "Neeraja Chinnimilli",
-      "managerId": "111028"
+      "empId": "111016",
+      "employeeName": "Anirudh Teppala",
+      "managerId": "111006"
     },
     {
-      "empId": "111050",
-      "employeeName": "Kasireddy Sivakalyani",
-      "managerId": "111028"
+      "empId": "111031",
+      "employeeName": "Chandra Sekhar . K",
+      "managerId": "111006"
     },
     {
-      "empId": "111069",
-      "employeeName": "Penthala Harsha Vardhan",
-      "managerId": "111028"
+      "empId": "111078",
+      "employeeName": "Amareshwar",
+      "managerId": "111006"
     },
     {
-      "empId": "111071",
-      "employeeName": "Nithin Reddy Gangadasari",
-      "managerId": "111028"
-    },
-    {
-      "empId": "222001",
-      "employeeName": "Ganesh Dhanasri",
-      "managerId": "111028"
-    },
-    {
-      "empId": "222002",
-      "employeeName": "Geetha Sandesh N",
-      "managerId": "111028"
-    },
-    {
-      "empId": "222003",
-      "employeeName": "Goutham Mathi",
-      "managerId": "111028"
-    },
-    {
-      "empId": "222004",
-      "employeeName": "Pachigolla Navya",
-      "managerId": "111028"
-    },
-    {
-      "empId": "111064",
-      "employeeName": "Akhila kakarla",
-      "managerId": "111014"
-    },
-    {
-      "empId": "111065",
-      "employeeName": "Manikanteswara Reddy Mukkamalla",
-      "managerId": "111014"
-    },
-    {
-      "empId": "111009",
-      "employeeName": "Ajay Rajashekhar Gundinahole",
-      "managerId": "111012"
-    },
-    {
-      "empId": "111010",
-      "employeeName": "Shravan Kumar kharwar",
-      "managerId": "111012"
-    },
-    {
-      "empId": "111017",
-      "employeeName": "Gaurav Bhargav Patil",
-      "managerId": "111012"
+      "empId": "111082",
+      "employeeName": "MAQBOOL HUSSAIN SYED",
+      "managerId": "111006"
     },
     {
       "empId": "111018",
       "employeeName": "Gangadasari Lakshmi Narasimha Reddy",
-      "managerId": "111012"
-    },
-    {
-      "empId": "111019",
-      "employeeName": "Prathibha Polagari",
-      "managerId": "111012"
-    },
-    {
-      "empId": "111020",
-      "employeeName": "Sai Kumar Thalikota",
-      "managerId": "111012"
-    },
-    {
-      "empId": "111035",
-      "employeeName": "Poojitha Bandaru",
-      "managerId": "111012"
-    },
-    {
-      "empId": "111037",
-      "employeeName": "Aswartha Narayanamma Vulindala",
-      "managerId": "111012"
-    },
-    {
-      "empId": "111038",
-      "employeeName": "Harish Bathala",
-      "managerId": "111012"
-    },
-    {
-      "empId": "111044",
-      "employeeName": "Hemanth Kumar Reddy Bollapu",
-      "managerId": "111012"
-    },
-    {
-      "empId": "111056",
-      "employeeName": "Chandra Sekhara Reddy Chittepu",
-      "managerId": "111012"
-    },
-    {
-      "empId": "111061",
-      "employeeName": "Parameswar Reddy Obulreddy",
-      "managerId": "111012"
-    },
-    {
-      "empId": "111063",
-      "employeeName": "Nara Sai Hemanth Reddy",
-      "managerId": "111012"
-    },
-    {
-      "empId": "111067",
-      "employeeName": "Dinesh Reddy S.",
-      "managerId": "111012"
+      "SupermanagerId": "111035"
     },
     {
       "empId": "111068",
       "employeeName": "Ganesh Gunde",
-      "managerId": "111012"
+      "SupermanagerId": "111035"
+    },
+    {
+      "empId": "111007",
+      "employeeName": "Pothukuchi Surya Annapurna Santhy Kamal",
+      "managerId": "111015"
+    },
+    {
+      "empId": "111045",
+      "employeeName": "Isvaiah Lyagala",
+      "managerId": "111015"
+    },
+    {
+      "empId": "111062",
+      "employeeName": "Dodla Sai Kumar",
+      "managerId": "111015"
+    },
+    {
+      "empId": "111050",
+      "employeeName": "Kasireddy Sivakalyani",
+      "SupermanagerId": "111012"
+    },
+    {
+      "empId": "111069",
+      "employeeName": "Penthala Harsha Vardhan",
+      "SupermanagerId": "111012"
+    },
+    {
+      "empId": "111064",
+      "employeeName": "Akhila kakarla",
+      "SupermanagerId": "111014"
+    },
+    {
+      "empId": "111065",
+      "employeeName": "Manikanteswara Reddy Mukkamalla",
+      "SupermanagerId": "111014"
+    },
+    {
+      "empId": "111009",
+      "employeeName": "Ajay Rajashekhar Gundinahole",
+      "managerId": "111038"
+    },
+    {
+      "empId": "111010",
+      "employeeName": "Shravan Kumar kharwar",
+      "managerId": "111038"
+    },
+    {
+      "empId": "111019",
+      "employeeName": "Prathibha Polagari",
+      "managerId": "111038"
+    },
+    {
+      "empId": "111061",
+      "employeeName": "Parameswar Reddy Obulreddy",
+      "managerId": "111038"
+    },
+    {
+      "empId": "111020",
+      "employeeName": "Sai Kumar Thalikota",
+      "managerId": "111068"
+    },
+    {
+      "empId": "111067",
+      "employeeName": "Dinesh Reddy S.",
+      "managerId": "111068"
     },
     {
       "empId": "111073",
       "employeeName": "Pachharapalle Siva Nageswara Reddy",
-      "managerId": "111012"
-    },
-    {
-      "empId": "111074",
-      "employeeName": "Thota Lakshminarasimha Udaya Bhaskar",
-      "managerId": "111012"
+      "managerId": "111068"
     },
     {
       "empId": "111075",
       "employeeName": "Vijay Kumar M",
-      "managerId": "111012"
+      "managerId": "111068"
+    },
+    {
+      "empId": "111028",
+      "employeeName": "Susmitha.P",
+      "managerId": "111018"
+    },
+    {
+      "empId": "111037",
+      "employeeName": "Aswartha Narayanamma Vulindala",
+      "managerId": "111018"
+    },
+    {
+      "empId": "111044",
+      "employeeName": "Hemanth Kumar Reddy Bollapu",
+      "managerId": "111018"
+    },
+    {
+      "empId": "111063",
+      "employeeName": "Nara Sai Hemanth Reddy",
+      "managerId": "111018"
+    },
+    {
+      "empId": "111071",
+      "employeeName": "Nithin Reddy Gangadasari",
+      "managerId": "111018"
     },
     {
       "empId": "111079",
       "employeeName": "Kavya Penugonda",
-      "managerId": "111012"
+      "managerId": "111018"
+    },
+    {
+      "empId": "111089",
+      "employeeName": "Ganesh Dhanasri",
+      "managerId": "111069"
+    },
+    {
+      "empId": "111090",
+      "employeeName": "Geetha Sandesh N",
+      "managerId": "111069"
+    },
+    {
+      "empId": "111091",
+      "employeeName": "Goutham Mathi",
+      "managerId": "111069"
+    },
+    {
+      "empId": "111021",
+      "employeeName": "Dharani Obulreddy",
+      "managerId": "111050"
+    },
+    {
+      "empId": "111023",
+      "employeeName": "Viswanadhuni Lakshmi Kalyani",
+      "managerId": "111050"
+    },
+    {
+      "empId": "111029",
+      "employeeName": "Venkata Viswam .R",
+      "managerId": "111050"
+    },
+    {
+      "empId": "111032",
+      "employeeName": "Jyothi Konda",
+      "managerId": "111050"
+    },
+    {
+      "empId": "111046",
+      "employeeName": "Neeraja Chinnimilli",
+      "managerId": "111050"
     }
   ]
 }

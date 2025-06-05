@@ -16,6 +16,13 @@ const ManagerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [activeView, setActiveView] = useState('dashboard');
   const [teamMembersCount, setTeamMembersCount] = useState(0);
+  const [activeTicketsCount, setActiveTicketsCount] = useState(0);
+  const [statusCounts, setStatusCounts] = useState({
+    Open: 0,
+    'In Progress': 0,
+    Resolved: 0,
+    Closed: 0
+  });
   const [notifications, setNotifications] = useState(globalNotifications);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
@@ -53,6 +60,42 @@ const ManagerDashboard = () => {
             }
            
             setTeamMembersCount(registeredTeamMembers.length);
+          }
+
+          // Fetch active tickets count for the team and status counts
+          if (data.role === 'manager' && data.project) {
+            const ticketsQuery = query(
+              collection(db, 'tickets'),
+              where('project', '==', data.project)
+            );
+
+            const unsubscribe = onSnapshot(ticketsQuery, (snapshot) => {
+              const counts = {
+                Open: 0,
+                'In Progress': 0,
+                Resolved: 0,
+                Closed: 0
+              };
+              let activeCount = 0;
+              snapshot.docs.forEach(doc => {
+                const ticketStatus = doc.data().status;
+                if (counts.hasOwnProperty(ticketStatus)) {
+                  counts[ticketStatus]++;
+                }
+                if (ticketStatus === 'Open' || ticketStatus === 'In Progress') {
+                  activeCount++;
+                }
+              });
+              setStatusCounts(counts);
+              setActiveTicketsCount(activeCount);
+            }, (error) => {
+              console.error("Error fetching tickets for status counts:", error);
+            });
+
+            return () => unsubscribe();
+          } else {
+            setActiveTicketsCount(0);
+            setStatusCounts({ Open: 0, 'In Progress': 0, Resolved: 0, Closed: 0 });
           }
         }
       }
@@ -351,7 +394,7 @@ const ManagerDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Active Tickets</p>
-                <p className="text-2xl font-bold text-gray-900">0</p>
+                <p className="text-2xl font-bold text-gray-900">{activeTicketsCount}</p>
               </div>
               <div className="p-3 bg-red-100 rounded-lg">
                 <FaTicketAlt className="w-6 h-6 text-red-600" />
@@ -361,11 +404,46 @@ const ManagerDashboard = () => {
           <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Team Meetings</p>
-                <p className="text-2xl font-bold text-gray-900">0</p>
+                <p className="text-sm font-medium text-gray-600">Total Tickets</p>
+                <p className="text-2xl font-bold text-gray-900">{statusCounts.Open + statusCounts['In Progress'] + statusCounts.Resolved + statusCounts.Closed}</p>
               </div>
               <div className="p-3 bg-blue-100 rounded-lg">
-                <FaCalendarAlt className="w-6 h-6 text-blue-600" />
+                <FaTicketAlt className="w-6 h-6 text-blue-600" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Status Overview Section */}
+        <div className="mb-8 bg-white rounded-xl shadow-md p-6 border border-gray-100">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">Ticket Status Overview</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+              <div>
+                <p className="text-sm text-gray-600">Open</p>
+                <p className="text-lg font-bold text-gray-900">{statusCounts.Open}</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-amber-500 rounded-full"></div>
+              <div>
+                <p className="text-sm text-gray-600">In Progress</p>
+                <p className="text-lg font-bold text-gray-900">{statusCounts['In Progress']}</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+              <div>
+                <p className="text-sm text-gray-600">Resolved</p>
+                <p className="text-lg font-bold text-gray-900">{statusCounts.Resolved}</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+              <div>
+                <p className="text-sm text-gray-600">Closed</p>
+                <p className="text-lg font-bold text-gray-900">{statusCounts.Closed}</p>
               </div>
             </div>
           </div>

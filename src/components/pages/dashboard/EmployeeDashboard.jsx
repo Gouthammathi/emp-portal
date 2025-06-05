@@ -8,12 +8,20 @@ import {
   FaTicketAlt
 } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 
 const EmployeeDashboard = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
+  const [activeTicketsCount, setActiveTicketsCount] = useState(0);
+  const [statusCounts, setStatusCounts] = useState({
+    Open: 0,
+    'In Progress': 0,
+    Resolved: 0,
+    Closed: 0
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -24,6 +32,41 @@ const EmployeeDashboard = () => {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         if (userDoc.exists()) {
           setUserData(userDoc.data());
+        }
+
+        // Listen for tickets assigned to this employee to update status counts
+        if (user.uid) {
+          const ticketsQuery = query(
+            collection(db, 'tickets'),
+            where('assignedTo', '==', user.uid)
+          );
+
+          const unsubscribe = onSnapshot(ticketsQuery, (snapshot) => {
+            const counts = {
+              Open: 0,
+              'In Progress': 0,
+              Resolved: 0,
+              Closed: 0
+            };
+            snapshot.docs.forEach(doc => {
+              const ticketStatus = doc.data().status;
+              if (counts.hasOwnProperty(ticketStatus)) {
+                counts[ticketStatus]++;
+              }
+            });
+            setStatusCounts(counts);
+            // Update active tickets count (Open + In Progress)
+            setActiveTicketsCount(counts.Open + counts['In Progress']);
+          }, (error) => {
+            console.error("Error fetching assigned tickets for status counts:", error);
+          });
+
+          setLoading(false);
+          return () => unsubscribe();
+        } else {
+          setActiveTicketsCount(0);
+          setStatusCounts({ Open: 0, 'In Progress': 0, Resolved: 0, Closed: 0 });
+          setLoading(false);
         }
       }
       setLoading(false);
@@ -110,9 +153,43 @@ const EmployeeDashboard = () => {
           >
             <FaTicketAlt className="text-red-500 text-3xl" />
             <div>
-              <p className="text-gray-700 font-semibold">My Tickets</p>
-              {/* We can add ticket count here later if needed */}
-              <p className="text-sm text-gray-500">View assigned tickets</p>
+              <p className="text-gray-700 font-semibold text-sm"> Active Tickets</p>
+              <p className="text-2xl font-bold text-gray-900">{activeTicketsCount}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Status Overview Section */}
+        <div className="mt-8 bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">Ticket Status Overview</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+              <div>
+                <p className="text-sm text-gray-600">Open</p>
+                <p className="text-lg font-bold text-gray-900">{statusCounts.Open}</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-amber-500 rounded-full"></div>
+              <div>
+                <p className="text-sm text-gray-600">In Progress</p>
+                <p className="text-lg font-bold text-gray-900">{statusCounts['In Progress']}</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+              <div>
+                <p className="text-sm text-gray-600">Resolved</p>
+                <p className="text-lg font-bold text-gray-900">{statusCounts.Resolved}</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+              <div>
+                <p className="text-sm text-gray-600">Closed</p>
+                <p className="text-lg font-bold text-gray-900">{statusCounts.Closed}</p>
+              </div>
             </div>
           </div>
         </div>
