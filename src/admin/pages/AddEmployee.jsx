@@ -523,6 +523,7 @@ const AddEmployee = () => {
                   />
                 </div>
               </div>
+              
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">Joining Date</label>
