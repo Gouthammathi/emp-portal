@@ -171,7 +171,14 @@ const SuperManagerDashboard = () => {
       hoverColor: 'hover:bg-indigo-600',
       onClick: () => navigate('/supermanager-team-overview')
     },
-   
+    {
+      title: 'Tickets',
+      icon: <FaTasks className="w-8 h-8" />,
+      description: 'View all tickets from your managers',
+      color: 'bg-blue-500',
+      hoverColor: 'hover:bg-blue-600',
+      onClick: () => navigate('/supermanager-tickets')
+    },
     {
       title: 'Performance',
       icon: <FaChartLine className="w-8 h-8" />,

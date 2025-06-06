@@ -15,7 +15,8 @@ const TeamOverview = () => {
     timesheets: [],
     statusReports: [],
     mockTests: [],
-    reimbursements: []
+    reimbursements: [],
+    leaves: []
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -151,11 +152,23 @@ const TeamOverview = () => {
         ...doc.data()
       }));
 
+      // Fetch leaves
+      const leavesQuery = query(
+        collection(db, "leaves"),
+        where("employeeId", "==", empId)
+      );
+      const leavesSnapshot = await getDocs(leavesQuery);
+      const leaves = leavesSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
       setMemberData({
         timesheets,
         statusReports,
         mockTests,
-        reimbursements
+        reimbursements,
+        leaves
       });
     } catch (error) {
       console.error("Error fetching member data:", error);
@@ -181,12 +194,12 @@ const TeamOverview = () => {
         approvedAt: new Date(),
         approvedBy: getAuth().currentUser.uid
       });
-     
+
       // Refresh the timesheet data
       if (selectedMember) {
         fetchMemberData(selectedMember.empId);
       }
-     
+
       alert('Timesheet approved successfully!');
     } catch (error) {
       console.error("Error approving timesheet:", error);
@@ -194,24 +207,68 @@ const TeamOverview = () => {
     }
   };
 
-  const handleApproveStatusReport = async (statusReportId) => {
+  const handleRejectTimesheet = async (timesheetId, comments) => {
     try {
-      const statusReportRef = doc(db, "statusReports", statusReportId);
-      await updateDoc(statusReportRef, {
+      const timesheetRef = doc(db, "timesheets", timesheetId);
+      await updateDoc(timesheetRef, {
+        status: 'rejected',
+        rejectedAt: new Date(),
+        rejectedBy: getAuth().currentUser.uid,
+        approverComments: comments
+      });
+
+      // Refresh the timesheet data
+      if (selectedMember) {
+        fetchMemberData(selectedMember.empId);
+      }
+
+      alert('Timesheet rejected successfully!');
+    } catch (error) {
+      console.error("Error rejecting timesheet:", error);
+      alert('Error rejecting timesheet. Please try again.');
+    }
+  };
+
+  const handleApproveStatusReport = async (reportId) => {
+    try {
+      const reportRef = doc(db, "statusReports", reportId);
+      await updateDoc(reportRef, {
         status: 'approved',
         approvedAt: new Date(),
         approvedBy: getAuth().currentUser.uid
       });
-     
+
       // Refresh the status report data
       if (selectedMember) {
         fetchMemberData(selectedMember.empId);
       }
-     
+
       alert('Status report approved successfully!');
     } catch (error) {
       console.error("Error approving status report:", error);
       alert('Error approving status report. Please try again.');
+    }
+  };
+
+  const handleRejectStatusReport = async (reportId, comments) => {
+    try {
+      const reportRef = doc(db, "statusReports", reportId);
+      await updateDoc(reportRef, {
+        status: 'rejected',
+        rejectedAt: new Date(),
+        rejectedBy: getAuth().currentUser.uid,
+        approverComments: comments
+      });
+
+      // Refresh the status report data
+      if (selectedMember) {
+        fetchMemberData(selectedMember.empId);
+      }
+
+      alert('Status report rejected successfully!');
+    } catch (error) {
+      console.error("Error rejecting status report:", error);
+      alert('Error rejecting status report. Please try again.');
     }
   };
 
@@ -223,12 +280,12 @@ const TeamOverview = () => {
         approvedAt: new Date(),
         approvedBy: getAuth().currentUser.uid
       });
-     
+
       // Refresh the reimbursement data
       if (selectedMember) {
         fetchMemberData(selectedMember.empId);
       }
-     
+
       alert('Reimbursement request approved successfully!');
     } catch (error) {
       console.error("Error approving reimbursement:", error);
@@ -245,16 +302,59 @@ const TeamOverview = () => {
         rejectedBy: getAuth().currentUser.uid,
         approverComments: comments
       });
-     
+
       // Refresh the reimbursement data
       if (selectedMember) {
         fetchMemberData(selectedMember.empId);
       }
-     
+
       alert('Reimbursement request rejected successfully!');
     } catch (error) {
       console.error("Error rejecting reimbursement:", error);
       alert('Error rejecting reimbursement request. Please try again.');
+    }
+  };
+
+  const handleApproveLeave = async (leaveId) => {
+    try {
+      const leaveRef = doc(db, "leaves", leaveId);
+      await updateDoc(leaveRef, {
+        status: 'approved',
+        approvedAt: new Date(),
+        approvedBy: getAuth().currentUser.uid
+      });
+
+      // Refresh the leave data
+      if (selectedMember) {
+        fetchMemberData(selectedMember.empId);
+      }
+
+      alert('Leave request approved successfully!');
+    } catch (error) {
+      console.error("Error approving leave request:", error);
+      alert('Error approving leave request. Please try again.');
+    }
+  };
+
+  const handleRejectLeave = async (leaveId, comments) => {
+    try {
+      const leaveRef = doc(db, "leaves", leaveId);
+      await updateDoc(leaveRef, {
+        status: 'rejected',
+        rejectedAt: new Date(),
+        rejectedBy: getAuth().currentUser.uid,
+        approverComments: comments
+      });
+
+      // Refresh the leave data
+      if (selectedMember) {
+        fetchMemberData(selectedMember.empId);
+      }
+
+      alert('Leave request rejected successfully!');
+    } catch (error) {
+      console.error("Error rejecting leave request:", error);
+      alert('Error rejecting leave request. Please try again.');
     }
   };
 
@@ -301,64 +401,39 @@ const TeamOverview = () => {
                       {timesheet.status.charAt(0).toUpperCase() + timesheet.status.slice(1)}
                     </span>
                     {timesheet.status === 'pending' && (
-                      <button
-                        onClick={() => handleApproveTimesheet(timesheet.id)}
-                        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors"
-                      >
-                        Approve
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleApproveTimesheet(timesheet.id)}
+                          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => alert('Review functionality not implemented yet.')}
+                          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+                        >
+                          Review
+                        </button>
+                        <button
+                          onClick={() => {
+                            const comments = prompt('Please enter rejection comments:');
+                            if (comments) {
+                              handleRejectTimesheet(timesheet.id, comments);
+                            }
+                          }}
+                          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
+                        >
+                          Reject
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
- 
-                {/* Excel-like table */}
-                <div className="overflow-x-auto">
-                  <table className="min-w-full border border-gray-300">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="border px-4 py-2">Date</th>
-                        <th className="border px-4 py-2">Day</th>
-                        <th className="border px-4 py-2">Shift</th>
-                        <th className="border px-4 py-2">In Time</th>
-                        <th className="border px-4 py-2">Out Time</th>
-                        <th className="border px-4 py-2">In Time</th>
-                        <th className="border px-4 py-2">Out Time</th>
-                        <th className="border px-4 py-2">Hours</th>
-                        <th className="border px-4 py-2">Overtime</th>
-                        <th className="border px-4 py-2">Total Hours</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {timesheet.entries?.map((entry, index) => (
-                        <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                          <td className="border px-4 py-2">{entry.date}</td>
-                          <td className="border px-4 py-2">{entry.day}</td>
-                          <td className="border px-4 py-2">{entry.shift}</td>
-                          <td className="border px-4 py-2">{entry.inTime1}</td>
-                          <td className="border px-4 py-2">{entry.outTime1}</td>
-                          <td className="border px-4 py-2">{entry.inTime2}</td>
-                          <td className="border px-4 py-2">{entry.outTime2}</td>
-                          <td className="border px-4 py-2">{entry.hoursCompleted}</td>
-                          <td className="border px-4 py-2">{entry.overtime}</td>
-                          <td className="border px-4 py-2">{entry.totalHours}</td>
-                        </tr>
-                      ))}
-                      {/* Total row */}
-                      <tr className="bg-gray-100 font-semibold">
-                        <td colSpan="7" className="border px-4 py-2 text-right">Total:</td>
-                        <td className="border px-4 py-2">
-                          {timesheet.entries?.reduce((sum, entry) => sum + Number(entry.hoursCompleted || 0), 0)}
-                        </td>
-                        <td className="border px-4 py-2">
-                          {timesheet.entries?.reduce((sum, entry) => sum + Number(entry.overtime || 0), 0)}
-                        </td>
-                        <td className="border px-4 py-2">
-                          {timesheet.entries?.reduce((sum, entry) => sum + Number(entry.totalHours || 0), 0)}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+                {timesheet.approverComments && (
+                  <p className="text-sm text-gray-600 mt-2">
+                    Comments: {timesheet.approverComments}
+                  </p>
+                )}
               </div>
             ))}
             {memberData.timesheets.length === 0 && (
@@ -389,47 +464,39 @@ const TeamOverview = () => {
                       {report.status.charAt(0).toUpperCase() + report.status.slice(1)}
                     </span>
                     {report.status === 'pending' && (
-                      <button
-                        onClick={() => handleApproveStatusReport(report.id)}
-                        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors"
-                      >
-                        Approve
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleApproveStatusReport(report.id)}
+                          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => alert('Review functionality not implemented yet.')}
+                          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+                        >
+                          Review
+                        </button>
+                        <button
+                          onClick={() => {
+                            const comments = prompt('Please enter rejection comments:');
+                            if (comments) {
+                              handleRejectStatusReport(report.id, comments);
+                            }
+                          }}
+                          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
+                        >
+                          Reject
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
- 
-                {/* Excel-like table with fixed styling */}
-                <div className="overflow-x-auto border border-gray-200 rounded-lg">
-                  <table className="w-full table-fixed border-collapse">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="w-1/6 border border-gray-300 px-4 py-2 text-left font-semibold text-gray-700">Time</th>
-                        <th className="w-2/6 border border-gray-300 px-4 py-2 text-left font-semibold text-gray-700">Description</th>
-                        <th className="w-1/6 border border-gray-300 px-4 py-2 text-left font-semibold text-gray-700">Status</th>
-                        <th className="w-2/6 border border-gray-300 px-4 py-2 text-left font-semibold text-gray-700">Remarks</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {report.tasks?.map((task, index) => (
-                        <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                          <td className="border border-gray-300 px-4 py-2 text-sm">{task.time}</td>
-                          <td className="border border-gray-300 px-4 py-2 text-sm">{task.description}</td>
-                          <td className="border border-gray-300 px-4 py-2 text-sm">
-                            <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                              task.completed
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-red-100 text-red-800'
-                            }`}>
-                              {task.completed ? 'Completed' : 'Pending'}
-                            </span>
-                          </td>
-                          <td className="border border-gray-300 px-4 py-2 text-sm">{task.remarks || '-'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                {report.approverComments && (
+                  <p className="text-sm text-gray-600 mt-2">
+                    Comments: {report.approverComments}
+                  </p>
+                )}
               </div>
             ))}
             {memberData.statusReports.length === 0 && (
@@ -462,6 +529,12 @@ const TeamOverview = () => {
                         Approve
                       </button>
                       <button
+                        onClick={() => alert('Review functionality not implemented yet.')}
+                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+                      >
+                        Review
+                      </button>
+                      <button
                         onClick={() => {
                           const comments = prompt('Please enter rejection comments:');
                           if (comments) {
@@ -484,6 +557,72 @@ const TeamOverview = () => {
             ))}
             {memberData.reimbursements.length === 0 && (
               <p className="text-gray-500">No reimbursement requests found</p>
+            )}
+          </div>
+        );
+      case 'leaves':
+        return (
+          <div className="space-y-4">
+            {memberData.leaves.map((leave) => (
+              <div key={leave.id} className="border rounded-lg p-4 bg-white shadow-sm">
+                <div className="flex justify-between items-center mb-4">
+                  <div>
+                    <p className="font-semibold">Leave Type: {leave.type}</p>
+                    <p className="text-sm text-gray-500">
+                      From: {new Date(leave.startDate).toLocaleDateString()} to {new Date(leave.endDate).toLocaleDateString()}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Reason: {leave.reason}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      leave.status === 'approved'
+                        ? 'bg-green-100 text-green-800'
+                        : leave.status === 'rejected'
+                        ? 'bg-red-100 text-red-800'
+                        : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {leave.status.charAt(0).toUpperCase() + leave.status.slice(1)}
+                    </span>
+                    {leave.status === 'pending' && (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleApproveLeave(leave.id)}
+                          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => alert('Review functionality not implemented yet.')}
+                          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+                        >
+                          Review
+                        </button>
+                        <button
+                          onClick={() => {
+                            const comments = prompt('Please enter rejection comments:');
+                            if (comments) {
+                              handleRejectLeave(leave.id, comments);
+                            }
+                          }}
+                          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {leave.approverComments && (
+                  <p className="text-sm text-gray-600 mt-2">
+                    Comments: {leave.approverComments}
+                  </p>
+                )}
+              </div>
+            ))}
+            {memberData.leaves.length === 0 && (
+              <p className="text-gray-500">No leave requests found</p>
             )}
           </div>
         );

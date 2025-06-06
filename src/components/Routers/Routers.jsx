@@ -29,6 +29,7 @@ import ReimbursementRequest from '../pages/ReimbursementRequest';
 import TeamMemberDetails from '../pages/dashboard/TeamMemberDetails';
 import TeamOverview from '../pages/dashboard/TeamOverview';
 import SuperManagerTeamOverview from '../pages/dashboard/SuperManagerTeamOverview';
+import SuperManagerTickets from '../pages/dashboard/SuperManagerTickets';
 import Engage from '../pages/Engage';
 
 import Payslip from '../pages/salary/Payslips';
@@ -51,7 +52,7 @@ import EmployeeAssignedTickets from '../pages/EmployeeAssignedTickets';
 import Layout from '../layout/Layout';
 import AdminRouter from '../../admin/routes/AdminRouter';
 import CSuiteDashboard from '../pages/dashboard/CSuiteDashboard';
-
+import CSuiteTickets from '../pages/dashboard/CsuiteTickets';
 const UserLayoutWrapper = () => (
   <Layout>
     <Outlet />
@@ -79,17 +80,15 @@ const Routers = () => {
           <AdminRouter />
         </ProtectedRoute>
       } />
-
-      {/* C-Suite Dashboard Route */}
-      <Route path="/csuite" element={
+ {/* C-Suite Dashboard Route */}
+ {/* <Route path="/csuite" element={
         <ProtectedRoute allowedRoles={['c-suite']}>
           <CSuiteDashboard />
         </ProtectedRoute>
-      } />
-
-      {/* Employee / Manager / HR / TL / Supermanager / Client Routes */}
+      } /> */}
+      {/* Employee / Manager / HR / TL / Supermanager */}
       <Route path="/" element={
-        <ProtectedRoute allowedRoles={['employee', 'manager', 'hr', 'supermanager', 'tl', 'client']}>
+        <ProtectedRoute allowedRoles={['employee', 'manager', 'hr', 'supermanager', 'tl', 'client', 'c-suite']}>
           <UserLayoutWrapper />
         </ProtectedRoute>
       }>
@@ -114,6 +113,7 @@ const Routers = () => {
         <Route path="team-member/:empId" element={<TeamMemberDetails />} />
         <Route path="team-overview" element={<TeamOverview />} />
         <Route path="supermanager-team-overview" element={<SuperManagerTeamOverview />} />
+        <Route path="supermanager-tickets" element={<SuperManagerTickets />} />
         <Route path="document-center" element={<DocumentCenter />} />
         <Route path="emp-docs" element={<EmpDocs />} />
         <Route path="emp-payslips" element={<EmpPlayslips />} />
@@ -123,6 +123,8 @@ const Routers = () => {
         <Route path="my-tickets" element={<EmployeeAssignedTickets />} />
         <Route path="conference-hall" element={<ConferenceHall />} />
         <Route path="clientform" element={<ClientForm />} />
+        <Route path="csuite" element={<CSuiteDashboard />} />
+        <Route path="csuite-tickets" element={<CSuiteTickets />} />
       </Route>
 
       {/* Catch-All Route */}

@@ -61,7 +61,7 @@ const TeamMemberDetails = () => {
         // Fetch reimbursement requests
         const reimbursementsQuery = query(
           collection(db, "reimbursements"),
-          where("employeeId", "==", empId)
+          where("empId", "==", empId)
         );
         const reimbursementsSnapshot = await getDocs(reimbursementsQuery);
         const reimbursements = reimbursementsSnapshot.docs.map(doc => ({
@@ -148,34 +148,101 @@ const TeamMemberDetails = () => {
             )}
           </div>
         );
-      case 'reimbursement':
+      case 'reimbursements':
         return (
           <div className="space-y-4">
-            {memberData.reimbursements.map((reimbursement) => (
-              <div key={reimbursement.id} className="border rounded-lg p-4 bg-white shadow-sm">
-                {/* Reimbursement content */}
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="font-medium">Amount: ₹{reimbursement.amount}</p>
-                    <p className="text-sm text-gray-600">Type: {reimbursement.expenseType}</p>
-                    <p className="text-sm text-gray-600">
-                      Date: {new Date(reimbursement.expenseDate).toLocaleDateString()}
-                    </p>
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Reimbursement Requests</h3>
+            {memberData.reimbursements.length > 0 ? (
+              <div className="space-y-4">
+                {memberData.reimbursements.map((reimbursement) => (
+                  <div key={reimbursement.id} className="bg-white rounded-lg shadow p-4 border border-gray-200">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h4 className="text-lg font-semibold text-gray-900">Request #{reimbursement.id}</h4>
+                        <p className="text-sm text-gray-600">
+                          Submitted: {reimbursement.submittedAt?.toDate().toLocaleDateString()}
+                        </p>
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        reimbursement.status === 'approved' ? 'bg-green-100 text-green-800' :
+                        reimbursement.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                        'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {reimbursement.status.charAt(0).toUpperCase() + reimbursement.status.slice(1)}
+                      </span>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <p className="text-sm text-gray-600">Total Amount</p>
+                        <p className="font-medium">₹{reimbursement.totalAmount || reimbursement.entries.reduce((sum, entry) => sum + (parseFloat(entry.amount) || 0), 0)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Category</p>
+                        <p className="font-medium">{reimbursement.entries[0]?.category}</p>
+                      </div>
+                    </div>
+
+                    <div className="mb-4">
+                      <p className="text-sm text-gray-600">Justification</p>
+                      <p className="text-gray-800">{reimbursement.justification}</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-gray-700">Expense Entries:</p>
+                      {reimbursement.entries.map((entry, index) => (
+                        <div key={index} className="bg-gray-50 p-3 rounded-md">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-sm text-gray-600">Date</p>
+                              <p className="font-medium">{entry.date}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-600">Amount</p>
+                              <p className="font-medium">₹{entry.amount}</p>
+                            </div>
+                            <div className="col-span-2">
+                              <p className="text-sm text-gray-600">Description</p>
+                              <p className="font-medium">{entry.description}</p>
+                            </div>
+                            {entry.receipt && (
+                              <div className="col-span-2">
+                                <p className="text-sm text-gray-600">Receipt</p>
+                                <a 
+                                  href={entry.receipt.url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:underline"
+                                >
+                                  {entry.receipt.name}
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {reimbursement.status === 'pending' && (
+                      <div className="flex justify-end space-x-4 mt-4">
+                        <button
+                          onClick={() => handleApproveReimbursement(reimbursement.id)}
+                          className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => handleRejectReimbursement(reimbursement.id)}
+                          className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    reimbursement.status === 'approved'
-                      ? 'bg-green-100 text-green-800'
-                      : reimbursement.status === 'rejected'
-                      ? 'bg-red-100 text-red-800'
-                      : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {reimbursement.status.charAt(0).toUpperCase() + reimbursement.status.slice(1)}
-                  </span>
-                </div>
-                {/* Add reimbursement details here */}
+                ))}
               </div>
-            ))}
-            {memberData.reimbursements.length === 0 && (
+            ) : (
               <p className="text-gray-500">No reimbursement requests found</p>
             )}
           </div>
@@ -264,7 +331,7 @@ const TeamMemberDetails = () => {
               {[
                 { id: 'timesheets', icon: FaClock, label: 'Timesheets' },
                 { id: 'status', icon: FaClipboardList, label: 'Daily Status' },
-                { id: 'reimbursement', icon: FaFileInvoiceDollar, label: 'Reimbursement' },
+                { id: 'reimbursements', icon: FaFileInvoiceDollar, label: 'Reimbursement' },
                 { id: 'mocktests', icon: FaBook, label: 'Mock Tests' }
               ].map((tab) => (
                 <button
