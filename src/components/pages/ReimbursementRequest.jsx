@@ -1,24 +1,69 @@
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaTrash, FaFileUpload, FaSave, FaEye, FaTimes } from 'react-icons/fa';
 import { collection, addDoc, serverTimestamp, doc, getDoc, updateDoc, query, where, getDocs, orderBy } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getAuth } from 'firebase/auth';
-import { db, auth, storage } from '../../firebase';
+import { db, auth } from '../../firebase';
 import { useNavigate, useParams } from 'react-router-dom';
 import orgChartData from '../../data/orgchart.json';
 
-// Helper function to upload file
-const uploadReceiptFile = async (file) => {
-  const user = auth.currentUser;
-  if (!user) throw new Error('User not authenticated');
-
-  const filePath = `receipts/${user.uid}/${Date.now()}_${file.name}`;
-  const fileRef = ref(storage, filePath);
-
-  await uploadBytes(fileRef, file); // Firebase SDK handles CORS
-  const downloadURL = await getDownloadURL(fileRef);
-
-  return downloadURL;
+// Helper function to compress and convert file to base64
+const processFile = async (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    
+    reader.onload = async (e) => {
+      try {
+        let base64String = e.target.result;
+        
+        // If it's an image, compress it
+        if (file.type.startsWith('image/')) {
+          const img = new Image();
+          img.src = base64String;
+          
+          await new Promise((resolve) => {
+            img.onload = resolve;
+          });
+          
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 800;
+          const MAX_HEIGHT = 800;
+          let width = img.width;
+          let height = img.height;
+          
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          base64String = canvas.toDataURL('image/jpeg', 0.7);
+        }
+        
+        resolve({
+          name: file.name,
+          type: file.type,
+          data: base64String,
+          size: base64String.length
+        });
+      } catch (error) {
+        reject(error);
+      }
+    };
+    
+    reader.onerror = (error) => reject(error);
+    reader.readAsDataURL(file);
+  });
 };
 
 const ReimbursementRequest = () => {
@@ -46,7 +91,7 @@ const ReimbursementRequest = () => {
   const [isManager, setIsManager] = useState(false);
   const navigate = useNavigate();
 
-  const categories = ['Travel', 'Food','Accomodation', 'Office Supplies', 'Training', 'Software', 'Other'];
+  const categories = ['Travel', 'Meals','Accomodation', 'Office Supplies', 'Training', 'Software', 'Other'];
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -208,10 +253,16 @@ const ReimbursementRequest = () => {
     setEntries(newEntries);
   };
 
-  const handleFileChange = (index, file) => {
-    const newEntries = [...entries];
-    newEntries[index].receipt = file;
-    setEntries(newEntries);
+  const handleFileChange = async (index, file) => {
+    try {
+      const processedFile = await processFile(file);
+      const newEntries = [...entries];
+      newEntries[index].receipt = processedFile;
+      setEntries(newEntries);
+    } catch (error) {
+      console.error('Error processing file:', error);
+      setError('Failed to process file');
+    }
   };
 
   const validateForm = () => {
@@ -243,20 +294,9 @@ const ReimbursementRequest = () => {
           processedEntry.category = entry.otherCategory;
         }
         
-        if (entry.receipt instanceof File) {
-          try {
-            const downloadURL = await uploadReceiptFile(entry.receipt);
-            processedEntry.receipt = {
-              name: entry.receipt.name,
-              url: downloadURL
-            };
-          } catch (uploadError) {
-            console.error('Error uploading file:', uploadError);
-            processedEntry.receipt = {
-              name: entry.receipt.name,
-              error: 'Failed to upload file'
-            };
-          }
+        // File is already processed and stored in base64 format
+        if (entry.receipt && entry.receipt.data) {
+          processedEntry.receipt = entry.receipt;
         }
         
         return processedEntry;
@@ -372,20 +412,9 @@ const ReimbursementRequest = () => {
           processedEntry.category = entry.otherCategory;
         }
         
-        if (entry.receipt instanceof File) {
-          try {
-            const downloadURL = await uploadReceiptFile(entry.receipt);
-            processedEntry.receipt = {
-              name: entry.receipt.name,
-              url: downloadURL
-            };
-          } catch (uploadError) {
-            console.error('Error uploading file:', uploadError);
-            processedEntry.receipt = {
-              name: entry.receipt.name,
-              error: 'Failed to upload file'
-            };
-          }
+        // File is already processed and stored in base64 format
+        if (entry.receipt && entry.receipt.data) {
+          processedEntry.receipt = entry.receipt;
         }
         
         return processedEntry;
@@ -394,23 +423,33 @@ const ReimbursementRequest = () => {
       // Calculate total amount
       const totalAmount = processedEntries.reduce((sum, entry) => sum + (parseFloat(entry.amount) || 0), 0);
 
+      // Ensure all fields have default values
       const reimbursementData = {
-        empId: userData.empId,
-        name: `${userData.firstName} ${userData.lastName}`.trim(),
-        justification,
+        empId: userData.empId || '',
+        name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Unknown',
+        justification: justification || '',
         entries: processedEntries,
         status: 'pending',
         submittedAt: serverTimestamp(),
         lastUpdated: serverTimestamp(),
         userId: user.uid,
-        managerId: userData.managerId, // This is crucial for manager to find the reimbursement
-        superManagerId: userData.superManagerId,
-        cid: userData.cid,
-        role: userData.role,
-        totalAmount: totalAmount,
-        employeeEmail: userData.email,
-        department: userData.department
+        managerId: userData.managerId || '',
+        superManagerId: userData.superManagerId || '',
+        cid: userData.cid || '',
+        role: userData.role || 'employee',
+        totalAmount: totalAmount || 0,
+        employeeEmail: userData.email || '',
+        department: userData.department || '',
+        requestDate: new Date().toISOString().split('T')[0]
       };
+
+      // Validate required fields
+      const requiredFields = ['empId', 'name', 'userId', 'managerId'];
+      const missingFields = requiredFields.filter(field => !reimbursementData[field]);
+      
+      if (missingFields.length > 0) {
+        throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+      }
 
       let docRef;
       if (draftId) {
@@ -428,16 +467,16 @@ const ReimbursementRequest = () => {
           status: 'pending',
           reimbursementId: docRef,
           employeeId: user.uid,
-          employeeName: `${userData.firstName} ${userData.lastName}`.trim(),
-          amount: totalAmount,
+          employeeName: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Unknown',
+          amount: totalAmount || 0,
           createdAt: serverTimestamp(),
           read: false,
-          message: `New reimbursement request from ${userData.firstName} ${userData.lastName} for ₹${totalAmount}`
+          message: `New reimbursement request from ${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Unknown' + ` for ₹${totalAmount || 0}`
         };
 
         await addDoc(collection(db, 'notifications'), {
           ...notificationData,
-          userId: userData.managerId // This ensures the notification goes to the manager
+          userId: userData.managerId
         });
       }
       
@@ -448,7 +487,7 @@ const ReimbursementRequest = () => {
       navigate('/dashboard');
     } catch (err) {
       console.error('Error submitting reimbursement:', err);
-      setError('Failed to submit reimbursement request');
+      setError(err.message || 'Failed to submit reimbursement request');
     } finally {
       setIsSubmitting(false);
     }
@@ -548,14 +587,22 @@ const ReimbursementRequest = () => {
                       {entry.receipt && (
                         <div className="col-span-2">
                           <p className="text-sm text-gray-600">Receipt</p>
-                          <a 
-                            href={entry.receipt.url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline"
-                          >
-                            {entry.receipt.name}
-                          </a>
+                          {entry.receipt.type.startsWith('image/') ? (
+                            <img 
+                              src={entry.receipt.data} 
+                              alt={entry.receipt.name}
+                              className="max-w-xs mt-2 rounded"
+                            />
+                          ) : (
+                            <a 
+                              href={entry.receipt.data} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:underline"
+                            >
+                              {entry.receipt.name}
+                            </a>
+                          )}
                         </div>
                       )}
                     </div>
