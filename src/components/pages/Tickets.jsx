@@ -752,10 +752,12 @@ function TicketsPage() {
           to_email: assignedToEmail,
           to_name: assignedToName,
           ticket_id: currentTicket.ticketNumber,
+          subject: currentTicket.subject,
+          description: currentTicket.description,
           assigned_by_name: managerName,
           assigned_by_email: managerEmail,
           customer_name: currentTicket.customer,
-          customer_phone: currentTicket.phone || 'N/A', // Assuming ticket has customerPhone, or use 'N/A'
+          customer_phone: currentTicket.phone || 'N/A',
           template_html: ticketAssignmentTemplate
         };
 

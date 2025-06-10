@@ -1,20 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../firebase';
-import { collection, addDoc, serverTimestamp, getDocs } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { toast } from 'react-toastify';
+import { FaTrash } from 'react-icons/fa';
  
 const Documents = () => {
+  const [activeTab, setActiveTab] = useState('policies'); // 'policies' or 'form16'
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
  
-  // Fetch existing documents on component mount
+  // Fetch existing documents on component mount and when tab changes
   useEffect(() => {
     fetchDocuments();
-  }, []);
+  }, [activeTab]);
  
   const fetchDocuments = async () => {
     try {
-      const querySnapshot = await getDocs(collection(db, 'companyPolicies'));
+      const collectionName = activeTab === 'policies' ? 'companyPolicies' : 'form16Documents';
+      const querySnapshot = await getDocs(collection(db, collectionName));
       const documents = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
@@ -42,11 +45,12 @@ const Documents = () => {
         });
  
         // Add document to Firestore
-        const docRef = await addDoc(collection(db, 'companyPolicies'), {
+        const collectionName = activeTab === 'policies' ? 'companyPolicies' : 'form16Documents';
+        const docRef = await addDoc(collection(db, collectionName), {
           name: file.name,
           type: file.type,
           size: file.size,
-          data: fileData, // Store the base64 data
+          data: fileData,
           uploadedAt: serverTimestamp(),
           status: 'active'
         });
@@ -71,9 +75,48 @@ const Documents = () => {
     }
   };
  
+  const handleDeleteDocument = async (documentId) => {
+    if (window.confirm('Are you sure you want to delete this document?')) {
+      try {
+        const collectionName = activeTab === 'policies' ? 'companyPolicies' : 'form16Documents';
+        await deleteDoc(doc(db, collectionName, documentId));
+        setFiles(prevFiles => prevFiles.filter(file => file.id !== documentId));
+        toast.success('Document deleted successfully');
+      } catch (error) {
+        console.error('Error deleting document:', error);
+        toast.error('Failed to delete document');
+      }
+    }
+  };
+ 
   return (
     <div className="p-6 max-w-5xl mx-auto">
-      <h2 className="text-3xl font-semibold mb-6 text-indigo-700">Company Policies</h2>
+      <div className="flex space-x-4 mb-6">
+        <button
+          onClick={() => setActiveTab('policies')}
+          className={`px-4 py-2 rounded ${
+            activeTab === 'policies'
+              ? 'bg-indigo-600 text-white'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          Policy Documents
+        </button>
+        <button
+          onClick={() => setActiveTab('form16')}
+          className={`px-4 py-2 rounded ${
+            activeTab === 'form16'
+              ? 'bg-indigo-600 text-white'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          Form 16 Documents
+        </button>
+      </div>
+ 
+      <h2 className="text-3xl font-semibold mb-6 text-indigo-700">
+        {activeTab === 'policies' ? 'Company Policies' : 'Form 16 Documents'}
+      </h2>
  
       <div className="mb-6">
         <label
@@ -82,7 +125,7 @@ const Documents = () => {
             uploading ? 'bg-gray-400' : 'bg-indigo-600 hover:bg-indigo-700'
           } text-white px-6 py-3 rounded shadow transition`}
         >
-          {uploading ? 'Uploading...' : 'Upload Policy Documents'}
+          {uploading ? 'Uploading...' : `Upload ${activeTab === 'policies' ? 'Policy' : 'Form 16'} Documents`}
         </label>
         <input
           id="file-upload"
@@ -96,7 +139,7 @@ const Documents = () => {
       </div>
  
       {files.length === 0 ? (
-        <p className="text-gray-500">No policy documents uploaded yet.</p>
+        <p className="text-gray-500">No documents uploaded yet.</p>
       ) : (
         <div className="overflow-x-auto rounded-lg shadow">
           <table className="min-w-full bg-white">
@@ -117,14 +160,23 @@ const Documents = () => {
                   <td className="py-4 px-6">{(size / 1024).toFixed(2)}</td>
                   <td className="py-4 px-6">{date}</td>
                   <td className="py-4 px-6">
-                    <a
-                      href={data}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-indigo-600 hover:text-indigo-800"
-                    >
-                      View
-                    </a>
+                    <div className="flex space-x-3">
+                      <a
+                        href={data}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-indigo-600 hover:text-indigo-800"
+                      >
+                        View
+                      </a>
+                      <button
+                        onClick={() => handleDeleteDocument(id)}
+                        className="text-red-600 hover:text-red-800 flex items-center"
+                      >
+                        <FaTrash className="mr-1" />
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -137,6 +189,7 @@ const Documents = () => {
 };
  
 export default Documents;
+ 
  
  
  

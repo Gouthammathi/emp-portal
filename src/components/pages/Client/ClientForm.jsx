@@ -186,7 +186,7 @@ function Client() {
       const managerQuery = query(
         collection(db, "users"),
         where("assignedProject", "==", formData.project),
-        where("role", "==", "manager")
+        where("role", "in", ["manager", "Team Lead"])
       );
       const managerSnapshot = await getDocs(managerQuery);
      
@@ -277,6 +277,8 @@ function Client() {
           to_email: managerEmail,
           to_name: managerData.firstName,
           ticket_id: ticketData.ticketNumber,
+          subject: formData.subject,
+          description: formData.description,
           reply_from: formData.name,
           phone: formData.phone,
           customer_email: formData.email,

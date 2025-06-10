@@ -32,6 +32,14 @@ export const ticketNotificationTemplate = `
             margin: 15px 0;
             font-size: 0.9em;
         }
+        .description {
+            background-color: #f1f5f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+        }
         .footer {
             text-align: center;
             margin-top: 20px;
@@ -52,9 +60,18 @@ export const ticketNotificationTemplate = `
        
         <div class="ticket-details">
             <p><strong>Ticket Number:</strong> {{ticket_id}}</p>
+            <p><strong>Subject:</strong> {{subject}}</p>
             <p><strong>From:</strong> {{reply_from}}</p>
             <p><strong>Contact Number:</strong> {{phone}}</p>
+            <p><strong>Customer Email:</strong> {{customer_email}}</p>
         </div>
+ 
+        <div class="description">
+            <p><strong>Description:</strong></p>
+            <p>{{description}}</p>
+        </div>
+ 
+        <p>Please log in to the portal to view and respond to this ticket.</p>
     </div>
    
     <div class="footer">
@@ -98,6 +115,14 @@ export const ticketAssignmentTemplate = `
             margin: 15px 0;
             font-size: 0.9em;
         }
+        .description {
+            background-color: #f1f5f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+        }
         .footer {
             text-align: center;
             margin-top: 20px;
@@ -118,10 +143,19 @@ export const ticketAssignmentTemplate = `
        
         <div class="ticket-details">
             <p><strong>Ticket Number:</strong> {{ticket_id}}</p>
+            <p><strong>Subject:</strong> {{subject}}</p>
             <p><strong>Assigned By:</strong> {{assigned_by_name}}</p>
+            <p><strong>Assigned By Email:</strong> {{assigned_by_email}}</p>
             <p><strong>Customer Name:</strong> {{customer_name}}</p>
             <p><strong>Customer Contact:</strong> {{customer_phone}}</p>
         </div>
+ 
+        <div class="description">
+            <p><strong>Description:</strong></p>
+            <p>{{description}}</p>
+        </div>
+ 
+        <p>Please log in to the portal to view and respond to this ticket.</p>
     </div>
    
     <div class="footer">
