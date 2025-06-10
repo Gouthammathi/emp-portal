@@ -17,6 +17,7 @@
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",
     "express": "^5.1.0",
+    "file-saver": "^2.0.5",
     "firebase": "^11.6.0",
     "framer-motion": "^12.10.5",
     "html2canvas": "^1.4.1",

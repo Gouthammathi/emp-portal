@@ -52,14 +52,16 @@ function Client() {
   ];
  
   const categories = [
-    'Technical Issue',
-    'Bug Report',
-    'Feature Request',
-    'Account Problem',
-    'Billing Issue',
-    'General Inquiry',
-    'Complaint',
-    'Feedback'
+    'Master Data Issues',
+    'Inbound Process Issues',
+    'Outbound Process Issues',
+    'Internal Warehouse Process Issues',
+    'Integration Issues',
+    'RF Framework Issues',
+    'Authorization and Role Issues',
+    'Performance Issues',
+    'Reporting and Monitor Issues',
+    'Technical Errors / Enhancements'
   ];
  
   useEffect(() => {
@@ -684,6 +686,3 @@ function Client() {
 }
  
 export default Client;
- 
- 
- 

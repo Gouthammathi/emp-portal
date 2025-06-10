@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  FaHome, FaFire, FaBook, FaClipboardList, FaClock,
+  FaHome, FaFire, FaBook, FaClipboardList, FaClock,FaChartBar,
   FaFolderOpen, FaSitemap, FaFileInvoiceDollar, FaChevronDown,
   FaChevronUp, FaUmbrellaBeach, FaUsers, FaUserPlus, FaUserCog,
   FaChartLine, FaBuilding, FaFileAlt, FaCalendarAlt, FaTicketAlt
@@ -65,8 +65,14 @@ const Sidebar = ({ role }) => {
     {
       icon: <FaTicketAlt className="text-blue-500 group-hover:text-blue-600" />,
       label: "My Tickets",
-      path: "/my-tickets"
+      path: "/my-tickets",
+
     },
+    {
+      icon: <FaChartBar className="text-indigo-500 group-hover:text-indigo-600" />,
+      label: "Ticket Reports",
+      path: "/ticket-reports"
+    }
  
   ];
  
@@ -92,6 +98,11 @@ const Sidebar = ({ role }) => {
       label: "Reports",
       path: "/hr/reports"
     },
+    {
+      icon: <FaChartBar className="text-indigo-500 group-hover:text-indigo-600" />,
+      label: "Ticket Reports",
+      path: "/ticket-reports"
+    }
 
   ];
  
@@ -117,6 +128,11 @@ const Sidebar = ({ role }) => {
       label: "Reports",
       path: "/manager/reports"
     },
+    {
+      icon: <FaChartBar className="text-indigo-500 group-hover:text-indigo-600" />,
+      label: "Ticket Reports",
+      path: "/ticket-reports"
+    }
 
   ];
  

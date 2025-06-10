@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getAuth } from 'firebase/auth';
-import { doc, getDoc, collection, query, where, onSnapshot, updateDoc, serverTimestamp, arrayUnion } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, onSnapshot, updateDoc, serverTimestamp, arrayUnion, addDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import {
   Mail,
@@ -35,7 +35,7 @@ import {
   Zap,
   TrendingUp
 } from 'lucide-react';
-
+ 
 const EmployeeAssignedTickets = () => {
   const [loading, setLoading] = useState(true);
   const [tickets, setTickets] = useState([]);
@@ -51,10 +51,10 @@ const EmployeeAssignedTickets = () => {
     Resolved: 0,
     Closed: 0
   });
-
+ 
   // Add messagesContainerRef for scrolling
   const messagesContainerRef = useRef(null);
-
+ 
   useEffect(() => {
     const fetchUserData = async () => {
       const auth = getAuth();
@@ -67,34 +67,34 @@ const EmployeeAssignedTickets = () => {
       }
       setLoading(false);
     };
-
+ 
     fetchUserData();
   }, []);
-
+ 
   // Listen for tickets assigned to this employee
   useEffect(() => {
     const auth = getAuth();
     const currentUser = auth.currentUser;
-
+ 
     if (!currentUser) {
       setTickets([]);
       console.warn("Employee not authenticated, cannot fetch assigned tickets.");
       setLoading(false);
       return;
     }
-
+ 
     const ticketsQuery = query(
       collection(db, 'tickets'),
       where('assignedTo', '==', currentUser.uid)
     );
-
+ 
     const unsubscribe = onSnapshot(ticketsQuery, (snapshot) => {
       const ticketList = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
       setTickets(ticketList);
-      
+     
       // Update status counts
       const counts = {
         Open: 0,
@@ -106,23 +106,23 @@ const EmployeeAssignedTickets = () => {
         counts[ticket.status] = (counts[ticket.status] || 0) + 1;
       });
       setStatusCounts(counts);
-      
+     
       console.log('EmployeeAssignedTickets: onSnapshot received tickets:', ticketList);
       setLoading(false);
     }, (error) => {
       console.error("Error fetching assigned tickets:", error);
       setLoading(false);
     });
-
+ 
     return () => unsubscribe();
   }, []);
-
+ 
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [selectedTicket?.adminResponses, selectedTicket?.employeeResponses, selectedTicket?.customerResponses]);
-
+ 
   // Enhanced scroll to bottom function
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
@@ -132,7 +132,7 @@ const EmployeeAssignedTickets = () => {
       });
     }
   };
-
+ 
   // Scroll to bottom when messages change
   useEffect(() => {
     if (selectedTicket) {
@@ -141,7 +141,7 @@ const EmployeeAssignedTickets = () => {
       }, 100);
     }
   }, [selectedTicket?.adminResponses, selectedTicket?.customerResponses, selectedTicket?.employeeResponses, selectedTicket?.id]);
-
+ 
   const sendResponse = async (ticketId, message) => {
     if (!message.trim()) return;
    
@@ -160,7 +160,7 @@ const EmployeeAssignedTickets = () => {
         employeeResponses: arrayUnion(newResponse),
         lastUpdated: serverTimestamp()
       });
-      
+     
       setTickets(prevTickets =>
         prevTickets.map(t =>
           t.id === ticketId
@@ -168,13 +168,13 @@ const EmployeeAssignedTickets = () => {
             : t
         )
       );
-      
+     
       setSelectedTicket(prev =>
         prev && prev.id === ticketId
           ? { ...prev, employeeResponses: [...(prev.employeeResponses || []), newResponse] }
           : prev
       );
-      
+     
       setNewResponse('');
     } catch (error) {
       console.error('Error sending response:', error);
@@ -184,20 +184,20 @@ const EmployeeAssignedTickets = () => {
       setIsSending(false);
     }
   };
-
+ 
   const formatMessageTime = (timestamp) => {
     if (!timestamp) return '';
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     const now = new Date();
     const yesterday = new Date(now);
     yesterday.setDate(yesterday.getDate() - 1);
-
+ 
     const timeStr = date.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
       hour12: true
     });
-
+ 
     if (date.toDateString() === now.toDateString()) {
       return timeStr;
     } else if (date.toDateString() === yesterday.toDateString()) {
@@ -215,7 +215,7 @@ const EmployeeAssignedTickets = () => {
       })} ${timeStr}`;
     }
   };
-
+ 
   const getStatusIcon = (status) => {
     switch (status) {
       case 'Open': return <AlertCircle className="w-4 h-4 text-blue-500" />;
@@ -225,7 +225,7 @@ const EmployeeAssignedTickets = () => {
       default: return <Minus className="w-4 h-4 text-gray-400" />;
     }
   };
-
+ 
   const getPriorityColor = (priority) => {
     switch (priority) {
       case 'High': return 'bg-red-100 text-red-800';
@@ -234,7 +234,7 @@ const EmployeeAssignedTickets = () => {
       default: return 'bg-gray-100 text-gray-800';
     }
   };
-
+ 
   const getStatusBadgeColor = (status) => {
     switch (status) {
       case 'Open': return 'bg-blue-100 text-blue-800';
@@ -244,7 +244,7 @@ const EmployeeAssignedTickets = () => {
       default: return 'bg-gray-100 text-gray-800';
     }
   };
-
+ 
   const getFileIcon = (file) => {
     const type = file.type.split('/')[0];
     switch (type) {
@@ -256,33 +256,109 @@ const EmployeeAssignedTickets = () => {
       default: return <File className="w-4 h-4" />;
     }
   };
-
+ 
   const updateTicketStatus = async (ticketId, newStatus) => {
+    console.log(`updateTicketStatus called for ticketId: ${ticketId}, newStatus: ${newStatus}`); // Debug log
     try {
-      await updateDoc(doc(db, 'tickets', ticketId), {
+      const ticketRef = doc(db, 'tickets', ticketId);
+      const ticketDoc = await getDoc(ticketRef);
+      const ticketData = ticketDoc.data();
+     
+      // Optimistically update local state BEFORE Firestore update
+      setTickets(prevTickets =>
+        prevTickets.map(t =>
+          t.id === ticketId ? { ...t, status: newStatus, lastUpdated: new Date() } : t
+        )
+      );
+      setSelectedTicket(prev => prev && prev.id === ticketId ? { ...prev, status: newStatus, lastUpdated: new Date() } : prev);
+ 
+      // If status is being changed to Closed, generate report
+      if (newStatus === 'Closed') {
+        console.log('Ticket is being closed, preparing report...'); // Debug log
+        const completionTime = new Date();
+        const startTime = ticketData.assignedAt?.toDate() || ticketData.created.toDate();
+        const timeToComplete = completionTime - startTime;
+       
+        // Create report data
+        const reportData = {
+          ticketId: ticketId,
+          ticketNumber: ticketData.ticketNumber,
+          subject: ticketData.subject,
+          completedBy: {
+            id: ticketData.assignedTo,
+            name: ticketData.assignedToName,
+            role: ticketData.assignedToRole
+          },
+          startTime: startTime,
+          completionTime: completionTime,
+          timeToComplete: timeToComplete,
+          project: ticketData.project,
+          priority: ticketData.priority,
+          createdAt: serverTimestamp()
+        };
+ 
+        // Add report to reports collection
+        await addDoc(collection(db, 'ticketReports'), reportData);
+        console.log('Report added to ticketReports collection:', reportData); // Debug log
+ 
+        // Send notification to next level in hierarchy
+        let notificationTo = null;
+        if (ticketData.assignedToRole === 'employee') {
+          // If employee completed, notify manager
+          notificationTo = 'manager';
+        } else if (ticketData.assignedToRole === 'manager') {
+          // If manager completed, notify supermanager
+          notificationTo = 'supermanager';
+        } else if (ticketData.assignedToRole === 'supermanager') {
+          // If supermanager completed, notify C-suite
+          notificationTo = 'csuite';
+        }
+ 
+        if (notificationTo) {
+          await addDoc(collection(db, 'notifications'), {
+            type: 'ticket_completed',
+            ticketId: ticketId,
+            ticketNumber: ticketData.ticketNumber,
+            subject: ticketData.subject,
+            completedBy: {
+              id: ticketData.assignedTo,
+              name: ticketData.assignedToName,
+              role: ticketData.assignedToRole
+            },
+            timeToComplete: timeToComplete,
+            notificationTo: notificationTo,
+            createdAt: serverTimestamp(),
+            read: false
+          });
+        }
+      }
+ 
+      // Update ticket status in Firestore
+      await updateDoc(ticketRef, {
         status: newStatus,
         lastUpdated: serverTimestamp()
       });
+ 
     } catch (error) {
       console.error('Error updating ticket status:', error);
     }
   };
-
+ 
   const filteredTickets = tickets.filter(ticket => {
     const matchesSearch = ticket.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          ticket.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          ticket.id.toLowerCase().includes(searchTerm.toLowerCase());
-    
+   
     if (filterStatus === 'All Tickets') return matchesSearch;
     return matchesSearch && ticket.status === filterStatus;
   });
-
+ 
   if (loading) return (
     <div className="flex justify-center items-center min-h-screen">
       <Loader2 className="animate-spin text-4xl text-blue-600" />
     </div>
   );
-
+ 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -320,7 +396,7 @@ const EmployeeAssignedTickets = () => {
             </div>
           </div>
         </div>
-
+ 
         {tickets.length === 0 ? (
           <div className="bg-white rounded-lg shadow-lg p-8 text-center">
             <Mail className="text-gray-400 w-16 h-16 mx-auto mb-4" />
@@ -354,16 +430,20 @@ const EmployeeAssignedTickets = () => {
                       <select
                         value={ticket.status}
                         onChange={(e) => {
-                          e.stopPropagation();
-                          updateTicketStatus(ticket.id, e.target.value);
+                          console.log(`EmployeeAssignedTickets: onChange triggered for ticket ${ticket.id}. Raw event target value: ${e.target.value}`); // New debug log for raw value
+                          // e.stopPropagation(); // Keeping this commented out
+                          const selectedValue = e.target.value; // Explicitly capture value
+                          console.log(`EmployeeAssignedTickets: Value of selectedValue immediately after assignment: ${selectedValue}`); // NEW DEBUG LOG
+                          console.log(`EmployeeAssignedTickets: Attempting to update status for ticket ${ticket.id} to: ${selectedValue}`); // Debug log with captured value
+                          updateTicketStatus(ticket.id, selectedValue);
                         }}
                         className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
-                        onClick={(e) => e.stopPropagation()}
+                        // onClick removed entirely
                       >
-                        <option>Open</option>
-                        <option>In Progress</option>
-                        <option>Resolved</option>
-                        <option>Closed</option>
+                        <option value="Open">Open</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Resolved">Resolved</option>
+                        <option value="Closed">Closed</option>
                       </select>
                     </div>
                   </div>
@@ -375,7 +455,7 @@ const EmployeeAssignedTickets = () => {
                 </div>
               ))}
             </div>
-
+ 
                                         {/* Chat Section */}
             {selectedTicket && (
               <div className="lg:col-span-2 bg-white rounded-lg shadow-lg flex flex-col h-[550px]">
@@ -389,7 +469,7 @@ const EmployeeAssignedTickets = () => {
                 <XCircle className="w-6 h-6" />
               </button>
             </div>
-          
+         
             {selectedTicket.attachments && selectedTicket.attachments.length > 0 && (
                   <div className="bg-gray-50 rounded-xl w-40 h-16 p-1">
                   {/* <h3 className="font-semibold text-gray-900 mb-1">Attachments</h3> */}
@@ -504,7 +584,7 @@ const EmployeeAssignedTickets = () => {
                         const timeB = b.timestamp?.toDate?.() || new Date(b.timestamp);
                         return timeA - timeB;
                       });
-
+ 
                       return allMessages.map((msg, index) => (
                         <div
                           key={index}
@@ -524,7 +604,11 @@ const EmployeeAssignedTickets = () => {
                                 }`}>
                                   {msg.type === 'admin'
                                     ? 'Admin'
-                                    : msg.type === 'employee' ? msg.sender : (msg.isInitial ? 'Initial Request' : 'Client Response')
+                                    : msg.type === 'employee'
+                                    ? msg.sender || 'Employee'
+                                    : msg.isInitial
+                                    ? 'Customer Initial Request'
+                                    : 'Customer'
                                   }
                                 </span>
                                 <span className={`text-xs ${
@@ -535,63 +619,57 @@ const EmployeeAssignedTickets = () => {
                                   {formatMessageTime(msg.timestamp)}
                                 </span>
                               </div>
-                              <p className={`text-sm leading-relaxed ${
-                                msg.type === 'admin' || msg.type === 'employee' ? 'text-white' : 'text-gray-700'
-                              }`}>
-                                {msg.message}
-                              </p>
-                             
+                              <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.message}</p>
+                              {msg.attachments && msg.attachments.length > 0 && (
+                                <div className="mt-3 space-y-2">
+                                  {msg.attachments.map((file, fileIndex) => (
+                                    <div key={fileIndex} className="flex items-center space-x-2 text-white/80 text-xs bg-black/20 p-2 rounded-lg">
+                                      {getFileIcon(file)}
+                                      <span>{file.name}</span>
+                                      <a
+                                        href={file.data}
+                                        download={file.name}
+                                        className="ml-auto text-white/90 hover:text-white"
+                                        onClick={(e) => e.stopPropagation()} // Prevent bubbling to message div
+                                      >
+                                        <Download className="w-4 h-4" />
+                                      </a>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           </div>
-                          {msg.type === 'admin' || msg.type === 'employee' ? (
-                            <div className="w-8 h-8 bg-gradient-to-r from-gray-600 to-gray-700 rounded-full flex items-center justify-center ml-3 order-1 flex-shrink-0">
-                              <MessageSquare className="w-4 h-4 text-white" />
-                            </div>
-                          ) : (
-                            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center mr-3 order-2 flex-shrink-0">
-                              <User className="w-4 h-4 text-white" />
-                            </div>
-                          )}
                         </div>
                       ));
                     })()}
                     <div ref={messagesEndRef} />
                   </div>
-                </div>
-                                {/* RESPONSE SECTION */}
-                <div className="p-4 border-t border-gray-200">
-                  <div className="space-y-2">
+ 
+                  {/* Response Input */}
+                  <div className="p-4 border-t border-gray-200 bg-white flex items-center space-x-3">
                     <textarea
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      rows="3"
-                      placeholder="Type your response here..."
                       value={newResponse}
                       onChange={(e) => setNewResponse(e.target.value)}
-                      disabled={isSending}
-                    />
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => sendResponse(selectedTicket.id, newResponse)}
-                        disabled={isSending || !newResponse.trim()}
-                        className={`flex-1 py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors ${
-                          isSending || !newResponse.trim()
-                            ? 'bg-gray-400 cursor-not-allowed'
-                            : 'bg-blue-600 hover:bg-blue-700 text-white'
-                        }`}
-                      >
-                        {isSending ? (
-                          <>
-                            <Loader2 className="w-5 h-5 animate-spin" />
-                            <span>Sending...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Send className="w-5 h-5" />
-                            <span>Send Response</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
+                      placeholder="Type your response..."
+                      rows="1"
+                      className="flex-1 resize-none border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    ></textarea>
+                    <button
+                      onClick={() => sendResponse(selectedTicket.id, newResponse)}
+                      disabled={isSending || !newResponse.trim()}
+                      className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 ${
+                        isSending || !newResponse.trim()
+                          ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'
+                      }`}
+                    >
+                      {isSending ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <Send className="w-5 h-5" />
+                      )}
+                      <span>{isSending ? 'Sending...' : 'Send'}</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -602,5 +680,5 @@ const EmployeeAssignedTickets = () => {
     </div>
   );
 };
-
-export default EmployeeAssignedTickets; 
+ 
+export default EmployeeAssignedTickets;
