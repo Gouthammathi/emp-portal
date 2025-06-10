@@ -52,7 +52,7 @@ import EmployeeAssignedTickets from '../pages/EmployeeAssignedTickets';
 import Layout from '../layout/Layout';
 import AdminRouter from '../../admin/routes/AdminRouter';
 import CSuiteDashboard from '../pages/dashboard/CSuiteDashboard';
-import CSuiteTickets from '../pages/dashboard/CsuiteTickets';
+import CSuiteTickets from '../pages/dashboard/CSuiteTickets';
 const UserLayoutWrapper = () => (
   <Layout>
     <Outlet />
