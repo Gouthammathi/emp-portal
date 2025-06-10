@@ -38,7 +38,8 @@ import {
 import { collection, query, onSnapshot, doc, updateDoc, deleteDoc, orderBy, serverTimestamp, where, getDoc, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { getAuth } from 'firebase/auth';
-import orgChartData from '../../data/orgchart.json';
+import emailjs from '@emailjs/browser';
+import { ticketNotificationTemplate, ticketAssignmentTemplate } from '../../utils/emailTemplates';
 
 function TicketsPage() {
   const [tickets, setTickets] = useState([]);
@@ -61,45 +62,27 @@ function TicketsPage() {
   const [userEmpId, setUserEmpId] = useState(null);
   const [teamMembers, setTeamMembers] = useState([]);
   const [employeeNames, setEmployeeNames] = useState({});
-
-  // Function to fetch registered team members based on manager's empId and orgchart
+  // Function to fetch registered team members based on manager's empId
   const fetchRegisteredTeamMembers = async (managerEmpId) => {
       if (!managerEmpId) return [];
      
       try {
-        // Find all employees who have this manager's empId as their managerId in orgchart
-        const orgChartTeamMembers = orgChartData.organizationChart.filter(
-          emp => String(emp.managerId) === String(managerEmpId)
+        // Find all employees who have this manager's empId as their managerId in users collection
+        const teamMembersQuery = query(
+          collection(db, "users"),
+          where("managerId", "==", managerEmpId),
+          where("status", "==", "active")
         );
+        
+        const teamMembersSnapshot = await getDocs(teamMembersQuery);
+        const registeredTeamMembers = teamMembersSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          employeeName: `${doc.data().firstName} ${doc.data().lastName}`,
+          isRegistered: true
+        }));
 
-        if (orgChartTeamMembers.length === 0) {
-          console.log("No team members found in orgchart for managerEmpId:", managerEmpId);
-          return [];
-        }
-
-        // Check which of these employees are registered in the database
-        const registeredTeamMembers = [];
-       
-        for (const member of orgChartTeamMembers) {
-          // Check if employee is registered in users collection by empId
-          const userQuery = query(
-            collection(db, "users"),
-            where("empId", "==", member.empId)
-          );
-          const userSnapshot = await getDocs(userQuery);
-         
-          if (!userSnapshot.empty) {
-            // Employee is registered, add their data including Firestore document ID (Auth UID)
-            const userData = userSnapshot.docs[0].data();
-            registeredTeamMembers.push({
-              id: userSnapshot.docs[0].id, // Firebase Auth UID
-              ...member, // Data from orgchart (employeeName, empId, etc.)
-              ...userData, // Data from users collection (role, assignedProject, etc.)
-              isRegistered: true
-            });
-          }
-        }
-        // console.log("Fetched registered team members using orgchart:", registeredTeamMembers);
+        console.log("Fetched registered team members:", registeredTeamMembers);
         return registeredTeamMembers;
 
       } catch (error) {
@@ -155,7 +138,6 @@ function TicketsPage() {
          setStatusCounts({ Open: 0, 'In Progress': 0, Resolved: 0, Closed: 0 });
          return;
     }
-
     let q;
     if (userRole === 'admin') {
       // Admin sees all tickets
@@ -427,27 +409,35 @@ function TicketsPage() {
                   value={ticket.assignedTo || ''}
                   onChange={(e) => {
                     e.stopPropagation();
-                    assignTicketToTeamMember(ticket.id, e.target.value);
+                    const value = e.target.value;
+                    if (value === 'unassign') {
+                      assignTicketToTeamMember(ticket.id, 'unassign');
+                    } else if (value === 'myself') {
+                      assignTicketToTeamMember(ticket.id, 'myself');
+                    } else {
+                      assignTicketToTeamMember(ticket.id, value);
+                    }
                   }}
                   className="px-3 py-1.5 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <option value="">Assign to team member</option>
+                  <option value="">Select Assignee</option>
                   <option value="unassign">Unassign Ticket</option>
+                  <option value="myself">Assign to myself</option>
                   {teamMembers.map((member) => (
-                    // Use member.id (Auth UID) as the value and member.employeeName/empId for display
                     <option key={member.id} value={member.id}>
                       {member.employeeName} ({member.empId})
                     </option>
                   ))}
                 </select>
               )}
-              {/* Display Assigned Team Member for Employees - Visible only if assigned */}
-               {userRole === 'employee' && ticket.assignedTo && (
-                   <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                       Assigned to: {teamMembers.find(member => member.id === ticket.assignedTo)?.employeeName || 'N/A'}
-                   </span>
-               )}
+
+              {/* Display current assignment */}
+              {userRole === 'manager' && ticket.assignedTo && (
+                <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {ticket.assignedToRole === 'manager' ? 'Assigned to me' : `Assigned to: ${ticket.assignedToName}`}
+                </span>
+              )}
 
               <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusBadgeColor(ticket.status)}`}>
                 {ticket.status}
@@ -550,25 +540,32 @@ function TicketsPage() {
                   value={ticket.assignedTo || ''}
                   onChange={(e) => {
                     e.stopPropagation();
-                    assignTicketToTeamMember(ticket.id, e.target.value);
+                    const value = e.target.value;
+                    if (value === 'unassign') {
+                      assignTicketToTeamMember(ticket.id, 'unassign');
+                    } else if (value === 'myself') {
+                      assignTicketToTeamMember(ticket.id, 'myself');
+                    } else {
+                      assignTicketToTeamMember(ticket.id, value);
+                    }
                   }}
                   className="px-3 py-1.5 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <option value="">Assign to team member</option>
+                  <option value="">Select Assignee</option>
                   <option value="unassign">Unassign Ticket</option>
-                   {teamMembers.map((member) => (
+                  <option value="myself">Assign to myself</option>
+                  {teamMembers.map((member) => (
                     <option key={member.id} value={member.id}>
                       {member.employeeName} ({member.empId})
                     </option>
                   ))}
                 </select>
             )}
-             {/* Display Assigned Team Member for Employees - Visible only if assigned */}
-               {userRole === 'employee' && ticket.assignedTo && (
-                   <span className="px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-100 text-blue-800 flex items-center space-x-1">
-                       <User className="w-4 h-4" />
-                       <span>Assigned: {teamMembers.find(member => member.id === ticket.assignedTo)?.employeeName || 'N/A'}</span>
+             {/* Display current assignment */}
+               {userRole === 'manager' && ticket.assignedTo && (
+                   <span className="px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-100 text-blue-800">
+                       {ticket.assignedToRole === 'manager' ? 'Assigned to me' : `Assigned to: ${ticket.assignedToName}`}
                    </span>
                )}
            
@@ -615,7 +612,10 @@ function TicketsPage() {
      
       const newResponse = {
         message: message.trim(),
-        timestamp: new Date()
+        timestamp: new Date(),
+        sender: userRole === 'supermanager' ? 'Project Manager' : 'Team Lead',
+        senderRole: userRole === 'supermanager' ? 'supermanager' : 'manager',
+        senderId: getAuth().currentUser.uid
       };
      
       await updateDoc(ticketRef, {
@@ -641,27 +641,148 @@ function TicketsPage() {
   // Add function to assign ticket to team member
   const assignTicketToTeamMember = async (ticketId, teamMemberId) => {
     try {
+      console.log('Assigning ticket:', ticketId, 'to:', teamMemberId); // Debug log
+
       // If 'unassign' is selected, clear the assignment
       if (teamMemberId === 'unassign') {
-         await updateDoc(doc(db, 'tickets', ticketId), {
-           assignedTo: null,
-           assignedToName: null,
-           assignedAt: null,
-           status: 'Open' // Or change status as appropriate for unassigned
-         });
-         return; // Exit the function after unassigning
+        console.log('Unassigning ticket'); // Debug log
+        await updateDoc(doc(db, 'tickets', ticketId), {
+          assignedTo: null,
+          assignedToName: null,
+          assignedAt: null,
+          status: 'Open'
+        });
+
+        // Update local state
+        setTickets(prevTickets =>
+          prevTickets.map(t =>
+            t.id === ticketId
+              ? {
+                  ...t,
+                  assignedTo: null,
+                  assignedToName: null,
+                  assignedAt: null,
+                  status: 'Open'
+                }
+              : t
+          )
+        );
+        return;
       }
 
-      // Find the team member's data to get their name
+      // If 'myself' is selected, use the current manager's details
+      if (teamMemberId === 'myself') {
+        console.log('Assigning to manager'); // Debug log
+        const currentUser = getAuth().currentUser;
+        if (!currentUser) {
+          console.error('No authenticated user found');
+          return;
+        }
+
+        // Get manager's details from users collection
+        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        if (!userDoc.exists()) {
+          console.error('Manager details not found');
+          return;
+        }
+
+        const managerData = userDoc.data();
+        const managerName = managerData.firstName ? `${managerData.firstName} ${managerData.lastName}` : (managerData.employeeName || 'Manager');
+        const managerEmail = managerData.email;
+
+        console.log('Manager details:', { uid: currentUser.uid, name: managerName }); // Debug log
+
+        // Update the ticket with manager's details
+        await updateDoc(doc(db, 'tickets', ticketId), {
+          assignedTo: currentUser.uid,
+          assignedToName: managerName,
+          assignedAt: serverTimestamp(),
+          status: 'In Progress',
+          assignedToRole: 'manager'
+        });
+
+        // Update local state
+        setTickets(prevTickets =>
+          prevTickets.map(t =>
+            t.id === ticketId
+              ? {
+                  ...t,
+                  assignedTo: currentUser.uid,
+                  assignedToName: managerName,
+                  assignedAt: new Date(),
+                  status: 'In Progress',
+                  assignedToRole: 'manager'
+                }
+              : t
+          )
+        );
+        return;
+      }
+
+      // For team members, find their data to get their name and email
       const assignedTeamMember = teamMembers.find(member => member.id === teamMemberId);
-      const assignedToName = assignedTeamMember ? assignedTeamMember.employeeName : 'Unknown';
+      if (!assignedTeamMember) {
+        console.error('Team member not found:', teamMemberId);
+        return;
+      }
+
+      const assignedToName = assignedTeamMember.employeeName || 'Unknown';
+      const assignedToEmail = assignedTeamMember.email; // Get the team member's email
+
+      console.log('Assigning to team member:', { id: teamMemberId, name: assignedToName, email: assignedToEmail }); // Debug log
 
       await updateDoc(doc(db, 'tickets', ticketId), {
         assignedTo: teamMemberId,
-        assignedToName: assignedToName, // Store the assigned team member's name
+        assignedToName: assignedToName,
         assignedAt: serverTimestamp(),
-        status: 'In Progress'
+        status: 'In Progress',
+        assignedToRole: 'employee'
       });
+
+      // Send email notification to the assigned team member using EmailJS
+      if (assignedToEmail) {
+        const currentTicket = tickets.find(t => t.id === ticketId);
+        const currentUser = getAuth().currentUser;
+        const managerDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        const managerData = managerDoc.data();
+        const managerName = managerData.firstName ? `${managerData.firstName} ${managerData.lastName}` : (managerData.employeeName || 'Manager');
+        const managerEmail = managerData.email;
+
+        const templateParams = {
+          to_email: assignedToEmail,
+          to_name: assignedToName,
+          ticket_id: currentTicket.ticketNumber,
+          assigned_by_name: managerName,
+          assigned_by_email: managerEmail,
+          customer_name: currentTicket.customer,
+          customer_phone: currentTicket.phone || 'N/A', // Assuming ticket has customerPhone, or use 'N/A'
+          template_html: ticketAssignmentTemplate
+        };
+
+        await emailjs.send(
+          'service_f2cgkcd', // Use your EmailJS service ID
+          'template_6265t8d', // <--- IMPORTANT: This will be your NEW template ID
+          templateParams,
+          'ra7gO6IdJA5dC3cH4' // Use your EmailJS public key
+        );
+        console.log(`Email sent to ${assignedToEmail} for ticket ${currentTicket.ticketNumber}`);
+      }
+
+      // Update local state
+      setTickets(prevTickets =>
+        prevTickets.map(t =>
+          t.id === ticketId
+            ? {
+                ...t,
+                assignedTo: teamMemberId,
+                assignedToName: assignedToName,
+                assignedAt: new Date(),
+                status: 'In Progress',
+                assignedToRole: 'employee'
+              }
+            : t
+        )
+      );
     } catch (error) {
       console.error('Error assigning ticket:', error);
     }
@@ -1011,7 +1132,9 @@ function TicketsPage() {
                       ...(selectedTicket.adminResponses || []).map(response => ({
                         type: 'admin',
                         message: response.message,
-                        timestamp: response.timestamp
+                        timestamp: response.timestamp,
+                        sender: response.sender || 'Manager',
+                        senderRole: response.senderRole || 'manager'
                       })),
                       // Customer responses
                       ...(selectedTicket.customerResponses || []).map(response => ({
@@ -1024,7 +1147,7 @@ function TicketsPage() {
                         type: 'employee',
                         message: response.message,
                         timestamp: response.timestamp,
-                        sender: response.sender || 'Employee', // Use sender name if available, default to Employee
+                        sender: response.sender || 'Employee',
                         senderId: response.senderId
                       }))
                     ].sort((a, b) => {
@@ -1035,51 +1158,53 @@ function TicketsPage() {
 
                     return allMessages.map((msg, index) => (
                       <div
-  key={index}
-  className={`flex ${msg.type === 'admin' ? 'justify-end' : 'justify-start'} mb-4`}
->
-  <div className={`max-w-[75%] ${msg.type === 'admin' ? 'order-2' : 'order-1'}`}>
-    <div className={`rounded-2xl px-4 py-3 shadow-lg ${
-      msg.type === 'admin' ? 'bg-gradient-to-r from-green-600 to-green-700 text-white' :
-      msg.type === 'employee' ? 'bg-blue-500 text-white' :
-      'bg-white border border-gray-200 text-gray-800'
-    }`}>
-      <div className="flex items-center justify-between mb-2">
-        <span className={`text-xs font-semibold ${
-          msg.type === 'admin' ? 'text-green-100' :
-          msg.type === 'employee' ? 'text-blue-100' :
-          'text-gray-500'
-        }`}>
-          {msg.type === 'admin'
-            ? 'Admin'
-            : msg.type === 'employee' ? msg.sender : (msg.isInitial ? 'Initial Request' : 'Client Response')
-          }
-        </span>
-        <span className={`text-xs ${
-          msg.type === 'admin' ? 'text-green-100' :
-          msg.type === 'employee' ? 'text-blue-100' :
-          'text-gray-400'
-        }`}>
-          {formatMessageTime(msg.timestamp)}
-        </span>
-      </div>
-      <p className={`text-sm leading-relaxed ${
-        msg.type === 'admin' || msg.type === 'employee' ? 'text-white' : 'text-gray-700'
-      }`}>
-        {msg.message}
-      </p>
-    </div>
-  </div>
-  {msg.type === 'admin' || msg.type === 'employee' ? (
-    <div className="w-8 h-8 bg-gradient-to-r  flex items-center justify-center ml-3 order-1 flex-shrink-0">
-      {/* <User className="w-4 h-4 text-white" /> */}
-    </div>
-  ) : (
-    <div className="w-8 h-8 bg-gradient-to-r from-gray-600 to-gray-700 rounded-full flex items-center justify-center mr-3 order-2 flex-shrink-0">
-      <MessageSquare className="w-4 h-4 text-white" />
-    </div>
-  )}
-</div>
+                        key={index}
+                        className={`flex ${msg.type === 'admin' ? 'justify-end' : 'justify-start'} mb-4`}
+                      >
+                        <div className={`max-w-[75%] ${msg.type === 'admin' ? 'order-2' : 'order-1'}`}>
+                          <div className={`rounded-2xl px-4 py-3 shadow-lg ${
+                            msg.type === 'admin' ? 'bg-gradient-to-r from-green-600 to-green-700 text-white' :
+                            msg.type === 'employee' ? 'bg-blue-500 text-white' :
+                            'bg-white border border-gray-200 text-gray-800'
+                          }`}>
+                            <div className="flex items-center justify-between mb-2">
+                              <span className={`text-xs font-semibold ${
+                                msg.type === 'admin' ? 'text-green-100' :
+                                msg.type === 'employee' ? 'text-blue-100' :
+                                'text-gray-500'
+                              }`}>
+                                {msg.type === 'admin'
+                                  ? (msg.senderRole === 'supermanager' || (!msg.senderRole && userRole === 'supermanager') ? 'Project Manager'
+                                     : msg.senderRole === 'manager' || (!msg.senderRole && userRole === 'manager') ? 'Team Lead'
+                                     : 'Admin')
+                                    : msg.type === 'employee' ? msg.sender : (msg.isInitial ? 'Initial Request' : 'Client Response')
+                                }
+                              </span>
+                              <span className={`text-xs ${
+                                msg.type === 'admin' ? 'text-green-100' :
+                                msg.type === 'employee' ? 'text-blue-100' :
+                                'text-gray-400'
+                              }`}>
+                                {formatMessageTime(msg.timestamp)}
+                              </span>
+                            </div>
+                            <p className={`text-sm leading-relaxed ${
+                              msg.type === 'admin' || msg.type === 'employee' ? 'text-white' : 'text-gray-700'
+                            }`}>
+                              {msg.message}
+                            </p>
+                          </div>
+                        </div>
+                        {msg.type === 'admin' || msg.type === 'employee' ? (
+                          <div className="w-8 h-8 bg-gradient-to-r from-gray-600 to-gray-700 rounded-full flex items-center justify-center ml-3 order-1 flex-shrink-0">
+                            <MessageSquare className="w-4 h-4 text-white" />
+                          </div>
+                        ) : (
+                          <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center mr-3 order-2 flex-shrink-0">
+                            <User className="w-4 h-4 text-white" />
+                          </div>
+                        )}
+                      </div>
                     ));
                   })()}
                 </div>

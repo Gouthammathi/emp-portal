@@ -554,7 +554,12 @@ function ClientDashboard() {
                                 }`}>
                                   {msg.type === 'customer'
                                     ? (msg.isInitial ? 'Initial Request' : 'Your Response')
-                                    : msg.type === 'admin' || msg.type === 'employee' ? 'Support Team'
+                                    : msg.type === 'admin'
+                                    ? 'Admin'
+                                    : msg.type === 'employee'
+                                    ? (msg.senderRole === 'superManager' ? 'Project Manager' :
+                                       msg.senderRole === 'manager' ? 'Team Lead' :
+                                       assignedEmployeeNames[msg.senderId] || 'Employee')
                                     : 'Unknown Sender'
                                   }
                                 </span>

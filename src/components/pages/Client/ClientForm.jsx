@@ -19,10 +19,12 @@ import {
   Loader2,
   Projector
 } from 'lucide-react';
-import { collection, addDoc, serverTimestamp, query, where, getDocs, updateDoc, doc, getDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, updateDoc, doc, getDoc, orderBy } from 'firebase/firestore';
 import { db } from '../../../firebase';
-import { getAuth } from 'firebase/auth';
-
+import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
+import emailjs from '@emailjs/browser';
+import { ticketNotificationTemplate } from '../../../utils/emailTemplates';
+ 
 function Client() {
   const [formData, setFormData] = useState({
     name: '',
@@ -42,13 +44,13 @@ function Client() {
   const [ticketId, setTicketId] = useState(null);
   const [assignedProject, setAssignedProject] = useState('Loading...');
   const fileInputRef = useRef(null);
-
+ 
   const priorities = [
     { value: 'Low', color: 'text-green-600', description: 'Non-urgent, can wait' },
     { value: 'Medium', color: 'text-yellow-600', description: 'Normal priority' },
     { value: 'High', color: 'text-red-600', description: 'Urgent, needs immediate attention' }
   ];
-
+ 
   const categories = [
     'Technical Issue',
     'Bug Report',
@@ -59,17 +61,17 @@ function Client() {
     'Complaint',
     'Feedback'
   ];
-
+ 
   useEffect(() => {
     const fetchClientProject = async () => {
       const auth = getAuth();
       const user = auth.currentUser;
-      
+     
       if (user) {
         try {
           const userDocRef = doc(db, 'users', user.uid);
           const userDocSnap = await getDoc(userDocRef);
-          
+         
           if (userDocSnap.exists()) {
             const userData = userDocSnap.data();
             const project = userData.assignedProject || 'Not Assigned';
@@ -89,10 +91,10 @@ function Client() {
         setFormData(prev => ({ ...prev, project: 'Not Logged In' }));
       }
     };
-
+ 
     fetchClientProject();
   }, []);
-
+ 
   const validateForm = async () => {
     const newErrors = {};
    
@@ -102,7 +104,7 @@ function Client() {
     if (!formData.subject.trim()) newErrors.subject = 'Subject is required';
     if (!formData.description.trim()) newErrors.description = 'Description is required';
     else if (formData.description.trim().length < 10) newErrors.description = 'Description must be at least 10 characters';
-
+ 
     // Check for duplicate tickets
     if (formData.subject.trim() && formData.email.trim()) {
       const isDuplicate = await checkDuplicateTicket(formData.subject, formData.email);
@@ -110,11 +112,11 @@ function Client() {
         newErrors.submit = 'A similar ticket was submitted in the last 24 hours. Please check your email for updates.';
       }
     }
-
+ 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
+ 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     const validFiles = files.filter(file => {
@@ -125,17 +127,17 @@ function Client() {
       }
       return true;
     });
-
+ 
     setAttachments(prev => [...prev, ...validFiles]);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
-
+ 
   const removeAttachment = (index) => {
     setAttachments(prev => prev.filter((_, i) => i !== index));
   };
-
+ 
   const getFileIcon = (file) => {
     const type = file.type.split('/')[0];
     switch (type) {
@@ -152,7 +154,7 @@ function Client() {
         return <File className="w-4 h-4" />;
     }
   };
-
+ 
   const formatFileSize = (bytes) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -160,22 +162,44 @@ function Client() {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
-
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!await validateForm()) return;
-   
     setIsSubmitting(true);
     setErrors({});
-   
+ 
+    // Validate form
+    if (!await validateForm()) {
+      setIsSubmitting(false);
+      return;
+    }
+ 
     try {
       const auth = getAuth();
       const currentUser = auth.currentUser;
-      
+     
       if (!currentUser) {
         throw new Error('User not authenticated');
       }
-
+ 
+      // Get the manager's email for the project
+      const managerQuery = query(
+        collection(db, "users"),
+        where("assignedProject", "==", formData.project),
+        where("role", "==", "manager")
+      );
+      const managerSnapshot = await getDocs(managerQuery);
+     
+      if (managerSnapshot.empty) {
+        console.warn('No manager found for this project.');
+        setErrors({ project: 'No manager found for the selected project.' });
+        setIsSubmitting(false);
+        return;
+      }
+ 
+      // Determine who the ticket is assigned to for Firestore (e.g., the first manager found)
+      const assignedManagerData = managerSnapshot.docs[0].data();
+ 
       // Process attachments
       const processedFiles = await Promise.all(
         attachments.map(async (file) => {
@@ -208,11 +232,33 @@ function Client() {
         created: serverTimestamp(),
         starred: false,
         attachments: processedFiles,
-        ticketNumber: `TKT-${Date.now()}`,
         lastUpdated: serverTimestamp(),
-        customerId: currentUser.uid
+        customerId: currentUser.uid,
+        assignedTo: managerSnapshot.docs[0].id,
+        assignedToName: `${assignedManagerData.firstName} ${assignedManagerData.lastName}`,
+        assignedToRole: 'manager'
       };
-
+ 
+      // Get the last ticket number for this project and increment it
+      const ticketsQuery = query(
+        collection(db, 'tickets'),
+        where('project', '==', formData.project),
+        orderBy('ticketNumber', 'desc')
+      );
+      const ticketsSnapshot = await getDocs(ticketsQuery);
+ 
+      let nextTicketNumber = 1000;
+      if (!ticketsSnapshot.empty) {
+        const latestTicket = ticketsSnapshot.docs[0].data();
+        // Extract only the numeric part of the ticket number (e.g., "TKT-1001" -> 1001)
+        const lastNum = parseInt(latestTicket.ticketNumber.split('-')[1], 10);
+        if (!isNaN(lastNum) && lastNum >= 1000) {
+          nextTicketNumber = lastNum + 1;
+        }
+      }
+ 
+      ticketData.ticketNumber = `TKT-${nextTicketNumber}`;
+ 
       // Add to Firestore
       const docRef = await addDoc(collection(db, 'tickets'), ticketData);
       setTicketId(docRef.id);
@@ -221,7 +267,30 @@ function Client() {
       await updateDoc(docRef, {
         ticketId: docRef.id
       });
-     
+ 
+      // Send email notification to all relevant managers using EmailJS
+      for (const managerDoc of managerSnapshot.docs) {
+        const managerData = managerDoc.data();
+        const managerEmail = managerData.email;
+ 
+        const templateParams = {
+          to_email: managerEmail,
+          to_name: managerData.firstName,
+          ticket_id: ticketData.ticketNumber,
+          reply_from: formData.name,
+          phone: formData.phone,
+          customer_email: formData.email,
+          template_html: ticketNotificationTemplate
+        };
+ 
+        await emailjs.send(
+          'service_f2cgkcd', // Replace with your EmailJS service ID
+          'template_dkv2czr', // Replace with your EmailJS template ID
+          templateParams,
+          'ra7gO6IdJA5dC3cH4' // Replace with your EmailJS public key
+        );
+      }
+ 
       setIsSubmitting(false);
       setSubmitSuccess(true);
       setAttachments([]);
@@ -247,7 +316,7 @@ function Client() {
       setErrors({ submit: error.message || 'Failed to submit ticket. Please try again.' });
     }
   };
-
+ 
   // Add a function to check for duplicate tickets
   const checkDuplicateTicket = async (subject, email) => {
     const q = query(
@@ -264,7 +333,7 @@ function Client() {
       return data.subject === subject && createdTime >= last24Hours;
     });
   };
-
+ 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -274,7 +343,7 @@ function Client() {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
-
+ 
   if (submitSuccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -300,7 +369,7 @@ function Client() {
       </div>
     );
   }
-
+ 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Header */}
@@ -317,7 +386,7 @@ function Client() {
           </div>
         </div>
       </div>
-
+ 
       <div className="max-w-4xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Form */}
@@ -345,7 +414,7 @@ function Client() {
                     />
                     {errors.name && <p className="text-red-600 text-sm mt-1">{errors.name}</p>}
                   </div>
-
+ 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       <Mail className="w-4 h-4 inline mr-2" />
@@ -364,7 +433,7 @@ function Client() {
                     {errors.email && <p className="text-red-600 text-sm mt-1">{errors.email}</p>}
                   </div>
                 </div>
-
+ 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -380,7 +449,7 @@ function Client() {
                       placeholder="Enter your phone number"
                     />
                   </div>
-
+ 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       <Building className="w-4 h-4 inline mr-2" />
@@ -389,7 +458,7 @@ function Client() {
                     <p className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-700">{assignedProject}</p>
                   </div>
                 </div>
-
+ 
                 {/* Ticket Information */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
@@ -405,7 +474,7 @@ function Client() {
                       ))}
                     </select>
                   </div>
-
+ 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Priority Level</label>
                     <select
@@ -422,7 +491,7 @@ function Client() {
                     </select>
                   </div>
                 </div>
-
+ 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Subject *
@@ -439,7 +508,7 @@ function Client() {
                   />
                   {errors.subject && <p className="text-red-600 text-sm mt-1">{errors.subject}</p>}
                 </div>
-
+ 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Description *
@@ -459,7 +528,7 @@ function Client() {
                     Character count: {formData.description.length} (minimum 10 characters)
                   </p>
                 </div>
-
+ 
                 {/* Attachments Section */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -483,7 +552,7 @@ function Client() {
                       Add Files
                     </button>
                   </div>
-
+ 
                   {attachments.length > 0 && (
                     <div className="space-y-2">
                       {attachments.map((file, index) => (
@@ -510,7 +579,7 @@ function Client() {
                     </div>
                   )}
                 </div>
-
+ 
                 <div className="flex items-center justify-between pt-6">
                   <div className="flex items-center space-x-2 text-gray-600">
                     <span className="text-sm">
@@ -543,7 +612,7 @@ function Client() {
               </form>
             </div>
           </div>
-
+ 
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Quick Tips */}
@@ -567,7 +636,7 @@ function Client() {
                 </li>
               </ul>
             </div>
-
+ 
             {/* Priority Guide */}
             <div className="bg-white rounded-2xl shadow-xl p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
@@ -589,7 +658,7 @@ function Client() {
                 ))}
               </div>
             </div>
-
+ 
             {/* Contact Info */}
             <div className="bg-white rounded-2xl shadow-xl p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
@@ -611,6 +680,8 @@ function Client() {
     </div>
   );
 }
-
+ 
 export default Client;
-
+ 
+ 
+ 

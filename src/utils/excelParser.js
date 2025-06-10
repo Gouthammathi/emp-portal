@@ -20,7 +20,7 @@ export const parseExcelFile = (file) => {
         // Get headers from first row and clean them
         const headers = jsonData[0].map(header => {
           if (typeof header === 'string') {
-            return header.trim().toLowerCase();
+            return header.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
           }
           return '';
         });
@@ -29,7 +29,21 @@ export const parseExcelFile = (file) => {
  
         // Process data rows
         const mappedData = jsonData.slice(1).map(row => {
-          const rowData = {};
+          const rowData = {
+            bankDetails: {
+              accountNumber: '',
+              bankName: '',
+              ifscCode: '',
+              accountType: '',
+              branchName: ''
+            },
+            documents: {
+              aadharNumber: '',
+              panNumber: '',
+              passportNumber: '',
+              drivingLicense: ''
+            }
+          };
          
           // Map each column to its corresponding field
           headers.forEach((header, index) => {
@@ -37,75 +51,71 @@ export const parseExcelFile = (file) => {
            
             // Map the Excel column to our form field
             switch(header) {
-              case 'first name':
+              // Basic Information
               case 'firstname':
-              case 'first_name':
                 rowData.firstName = value || '';
                 break;
-              case 'last name':
               case 'lastname':
-              case 'last_name':
                 rowData.lastName = value || '';
                 break;
               case 'email':
-              case 'email address':
                 rowData.email = value || '';
                 break;
               case 'phone':
-              case 'phone number':
-              case 'contact number':
                 rowData.phone = value || '';
                 break;
-              case 'employee id':
-              case 'employeeid':
-              case 'emp id':
-              case 'emp_id':
+              case 'empid':
                 rowData.empId = value || '';
                 break;
-              case 'department':
-                rowData.department = value || '';
+              case 'password':
+                rowData.password = value || '';
                 break;
-              case 'designation':
-              case 'job title':
-                rowData.designation = value || '';
-                break;
-              case 'role':
-              case 'position':
-                rowData.role = mapRole(value || '');
-                break;
-              case 'status':
-                rowData.status = value?.toLowerCase() || 'active';
-                break;
-              case 'joining date':
-              case 'joiningdate':
-              case 'date of joining':
-                rowData.joiningDate = formatDate(value) || '';
-                break;
-              case 'date of birth':
-              case 'dob':
-              case 'birth date':
+              case 'dateofbirth':
                 rowData.dateOfBirth = formatDate(value) || '';
                 break;
               case 'gender':
                 rowData.gender = value?.toLowerCase() || '';
                 break;
-              case 'marital status':
               case 'maritalstatus':
                 rowData.maritalStatus = value?.toLowerCase() || '';
                 break;
-              case 'blood group':
               case 'bloodgroup':
-              case 'blood type':
                 rowData.bloodGroup = value || '';
                 break;
-              case 'emergency contact':
               case 'emergencycontact':
-              case 'emergency number':
                 rowData.emergencyContact = value || '';
                 break;
               case 'address':
                 rowData.address = value || '';
                 break;
+
+              // Employment Information
+              case 'department':
+                rowData.department = value || '';
+                break;
+              case 'designation':
+                rowData.designation = value || '';
+                break;
+              case 'role':
+                rowData.role = mapRole(value || '');
+                break;
+              case 'status':
+                rowData.status = value?.toLowerCase() || 'active';
+                break;
+              case 'joiningdate':
+                rowData.joiningDate = formatDate(value) || '';
+                break;
+              case 'cid':
+                rowData.cid = value || '';
+                break;
+              case 'managerid':
+                rowData.managerId = value || '';
+                break;
+              case 'supermanagerid':
+                rowData.superManagerId = value || '';
+                break;
+
+              // Professional Information
               case 'education':
                 rowData.education = value || '';
                 break;
@@ -118,40 +128,39 @@ export const parseExcelFile = (file) => {
               case 'salary':
                 rowData.salary = value || '';
                 break;
-              case 'account number':
+
+              // Bank Details
               case 'accountnumber':
-              case 'bank account':
-                rowData.bankDetails = {
-                  ...rowData.bankDetails,
-                  accountNumber: value || ''
-                };
+                rowData.bankDetails.accountNumber = value || '';
                 break;
-              case 'bank name':
               case 'bankname':
-                rowData.bankDetails = {
-                  ...rowData.bankDetails,
-                  bankName: value || ''
-                };
+                rowData.bankDetails.bankName = value || '';
                 break;
-              case 'ifsc code':
               case 'ifsccode':
-              case 'ifsc':
-                rowData.bankDetails = {
-                  ...rowData.bankDetails,
-                  ifscCode: value || ''
-                };
+                rowData.bankDetails.ifscCode = value || '';
+                break;
+              case 'accounttype':
+                rowData.bankDetails.accountType = value?.toLowerCase() || '';
+                break;
+              case 'branchname':
+                rowData.bankDetails.branchName = value || '';
+                break;
+
+              // Documents
+              case 'aadharnumber':
+                rowData.documents.aadharNumber = value || '';
+                break;
+              case 'pannumber':
+                rowData.documents.panNumber = value || '';
+                break;
+              case 'passportnumber':
+                rowData.documents.passportNumber = value || '';
+                break;
+              case 'drivinglicense':
+                rowData.documents.drivingLicense = value || '';
                 break;
             }
           });
- 
-          // Ensure bankDetails is properly structured
-          if (!rowData.bankDetails) {
-            rowData.bankDetails = {
-              accountNumber: '',
-              bankName: '',
-              ifscCode: ''
-            };
-          }
  
           // Log the mapped data for debugging
           console.log('Mapped Row Data:', rowData);

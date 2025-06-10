@@ -69,7 +69,6 @@ const AdminSidebar = () => {
       { name: 'Employee Documents', path: '/admin/employee-documents', icon: <FolderOpen size={20} /> },
       { name: 'Recruitment', path: '/admin/recruitment', icon: <UserPlus size={20} /> },
       { name: 'Client Management', path: '/admin/A-clients', icon: <FaBuilding /> },
-      { name: 'Client Access', path: '/admin/A-clients', icon: <Users size={20} /> }
     ],
     finance: [
       { name: 'Financial Reports', path: '/admin/financial-reports', icon: <FileSpreadsheet size={20} /> },

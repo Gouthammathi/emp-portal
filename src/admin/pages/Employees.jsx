@@ -60,7 +60,6 @@ const Employees = () => {
       const querySnapshot = await getDocs(q);
       const employeesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setEmployees(employeesData);
-      setFilteredEmployees(employeesData);
      
       // Extract unique departments
       const uniqueDepartments = [...new Set(employeesData.map(emp => emp.department))].filter(Boolean);
