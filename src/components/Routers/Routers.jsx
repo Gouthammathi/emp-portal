@@ -60,7 +60,7 @@ const UserLayoutWrapper = () => (
 );
 
 const Routers = () => {
-  const [, loading] = useAuthState(auth);
+  const [, loading] = useAuthState(auth);   
 
   if (loading) return <div>Loading...</div>;
 
