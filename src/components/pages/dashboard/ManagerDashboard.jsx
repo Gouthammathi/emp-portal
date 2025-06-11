@@ -250,6 +250,14 @@ const ManagerDashboard = () => {
       onClick: () => navigate('/Timesheet')
     },
     {
+      title: 'Leave Requests',
+      icon: <FaCalendarAlt className="w-8 h-8" />,
+      description: 'View and manage team leave requests',
+      color: 'bg-orange-500',
+      hoverColor: 'hover:bg-orange-600',
+      onClick: () => navigate('/leave/pending')
+    },
+    {
       title: 'Holiday Calendar',
       icon: <FaCalendarAlt className="w-8 h-8" />,
       description: 'View upcoming holidays and events',

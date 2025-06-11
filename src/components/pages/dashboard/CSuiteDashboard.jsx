@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../firebase';
-import { FaUsers, FaTicketAlt, FaProjectDiagram } from 'react-icons/fa';
+import { FaUsers, FaTicketAlt, FaProjectDiagram, FaCalendarAlt } from 'react-icons/fa';
 import { getAuth, signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
- 
+
 const CSuiteDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [totalEmployees, setTotalEmployees] = useState(0);
@@ -19,7 +19,7 @@ const CSuiteDashboard = () => {
   const [employeeRoleCounts, setEmployeeRoleCounts] = useState({});
   const navigate = useNavigate();
   const auth = getAuth();
- 
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -29,19 +29,19 @@ const CSuiteDashboard = () => {
         const allUsers = usersSnapshot.docs.map(doc => doc.data());
         const employees = allUsers.filter(user => user.role !== 'client');
         setTotalEmployees(employees.length);
- 
+
         const roleCounts = {};
         employees.forEach(emp => {
           const role = emp.role || 'employee'; // Default to employee if role is missing
           roleCounts[role] = (roleCounts[role] || 0) + 1;
         });
         setEmployeeRoleCounts(roleCounts);
- 
+
         // Fetch all tickets and calculate total and status counts
         const ticketsSnapshot = await getDocs(collection(db, 'tickets'));
         const allTickets = ticketsSnapshot.docs.map(doc => doc.data());
         setTotalTickets(allTickets.length);
- 
+
         const statusCounts = {
           Open: 0,
           'In Progress': 0,
@@ -55,21 +55,21 @@ const CSuiteDashboard = () => {
           }
         });
         setTicketStatusCounts(statusCounts);
- 
+
         // Fetch total projects
         const projectsSnapshot = await getDocs(collection(db, 'projects'));
         setTotalProjects(projectsSnapshot.size);
- 
+
         setLoading(false);
       } catch (error) {
         console.error('Error fetching C-Suite dashboard data:', error);
         setLoading(false);
       }
     };
- 
+
     fetchData();
   }, []);
- 
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -77,7 +77,7 @@ const CSuiteDashboard = () => {
       </div>
     );
   }
- 
+
   // Handle logout
   const handleLogout = async () => {
     try {
@@ -87,7 +87,7 @@ const CSuiteDashboard = () => {
       console.error('Error signing out:', error);
     }
   };
- 
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
@@ -102,10 +102,10 @@ const CSuiteDashboard = () => {
           </button>
         </div>
       </header>
- 
+
       {/* Main Content Area */}
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
- 
+
         {/* Quick Stats Section */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* Total Employees Tile */}
@@ -120,9 +120,9 @@ const CSuiteDashboard = () => {
               </div>
             </div>
           </div>
- 
+
           {/* Total Tickets Tile */}
-          <div 
+          <div
             onClick={() => navigate('/csuite-tickets')}
             className="bg-white rounded-xl shadow p-6 border border-gray-200 cursor-pointer hover:shadow-lg transition-shadow duration-200"
           >
@@ -136,9 +136,9 @@ const CSuiteDashboard = () => {
               </div>
             </div>
           </div>
- 
-           {/* Total Projects Tile */}
-           <div className="bg-white rounded-xl shadow p-6 border border-gray-200">
+
+          {/* Total Projects Tile */}
+          <div className="bg-white rounded-xl shadow p-6 border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Projects</p>
@@ -149,8 +149,23 @@ const CSuiteDashboard = () => {
               </div>
             </div>
           </div>
+          {/* Leave Requests Tile */}
+          <div
+            onClick={() => navigate('/leave/pending')}
+            className="bg-white rounded-xl shadow p-6 border border-gray-200 cursor-pointer hover:shadow-lg transition-shadow duration-200"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Leave Requests</p>
+                <p className="text-2xl font-bold text-gray-900">View</p>
+              </div>
+              <div className="p-3 bg-orange-100 rounded-lg">
+                <FaCalendarAlt className="w-6 h-6 text-orange-600" />
+              </div>
+            </div>
+          </div>
         </div>
- 
+
         {/* Ticket Status Overview */}
         <div className="bg-white rounded-xl shadow p-6 border border-gray-200 mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Ticket Status Overview (All Tickets)</h2>
@@ -185,7 +200,7 @@ const CSuiteDashboard = () => {
             </div>
           </div>
         </div>
- 
+
         {/* Employee Role Breakdown */}
         <div className="bg-white rounded-xl shadow p-6 border border-gray-200 mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Employee Breakdown by Role (Excluding Clients)</h2>
@@ -201,14 +216,13 @@ const CSuiteDashboard = () => {
             ))}
           </div>
         </div>
- 
+
         {/* Add more C-Suite relevant sections here */}
         {/* For example: Project status summary, financial overview, etc. */}
- 
+
       </main>
     </div>
   );
 };
- 
+
 export default CSuiteDashboard;
- 

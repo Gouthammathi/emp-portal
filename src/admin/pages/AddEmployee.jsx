@@ -306,6 +306,9 @@ const AddEmployee = () => {
       await batch.commit();
       toast.success('Employee added successfully');
 
+      // Redirect to the employees list after successful submission
+      navigate('/admin/A-employees');
+
       // Reset form data after successful submission
       setFormData({
         firstName: '',

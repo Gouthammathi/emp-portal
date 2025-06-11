@@ -59,12 +59,43 @@ const Employees = () => {
       const q = query(collection(db, 'users'), where('role', '!=', 'client'));
       const querySnapshot = await getDocs(q);
       const employeesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setEmployees(employeesData);
-     
+      
+      // Get all projects
+      const projectsSnapshot = await getDocs(collection(db, 'projects'));
+      const projectsData = projectsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      
+      // For each employee, if they are a manager, get their team leads' projects
+      const employeesWithProjects = await Promise.all(employeesData.map(async (employee) => {
+        if (employee.role === 'supermanager') {
+          // Get team leads under this manager
+          const teamLeadsQuery = query(
+            collection(db, 'users'),
+            where('managerId', '==', employee.empId),
+            where('role', '==', 'manager')
+          );
+          const teamLeadsSnapshot = await getDocs(teamLeadsQuery);
+          const teamLeads = teamLeadsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          
+          // Get projects for each team lead
+          const teamLeadProjects = teamLeads.map(teamLead => {
+            const teamLeadProject = projectsData.find(project => project.teamLeadId === teamLead.empId);
+            return teamLeadProject ? teamLeadProject.name : null;
+          }).filter(Boolean);
+          
+          return {
+            ...employee,
+            assignedProject: teamLeadProjects.length > 0 ? teamLeadProjects.join(', ') : 'No projects assigned'
+          };
+        }
+        return employee;
+      }));
+      
+      setEmployees(employeesWithProjects);
+      
       // Extract unique departments
-      const uniqueDepartments = [...new Set(employeesData.map(emp => emp.department))].filter(Boolean);
+      const uniqueDepartments = [...new Set(employeesWithProjects.map(emp => emp.department))].filter(Boolean);
       setDepartments(uniqueDepartments);
-     
+      
       setLoading(false);
     } catch (error) {
       console.error('Error fetching employees:', error);

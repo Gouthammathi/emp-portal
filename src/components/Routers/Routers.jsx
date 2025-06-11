@@ -38,6 +38,8 @@ import ITStatement from '../pages/salary/ItStatemnet';
  
 import LeaveApply from '../pages/leave/LeaveApply';
 import LeaveBalances from '../pages/leave/LeaveBalances';
+import PendingLeaves from '../pages/leave/PendingLeaves';
+import LeaveHistory from '../pages/leave/LeaveHistory';
  
 import DocumentCenter from '../pages/document/DocumentCenter';
 import EmpDocs from '../pages/document/Emp-Docs';
@@ -106,8 +108,11 @@ const Routers = () => {
 <Route path="timesheet" element={<Timesheet />} />
 <Route path="salary/payslips" element={<Payslip />} />
 <Route path="salary/it-statement" element={<ITStatement />} />
-<Route path="leave/apply" element={<LeaveApply />} />
-<Route path="leave/balances" element={<LeaveBalances />} />
+<Route path="leave/balances" element={<LeaveBalances />} />  
+<Route path="apply" element={<LeaveApply />} />
+<Route path="pending" element={<PendingLeaves />} />
+<Route path="history" element={<LeaveHistory />} />
+{/* <Route path="balances" element={<LeaveBalances />} /> */}
 <Route path="holiday-calendar" element={<Holidaycal />} />
 <Route path="daily-s" element={<Dailys />} />
 <Route path="org" element={<Org />} />

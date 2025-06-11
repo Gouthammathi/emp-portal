@@ -186,6 +186,14 @@ const SuperManagerDashboard = () => {
       color: 'bg-green-500',
       hoverColor: 'hover:bg-green-600',
       onClick: () => navigate('/manager/performance')
+    },
+    {
+      title: 'Leave Requests',
+      icon: <FaCalendarAlt className="w-8 h-8" />,
+      description: 'View and manage team leave requests',
+      color: 'bg-orange-500',
+      hoverColor: 'hover:bg-orange-600',
+      onClick: () => navigate('/leave/pending')
     }
   ];
  
