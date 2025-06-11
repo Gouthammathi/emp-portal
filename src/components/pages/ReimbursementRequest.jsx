@@ -91,7 +91,7 @@ const ReimbursementRequest = () => {
   const [isManager, setIsManager] = useState(false);
   const navigate = useNavigate();
 
-  const categories = ['Travel', 'Meals','Accomodation', 'Office Supplies', 'Training', 'Software', 'Other'];
+  const categories = ['Travel', 'Food','Accomodation', 'Office Supplies', 'Training', 'Software', 'Other'];
 
   useEffect(() => {
     const fetchUserData = async () => {

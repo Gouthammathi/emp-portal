@@ -112,7 +112,7 @@ const Employees = () => {
     const matchesSearch =
       employee.firstName?.toLowerCase().includes(searchTermLower) ||
       employee.lastName?.toLowerCase().includes(searchTermLower) ||
-      employee.empId?.toLowerCase().includes(searchTermLower) ||
+      String(employee.empId)?.toLowerCase().includes(searchTermLower) ||
       employee.email?.toLowerCase().includes(searchTermLower) ||
       employee.department?.toLowerCase().includes(searchTermLower) ||
       employee.designation?.toLowerCase().includes(searchTermLower);

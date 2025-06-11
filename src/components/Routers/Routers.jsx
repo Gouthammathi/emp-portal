@@ -26,6 +26,7 @@ import Holidaycal from '../pages/leave/holcal';
 import Dailys from '../pages/dailystatus/daily';
 import Org from '../pages/Org';
 import ReimbursementRequest from '../pages/ReimbursementRequest';
+import HrReimbursement from '../pages/HrReimbursement';
 import TeamMemberDetails from '../pages/dashboard/TeamMemberDetails';
 import TeamOverview from '../pages/dashboard/TeamOverview';
 import SuperManagerTeamOverview from '../pages/dashboard/SuperManagerTeamOverview';
@@ -111,6 +112,7 @@ const Routers = () => {
 <Route path="daily-s" element={<Dailys />} />
 <Route path="org" element={<Org />} />
 <Route path="reimbursement" element={<ReimbursementRequest />} />
+<Route path="hr-reimbursements" element={<HrReimbursement />} />
 <Route path="team-member/:empId" element={<TeamMemberDetails />} />
 <Route path="team-overview" element={<TeamOverview />} />
 <Route path="supermanager-team-overview" element={<SuperManagerTeamOverview />} />

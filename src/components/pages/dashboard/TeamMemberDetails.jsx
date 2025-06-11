@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '../../../firebase';
+import { collection, query, where, getDocs, doc, updateDoc, serverTimestamp, addDoc } from 'firebase/firestore';
+import { db, auth } from '../../../firebase';
 import { FaClock, FaClipboardList, FaFileInvoiceDollar, FaBook, FaArrowLeft } from 'react-icons/fa';
-
+ 
 const TeamMemberDetails = () => {
   const { empId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const member = location.state?.member;
-
+ 
   const [activeTab, setActiveTab] = useState('timesheets');
   const [memberData, setMemberData] = useState({
     timesheets: [],
@@ -18,11 +18,11 @@ const TeamMemberDetails = () => {
     reimbursements: []
   });
   const [loading, setLoading] = useState(true);
-
+ 
   useEffect(() => {
     const fetchMemberData = async () => {
       if (!member) return;
-      
+     
       setLoading(true);
       try {
         // Fetch timesheets
@@ -35,7 +35,7 @@ const TeamMemberDetails = () => {
           id: doc.id,
           ...doc.data()
         }));
-
+ 
         // Fetch status reports
         const statusQuery = query(
           collection(db, "statusReports"),
@@ -46,7 +46,7 @@ const TeamMemberDetails = () => {
           id: doc.id,
           ...doc.data()
         }));
-
+ 
         // Fetch mock tests
         const mockTestsQuery = query(
           collection(db, "mockTests"),
@@ -57,7 +57,7 @@ const TeamMemberDetails = () => {
           id: doc.id,
           ...doc.data()
         }));
-
+ 
         // Fetch reimbursement requests
         const reimbursementsQuery = query(
           collection(db, "reimbursements"),
@@ -68,7 +68,7 @@ const TeamMemberDetails = () => {
           id: doc.id,
           ...doc.data()
         }));
-
+ 
         setMemberData({
           timesheets,
           statusReports,
@@ -80,10 +80,102 @@ const TeamMemberDetails = () => {
       }
       setLoading(false);
     };
-
+ 
     fetchMemberData();
   }, [empId, member]);
-
+ 
+  const handleApproveReimbursement = async (reimbursementId) => {
+    try {
+      const reimbursementRef = doc(db, 'reimbursements', reimbursementId);
+      await updateDoc(reimbursementRef, {
+        status: 'manager_approved',
+        hrStatus: 'pending',
+        managerApprovedAt: serverTimestamp(),
+        managerApprovedBy: auth.currentUser.uid
+      });
+ 
+      // Create notification for employee
+      const reimbursement = memberData.reimbursements.find(r => r.id === reimbursementId);
+      if (reimbursement) {
+        await addDoc(collection(db, 'notifications'), {
+          type: 'reimbursement',
+          status: 'manager_approved',
+          reimbursementId: reimbursementId,
+          employeeId: reimbursement.userId,
+          amount: reimbursement.totalAmount,
+          createdAt: serverTimestamp(),
+          read: false,
+          message: `Your reimbursement request for ₹${reimbursement.totalAmount} has been approved by your manager and is pending HR review`
+        });
+      }
+ 
+      // Refresh the reimbursements data
+      const reimbursementsQuery = query(
+        collection(db, "reimbursements"),
+        where("empId", "==", empId)
+      );
+      const reimbursementsSnapshot = await getDocs(reimbursementsQuery);
+      const reimbursements = reimbursementsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+ 
+      setMemberData(prev => ({
+        ...prev,
+        reimbursements
+      }));
+ 
+    } catch (error) {
+      console.error('Error approving reimbursement:', error);
+    }
+  };
+ 
+  const handleRejectReimbursement = async (reimbursementId) => {
+    try {
+      const reimbursementRef = doc(db, 'reimbursements', reimbursementId);
+      await updateDoc(reimbursementRef, {
+        status: 'rejected',
+        hrStatus: 'rejected',
+        managerRejectedAt: serverTimestamp(),
+        managerRejectedBy: auth.currentUser.uid
+      });
+ 
+      // Create notification for employee
+      const reimbursement = memberData.reimbursements.find(r => r.id === reimbursementId);
+      if (reimbursement) {
+        await addDoc(collection(db, 'notifications'), {
+          type: 'reimbursement',
+          status: 'rejected',
+          reimbursementId: reimbursementId,
+          employeeId: reimbursement.userId,
+          amount: reimbursement.totalAmount,
+          createdAt: serverTimestamp(),
+          read: false,
+          message: `Your reimbursement request for ₹${reimbursement.totalAmount} has been rejected by your manager`
+        });
+      }
+ 
+      // Refresh the reimbursements data
+      const reimbursementsQuery = query(
+        collection(db, "reimbursements"),
+        where("empId", "==", empId)
+      );
+      const reimbursementsSnapshot = await getDocs(reimbursementsQuery);
+      const reimbursements = reimbursementsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+ 
+      setMemberData(prev => ({
+        ...prev,
+        reimbursements
+      }));
+ 
+    } catch (error) {
+      console.error('Error rejecting reimbursement:', error);
+    }
+  };
+ 
   const renderTabContent = () => {
     switch (activeTab) {
       case 'timesheets':
@@ -171,7 +263,7 @@ const TeamMemberDetails = () => {
                         {reimbursement.status.charAt(0).toUpperCase() + reimbursement.status.slice(1)}
                       </span>
                     </div>
-                    
+                   
                     <div className="grid grid-cols-2 gap-4 mb-4">
                       <div>
                         <p className="text-sm text-gray-600">Total Amount</p>
@@ -182,12 +274,12 @@ const TeamMemberDetails = () => {
                         <p className="font-medium">{reimbursement.entries[0]?.category}</p>
                       </div>
                     </div>
-
+ 
                     <div className="mb-4">
                       <p className="text-sm text-gray-600">Justification</p>
                       <p className="text-gray-800">{reimbursement.justification}</p>
                     </div>
-
+ 
                     <div className="space-y-2">
                       <p className="text-sm font-medium text-gray-700">Expense Entries:</p>
                       {reimbursement.entries.map((entry, index) => (
@@ -208,9 +300,9 @@ const TeamMemberDetails = () => {
                             {entry.receipt && (
                               <div className="col-span-2">
                                 <p className="text-sm text-gray-600">Receipt</p>
-                                <a 
-                                  href={entry.receipt.url} 
-                                  target="_blank" 
+                                <a
+                                  href={entry.receipt.url}
+                                  target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-blue-600 hover:underline"
                                 >
@@ -222,7 +314,7 @@ const TeamMemberDetails = () => {
                         </div>
                       ))}
                     </div>
-
+ 
                     {reimbursement.status === 'pending' && (
                       <div className="flex justify-end space-x-4 mt-4">
                         <button
@@ -283,7 +375,7 @@ const TeamMemberDetails = () => {
         return null;
     }
   };
-
+ 
   if (!member) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -294,7 +386,7 @@ const TeamMemberDetails = () => {
       </div>
     );
   }
-
+ 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200">
       <div className="container mx-auto px-4 py-8">
@@ -307,7 +399,7 @@ const TeamMemberDetails = () => {
             <FaArrowLeft className="w-4 h-4" />
             <span>Back to Team Overview</span>
           </button>
-          
+         
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex items-center space-x-4">
               <div className="w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 flex items-center justify-center shadow-lg">
@@ -323,7 +415,7 @@ const TeamMemberDetails = () => {
             </div>
           </div>
         </div>
-
+ 
         {/* Tabs */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="border-b border-gray-200">
@@ -349,7 +441,7 @@ const TeamMemberDetails = () => {
               ))}
             </nav>
           </div>
-
+ 
           {/* Tab Content */}
           <div className="p-6">
             {loading ? (
@@ -367,5 +459,6 @@ const TeamMemberDetails = () => {
     </div>
   );
 };
-
-export default TeamMemberDetails; 
+ 
+export default TeamMemberDetails;
+ 
